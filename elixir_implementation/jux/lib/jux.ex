@@ -1,0 +1,2 @@
+defmodule Jux do
+end
