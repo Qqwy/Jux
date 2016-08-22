@@ -19,6 +19,9 @@ The same holds true for data types: The literal data types a target *has* to imp
 - Elixir implementation: 0%;
 - New Ruby implementation: 0%;
 
+- Think about custom function definitions.
+- Think about rewrite rules.
+
 # Future Goals
 
 - Create a way to use rewrite rules to enhance efficiency; things like `reverse length === length`
@@ -75,6 +78,9 @@ The standard library extends on this with multiple variations of swapping, dupli
 The standard library extends on this with:
 - `i`: Interpret/evaluate the quotation on top of the stack.
 - `b`: Take the two quotations on top of the stack, and interpret/evaluate them in reverse order.
+- TODO `w`
+- TODO `k` 
+- TODO `c`
 - TODO `y`: Useful to make recursive definitions.
 
 ### Comparisons
