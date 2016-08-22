@@ -90,8 +90,8 @@ The standard library extends on this with:
 Note that _all_ Jux values are comparable with each other; They form a monoid. This is useful to easily create sorting functions and associative lookups without extra overhead or edge cases.
 
 Comparisons have the following order:
-`Integer/Float < Function < String < Quotation`
-- An Integer/Float is compared by its numerical value
+`Integer/Float < Boolean < Function < String < Quotation`
+- An Integer/Float is compared by its numerical value.
 - Comparison between Functions and comparisons between Strings is done by using 'dictionary order'.
 - Quotations are compared element-wise; if the first elements are the same, the second elements are considered, etc. A shorter quotation that has the same prefix as a longer quotation is smaller.
 

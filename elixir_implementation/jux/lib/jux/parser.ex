@@ -10,12 +10,15 @@ defmodule Jux.Parser do
 
   @doc """
   Takes a string as input, returns a list of Jux tokens as output.
+  Notice that the output of the parser is not yet reversed. 
+  Before evaluation, this should happen; the tail of the list of tokens
+  should be evaluated before the head.
   """
   def parse(str) do
     do_parse(str, [])
   end
 
-  defp do_parse("", tokens), do: :lists.reverse tokens
+  defp do_parse("", tokens), do: tokens
   defp do_parse(source, tokens) do
     cond do
       source =~ @whitespace_regexp ->
@@ -50,7 +53,6 @@ defmodule Jux.Parser do
   def parse_quotation(source) do
     [quotation_length, rest] = do_parse_quotation(String.next_codepoint(source), 0, 0)
     quotation = String.slice(source, 1, quotation_length - 2)
-    IO.inspect [quotation, rest]
     [parse(quotation), rest]
   end
 
