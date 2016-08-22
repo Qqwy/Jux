@@ -12,6 +12,25 @@ To be able to live up to both of these goals, Jux defines a very small set of li
 The same holds true for data types: The literal data types a target *has* to implement are `int`, `string`, `quotation`(linked lists), `symbol`(a name with a constant integer value). The other supported data types (`tuple`(pairs, triples, etc; fixed-size arrays of values), `dict`(an associative key->value store ) and `tree` are by default implemented on top of lists.)
 
 
+# Roadmap
+
+- Old Ruby implementation prototype: 100%; _(not in this repository)_
+- Flesh out this Readme: 50%;
+- Elixir implementation: 0%;
+- New Ruby implementation: 0%;
+
+# Future Goals
+
+- Create a way to use rewrite rules to enhance efficiency; things like `reverse length === length`
+- Self-hosting
+- Multiple implementations.
+- Explore the advantages/drawbacks of a bytecode variant of Jux.
+- Explore (dependently?) statical typing and if/how it might work with a concatenative language.
+
+
+________________
+
+
 # Easy to implement
 
 A bare-bones (also called a **level-0**) implementation has to contain at least:
@@ -166,14 +185,5 @@ The standard library extends on this with:
 **TODO**
 
 
-
-
-# Future Goals
-
-- Create a way to use rewrite rules to enhance efficiency; things like `reverse length === length`
-- Self-hosting
-- Multiple implementations.
-- Explore the advantages/drawbacks of a bytecode variant of Jux.
-- Explore (dependently?) statical typing and if/how it might work with a concatenative language.
 
 
