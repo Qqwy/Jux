@@ -80,66 +80,59 @@ defmodule Jux.Primitive do
 
   # Comparisons
 
+  def compare([b, a | xs]) do
+    [do_compare(b, a) | xs]
+  end
+
   # element always eq to itself
-  def compare([x, x | xs]), do: [0 | xs]
-
-  # Number < Boolean
-  def compare([b, a | xs]) when is_number(a) and is_boolean(b), do: [-1 | xs]
-  def compare([b, a | xs]) when is_number(b) and is_boolean(a), do: [ 1 | xs]
-
-  # Number < Identifier
-  def compare([b = %Jux.Identifier{}, a                     | xs]) when is_number(a), do: [-1 | xs]
-  def compare([b                    , a = %Jux.Identifier{} | xs]) when is_number(b), do: [ 1 | xs]
-
-  # Number < String
-  def compare([b, a | xs]) when is_number(a) and is_binary(b), do: [-1 | xs]
-  def compare([b, a | xs]) when is_number(b) and is_binary(a), do: [ 1 | xs]
-
-  # Number < Quotation
-  def compare([b, a | xs]) when is_number(a) and is_list(b), do: [-1 | xs]
-  def compare([b, a | xs]) when is_number(b) and is_list(a), do: [ 1 | xs]
-
-
-  # Boolean < Identifier
-  def compare([b = %Jux.Identifier{}, a                     | xs]) when is_boolean(a), do: [-1 | xs]
-  def compare([b                    , a = %Jux.Identifier{} | xs]) when is_boolean(b), do: [1  | xs]
-
-  # Boolean < String
-  def compare([b, a | xs]) when is_boolean(a) and is_binary(b), do: [-1 | xs]
-  def compare([b, a | xs]) when is_boolean(b) and is_binary(a), do: [1  | xs]
-
-  # Boolean < Quotation
-  def compare([b, a | xs]) when is_boolean(a) and is_list(b), do: [-1 | xs]
-  def compare([b, a | xs]) when is_boolean(b) and is_list(a), do: [ 1 | xs]
-
-  # Identifier < String
-  def compare([b                    , a = %Jux.Identifier{} | xs]) when is_binary(b), do: [-1 | xs]
-  def compare([b = %Jux.Identifier{}, a                     | xs]) when is_binary(a), do: [ 1 | xs]
-
-  # Identifier < Quotation
-  def compare([b                    , a = %Jux.Identifier{} | xs]) when is_list(b), do:  [-1 | xs]
-  def compare([b = %Jux.Identifier{}, a                     | xs]) when is_list(a), do:  [ 1 | xs]
-
-  # String < Quotation
-  def compare([b, a | xs]) when is_binary(a) and is_list(b), do:  [-1 | xs]
-  def compare([b, a | xs]) when is_binary(b) and is_list(a), do:  [1  | xs]
-
+  defp do_compare(x, x), do: 0
 
   # Number vs Number
-  def compare([b, a | xs]) when is_number(a) and is_number(b) and a < b, do:  [-1| xs]
-  def compare([b, a | xs]) when is_number(a) and is_number(b) and a > b, do:  [1 | xs]
-  def compare([b, a | xs]) when is_number(a) and is_number(b)          , do:  [0 | xs]
+  defp do_compare(b, a) when is_number(a) and is_number(b) and a < b, do: -1
+  defp do_compare(b, a) when is_number(a) and is_number(b) and a > b, do:  1
+  defp do_compare(b, a) when is_number(a) and is_number(b)          , do:  0
 
-  # String vs String
-  def compare([b, a | xs]) when is_binary(a) and is_binary(b) and a < b, do: [-1 | xs]
-  def compare([b, a | xs]) when is_binary(a) and is_binary(b) and a > b, do:  [1 | xs]
-  def compare([b, a | xs]) when is_binary(a) and is_binary(b)          , do:  [0 | xs]
+  # Number < (Boolean, Identifier, String, Quotation)
+  defp do_compare(b, a) when is_number(a) and Kernel.not(is_number(b)), do: -1
+  defp do_compare(b, a) when is_number(b) and Kernel.not(is_number(a)), do:  1
+
+  # Boolean vs Boolean
+  defp do_compare(false, true), do: -1
+  defp do_compare(true, false), do:  1
+
+  # Boolean < (Identifier, String, Quotation)
+  defp do_compare(b, a) when is_boolean(a) and Kernel.not(is_boolean(b)), do: -1
+  defp do_compare(b, a) when is_boolean(b) and Kernel.not(is_boolean(a)), do:  1
 
   # Identifier vs Identifier
-  def compare([b = %Jux.Identifier{name: name_b}, a = %Jux.Identifier{name: name_a} | xs]) when name_a < name_b, do: [-1 | xs]
-  def compare([b = %Jux.Identifier{name: name_b}, a = %Jux.Identifier{name: name_a} | xs]) when name_a < name_b, do:  [1 | xs]
-  def compare([b = %Jux.Identifier{name: name_b}, a = %Jux.Identifier{name: name_a} | xs])                     , do:  [0 | xs]
+  defp do_compare(%Jux.Identifier{name: name_b}, %Jux.Identifier{name: name_a}) when name_a < name_b, do: -1
+  defp do_compare(%Jux.Identifier{name: name_b}, %Jux.Identifier{name: name_a}) when name_b < name_a, do:  1
+  defp do_compare(%Jux.Identifier{name: name_b}, %Jux.Identifier{name: name_a})                     , do:  0
 
+  # Identifier < (String, Quotation)
+  defp do_compare(b                    , a = %Jux.Identifier{}), do: -1
+  defp do_compare(b = %Jux.Identifier{}, a                    ), do:  1
+
+  # String vs String
+  defp do_compare(b, a) when is_binary(a) and is_binary(b) and a < b, do: -1
+  defp do_compare(b, a) when is_binary(a) and is_binary(b) and a > b, do:  1
+  defp do_compare(b, a) when is_binary(a) and is_binary(b)          , do:  0
+
+  # String < Quotation
+  defp do_compare(b, a) when is_binary(a) and is_list(b), do: -1
+  defp do_compare(b, a) when is_binary(b) and is_list(a), do:  1
+
+  # Quotation vs Quotation
+  defp do_compare([], as), do: 1
+  defp do_compare(bs, []), do: -1
+  defp do_compare([b|bs], [a|as]) do
+    case do_compare(b, a) do
+      0 ->
+        do_compare(bs, as)
+      result ->
+        result
+    end
+  end
 
 
   # Quotation operations
