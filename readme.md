@@ -139,7 +139,7 @@ The standard library extends on this with:
 
 
 ### Bitwise operations
-- `bcomplement`: Pops top of the stack. Pushes the bitwise complement of that Integer.
+- `bnot`: Pops top of the stack. Pushes the bitwise complement of that Integer.
 - `bor`: Pops the top two elements `a` and `b` (`a` being the item originally on top). Pushes the bitwise or of these two Integers. 
 - `band`: Pops the top two elements `a` and `b` (`a` being the item originally on top). Pushes the bitwise and of these two Integers.
 

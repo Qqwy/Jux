@@ -1,4 +1,6 @@
 defmodule Jux.Primitive do
+  import Kernel, except: [to_string: 1]
+  require Bitwise
   @moduledoc """
   Defines the native primitive function implementation known to this Elixir implementation.
 
@@ -18,10 +20,10 @@ defmodule Jux.Primitive do
   end
   def swap(_), do: raise "Called `swap` without two values to swap on the stack."
 
-  def pop([x | xs]) do
+  def pop([_x | xs]) do
     xs
   end
-  def swap(_), do: raise "Called `pop` while the stack is empty."
+  def pop(_), do: raise "Called `pop` while the stack is empty."
 
   # Combinators
 
@@ -53,7 +55,7 @@ defmodule Jux.Primitive do
   def sub([b, a | xs]) do
     [a - b | xs]
   end
-  def add(_), do: raise "Called `sub` with non-numeric parameters."
+  def sub(_), do: raise "Called `sub` with non-numeric parameters."
 
   # Boolean
 
@@ -77,6 +79,12 @@ defmodule Jux.Primitive do
   def unquote(:and)([_    , false | xs]), do: [false | xs]
   def unquote(:and)([_    , _     | xs]), do: [true | xs]
   def unquote(:and)(), do: raise "Called `and` without two values to compare."
+
+  # Bitwise
+
+  def bnot([x | xs]), do: [Bitwise.bnot(x) | xs]
+  def bor([b, a | xs]), do: [Bitwise.bor(a, b) | xs]
+  def band([b, a | xs]), do: [Bitwise.band(a, b) | xs]
 
   # Comparisons
 
@@ -107,11 +115,11 @@ defmodule Jux.Primitive do
   # Identifier vs Identifier
   defp do_compare(%Jux.Identifier{name: name_b}, %Jux.Identifier{name: name_a}) when name_a < name_b, do: -1
   defp do_compare(%Jux.Identifier{name: name_b}, %Jux.Identifier{name: name_a}) when name_b < name_a, do:  1
-  defp do_compare(%Jux.Identifier{name: name_b}, %Jux.Identifier{name: name_a})                     , do:  0
+  defp do_compare(%Jux.Identifier{}            , %Jux.Identifier{})                                 , do:  0
 
   # Identifier < (String, Quotation)
-  defp do_compare(b                    , a = %Jux.Identifier{}), do: -1
-  defp do_compare(b = %Jux.Identifier{}, a                    ), do:  1
+  defp do_compare(_                 , %Jux.Identifier{}), do: -1
+  defp do_compare(%Jux.Identifier{},_                  ), do:  1
 
   # String vs String
   defp do_compare(b, a) when is_binary(a) and is_binary(b) and a < b, do: -1
@@ -123,8 +131,8 @@ defmodule Jux.Primitive do
   defp do_compare(b, a) when is_binary(b) and is_list(a), do:  1
 
   # Quotation vs Quotation
-  defp do_compare([], as), do: 1
-  defp do_compare(bs, []), do: -1
+  defp do_compare([], _as), do: 1
+  defp do_compare(_bs, []), do: -1
   defp do_compare([b|bs], [a|as]) do
     case do_compare(b, a) do
       0 ->
@@ -146,7 +154,7 @@ defmodule Jux.Primitive do
     [x, quot | xs]
   end
 
-  def uncons([[] | xs]) do
+  def uncons([[] | _xs]) do
     raise "Called `uncons` with an empty quotation to deconstruct."  
   end
   def uncons(_), do: raise "Called `uncons` without a quotation to deconstruct."
@@ -159,5 +167,18 @@ defmodule Jux.Primitive do
     end)
   end
   def reduce(_), do: raise "Called `reduce` with wrong parameters."
+
+  # String operations
+
+  def to_string([x | xs]) do
+    [Kernel.to_string(x), xs]
+  end
+
+  # Basic Output
+
+  def print([x | xs]) do
+    IO.write(x)
+    xs
+  end
 
 end
