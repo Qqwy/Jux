@@ -31,7 +31,10 @@ defmodule Jux.Primitive do
     new_stack = Jux.Evaluator.evaluate_on(quot, xs)
     [x | new_stack]
   end
-  def dip([_, _ | _]), do: raise "Called `dip` without a quotation"
+  def dip( xs = [_, _ | _]) do
+    IO.puts(Jux.stack_to_string(xs))
+    raise "Called `dip` without a quotation"
+  end
   def dip([_]), do: raise "Called `dip` without enough elements on the stack"
 
   # Conditionals
@@ -73,12 +76,12 @@ defmodule Jux.Primitive do
 
   def unquote(:or)([false, false | xs]), do: [false | xs]
   def unquote(:or)([_    , _     | xs]), do: [true | xs]
-  def unquote(:or)(), do: raise "Called `or` without two values to compare."
+  def unquote(:or)(_), do: raise "Called `or` without two values to compare."
 
   def unquote(:and)([false, _     | xs]), do: [false | xs]
   def unquote(:and)([_    , false | xs]), do: [false | xs]
   def unquote(:and)([_    , _     | xs]), do: [true | xs]
-  def unquote(:and)(), do: raise "Called `and` without two values to compare."
+  def unquote(:and)(_), do: raise "Called `and` without two values to compare."
 
   # Bitwise
 
@@ -142,6 +145,9 @@ defmodule Jux.Primitive do
     end
   end
 
+  def eq?([b, a | xs]) do
+    [do_compare(b, a) == 0 | xs]
+  end
 
   # Quotation operations
 
