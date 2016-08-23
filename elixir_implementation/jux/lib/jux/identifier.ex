@@ -43,6 +43,37 @@ defmodule Jux.Identifier do
     end
   end
 
+  @doc """
+  Used to completely flatten a fallback function's implementation, so we don't have to use rewrite rules multiple times,
+  but only for the initial high-level invocation.
+
+  This can be done because during execution, the built-in functions that our implementation supports do not change.
+  """
+  def fully_expand(function_stack) do
+    do_fully_expand(:lists.reverse(function_stack), [])
+  end
+
+  defp do_fully_expand([], result), do: result
+  defp do_fully_expand([identifier = %Jux.Identifier{} | rest], result) do
+    try do
+      identifier_atom = identifier.name |> String.to_existing_atom
+      cond do
+        Jux.Primitive.__info__(:functions)[identifier_atom] == 1 ->
+          do_fully_expand(rest, [identifier | result])
+        Jux.Fallback.__info__(:functions)[identifier_atom] == 1 ->
+          do_fully_expand(apply(Jux.Fallback, identifier_atom, [rest]), result)
+      true ->
+        raise "No implementation found for `#{identifier.name}`."
+      end
+    rescue 
+      ArgumentError -> 
+        # Simply skip this lookup step if the identifier is not an existing atom.
+        raise "No implementation found for `#{identifier.name}`."
+    end
+  end
+  defp do_fully_expand([literal | rest], result), do: do_fully_expand(rest, [literal | result])
+
+
   defimpl Inspect do
     def inspect(identifier, _opts) do
       identifier.name

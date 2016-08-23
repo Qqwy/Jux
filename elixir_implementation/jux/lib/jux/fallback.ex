@@ -1,9 +1,20 @@
 defmodule Jux.Rewrite do
+
+  @doc """
+  Rewrites `name` to the parsed Jux source `source`.
+  Note that these sources are parsed at compile time,
+  and they are immediately fully-expanded, so we don't have to call all internal rewrite rules at runtime.
+  This makes the rewrite process a whole lot faster.
+  """
   defmacro rewrite(name, source) do
     quote bind_quoted: [name: name, source: source] do
       def unquote(name |> String.to_atom)(fun_stack) do
         rewritten_fun_queue = 
-          unquote(quote do Jux.Parser.parse(unquote(source)) end)
+          unquote(quote do 
+            unquote(source)
+            |> Jux.Parser.parse
+            |> Jux.Identifier.fully_expand 
+          end)
           |> :lists.reverse
         rewritten_fun_queue ++ fun_stack
       end
@@ -101,20 +112,22 @@ defmodule Jux.Fallback do
   rewrite "unlift", "uncons popd"
   rewrite "unlift2", "uncons [uncons popd] dip"
 
-  rewrite "length", "0 [inc] reduce"
-  rewrite "reverse_append", "[cons] reduce" # TODO: Fix.
+  rewrite "length", "0 [inc] foldl"
+  rewrite "reverse", "[] [cons] foldl"
+  rewrite "foldr", "[reverse] dip2 foldl"
+  rewrite "reverse_append", "[cons] foldr" # TODO: Fix.
   rewrite "append", "swap reverse_append"
-  rewrite "map", "[] swap [cons] append reduce"
+  rewrite "map", "[] swap [cons] append foldl"
   # TODO rewrite "reverse", ""
-  rewrite "flatten", "[] [append] reduce" # TODO: Improve
+  rewrite "flatten", "[] [append] foldl" # TODO: Improve
 
-  rewrite "sum", "0 [add] reduce"
-  #rewrite "product", "1 [mul] reduce"
-  rewrite "list_max", "uncons [max] reduce"
-  rewrite "list_min", "uncons [min] reduce"
-  rewrite "list_max_min", "uncons dup lift2 [dup [unlift2] dip2 swapd max [min] dip lift2] reduce"
+  rewrite "sum", "0 [add] foldl"
+  #rewrite "product", "1 [mul] foldl"
+  rewrite "list_max", "uncons [max] foldl"
+  rewrite "list_min", "uncons [min] foldl"
+  rewrite "list_max_min", "uncons dup lift2 [dup [unlift2] dip2 swapd max [min] dip lift2] foldl"
 
-  rewrite "elem?", "lift [eq? or] append false swap reduce" # [1 2 3] 1 elem? # TODO: fix append so reverse arguments not necessary in quotation.
+  rewrite "elem?", "lift [eq? or] append false swap foldl" # [1 2 3] 1 elem? # TODO: fix append so reverse arguments not necessary in quotation.
   rewrite "in?", "swap elem?" # 1 [1 2 3] in?
 
   # Boolean

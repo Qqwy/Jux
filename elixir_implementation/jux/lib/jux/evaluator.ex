@@ -20,4 +20,5 @@ defmodule Jux.Evaluator do
     {updated_stack, updated_fun_queue} = IO.inspect Jux.Identifier.evaluate(identifier, stack, rest)
     do_evaluate_on(updated_fun_queue, updated_stack)
   end
+
 end

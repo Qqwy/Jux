@@ -166,13 +166,13 @@ defmodule Jux.Primitive do
   def uncons(_), do: raise "Called `uncons` without a quotation to deconstruct."
 
   # TODO
-  def reduce([quot, acc, list | xs]) when is_list(quot) and is_list(list) do
+  def foldl([quot, acc, list | xs]) when is_list(quot) and is_list(list) do
     stack = [acc | xs]
-    Enum.reduce(:lists.reverse(list), stack, fn elem, stack -> 
+    Enum.reduce(list, stack, fn elem, stack -> 
       Jux.Evaluator.evaluate_on(quot, [elem | stack])
     end)
   end
-  def reduce(_), do: raise "Called `reduce` with wrong parameters."
+  def foldl(_), do: raise "Called `reduce` with wrong parameters."
 
   # String operations
 
