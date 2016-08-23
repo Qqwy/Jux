@@ -102,7 +102,7 @@ defmodule Jux.Fallback do
   rewrite "unlift2", "uncons [uncons popd] dip"
 
   rewrite "length", "0 [inc] reduce"
-  rewrite "reverse_append", "[cons] reduce"
+  rewrite "reverse_append", "[cons] reduce" # TODO: Fix.
   rewrite "append", "swap reverse_append"
   rewrite "map", "[] swap [cons] append reduce"
   # TODO rewrite "reverse", ""
@@ -113,6 +113,9 @@ defmodule Jux.Fallback do
   rewrite "list_max", "uncons [max] reduce"
   rewrite "list_min", "uncons [min] reduce"
   rewrite "list_max_min", "uncons dup lift2 [dup [unlift2] dip2 swapd max [min] dip lift2] reduce"
+
+  rewrite "elem?", "lift [eq? or] append false swap reduce" # [1 2 3] 1 elem? # TODO: fix append so reverse arguments not necessary in quotation.
+  rewrite "in?", "swap elem?" # 1 [1 2 3] in?
 
   # Boolean
   rewrite "xor", "[dup] dip dup [swap] dip or [and not] dip and"

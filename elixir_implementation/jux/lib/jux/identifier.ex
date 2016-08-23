@@ -39,7 +39,7 @@ defmodule Jux.Identifier do
     rescue 
       ArgumentError -> 
         # Simply skip this lookup step if the identifier is not an existing atom.
-      IO.puts "BOOM?"
+        raise "No implementation found for `#{identifier.name}`."
     end
   end
 

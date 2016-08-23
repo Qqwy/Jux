@@ -168,7 +168,7 @@ defmodule Jux.Primitive do
   # TODO
   def reduce([quot, acc, list | xs]) when is_list(quot) and is_list(list) do
     stack = [acc | xs]
-    Enum.reduce(list, stack, fn elem, stack -> 
+    Enum.reduce(:lists.reverse(list), stack, fn elem, stack -> 
       Jux.Evaluator.evaluate_on(quot, [elem | stack])
     end)
   end
