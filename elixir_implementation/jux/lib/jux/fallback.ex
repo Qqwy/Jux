@@ -56,4 +56,5 @@ defmodule Jux.Fallback do
   rewrite "lte?", "compare  1 neq?"
   rewrite "empty?", "[] compare zero?"
   rewrite "xor", "[dup] dip dup [swap] dip or [and not] dip and"
+  rewrite "bxor", "[dup] dip dup [swap] dip bor [band bnot] dip band"
 end
