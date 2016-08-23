@@ -63,9 +63,9 @@ defmodule Jux.Fallback do
   rewrite "keep_i", "dup [i] dip"
   rewrite "b", "[i] dip i"
   rewrite "m", "dup i"
-  # k
-  # c
-  # w
+  rewrite "k", "[pop] dip i"
+  rewrite "c", "[swap] dip i"
+  rewrite "w", "[dup] dip i"
   # y
 
  
