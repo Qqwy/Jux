@@ -112,14 +112,14 @@ The standard library extends on this with:
 The standard library extends on this with:
 - `inc`
 - `dec`
-- `mul`
-- `pow`
-- `div`
-- `gcd`
-- `lcm`
-- `fact`
-- `fib`
-- `isqrt`
+- TODO `mul`
+- TODO `pow`
+- TODO `div`
+- TODO `gcd`
+- TODO `lcm`
+- TODO `fact`
+- TODO `fib`
+- TODO `isqrt`
 
 Maybe more?
 
@@ -151,20 +151,22 @@ The standard library extends on this with:
 
 - `cons`: Pops the top of the stack `a` and the quotation `q` just below it, and returns a new quotation `q2` where `a` is the final item in `q`.
 - `uncons`: Pops the top of the stack `q2`, and extracts the final item `a`. Pushes `q` which is `q2` without this item. Then pushes `a`.
-- `reduce`: Given a quotation `q`, a starting accumulator `acc`, and a quotation-list `l` to perform on:
+- `foldl`: Given a quotation `q`, a starting accumulator `acc`, and a quotation-list `l` to perform on:
   - Pushes `acc`.
-  - Pushes the first value in `l`
+  - Pushes the first (leftmost) value in `l`
   - Evaluates `q`
   - Pushes the next value in `l`.
   - Evaluates `q`
   - etc, until the list is empty.
 
 The standard library extends on this with:
-- `concat`: Concatenates two quotations into one.
+- `reverse`: Reverses a list
+- `foldr`: Folds a list, starting at the rightmost end.
+- `append`: Concatenates two quotations into one.
 - `length`: Returns the number of items in a quotation.
 - `map`: Maps a quotation `q` over each of the elements in the list `l`, returning a new list.
 - `sum`: Calculates the arithmetic sum of a list of integers.
-- `product`: Calculates the arithmetic product of a list of integers.
+- TODO `product`: Calculates the arithmetic product of a list of integers.
 
 ### String operations
 - `to_string`: Returns a string representation of the literal on top:

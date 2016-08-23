@@ -118,7 +118,6 @@ defmodule Jux.Fallback do
   rewrite "reverse_append", "[cons] foldr" # TODO: Fix.
   rewrite "append", "swap reverse_append"
   rewrite "map", "[] swap [cons] append foldl"
-  # TODO rewrite "reverse", ""
   rewrite "flatten", "[] [append] foldl" # TODO: Improve
 
   rewrite "sum", "0 [add] foldl"
