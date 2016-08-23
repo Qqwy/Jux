@@ -25,18 +25,21 @@ defmodule Jux.Identifier do
   - If these cannot be found, we look for a custom defined function. (TODO)
   - If these cannot be found either, an error is thrown as the identifier is unknown.
   """
-  def evaluate(identifier, stack) do
+  def evaluate(identifier, stack, fun_queue) do
     try do
       identifier_atom = identifier.name |> String.to_existing_atom
       cond do
         Jux.Primitive.__info__(:functions)[identifier_atom] == 1 ->
-          apply(Jux.Primitive, identifier_atom, [stack])
+          {apply(Jux.Primitive, identifier_atom, [stack]), fun_queue}
+        Jux.Fallback.__info__(:functions)[identifier_atom] == 1 ->
+          {stack, apply(Jux.Fallback, identifier_atom, [fun_queue])}
       true ->
         raise "No implementation found for `#{identifier.name}`."
       end
     rescue 
-      ArgumentError ->
+      ArgumentError -> 
         # Simply skip this lookup step if the identifier is not an existing atom.
+      IO.puts "BOOM?"
     end
   end
 

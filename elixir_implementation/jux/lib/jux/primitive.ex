@@ -163,7 +163,7 @@ defmodule Jux.Primitive do
   def reduce([quot, acc, list | xs]) when is_list(quot) and is_list(list) do
     stack = [acc | xs]
     Enum.reduce(list, stack, fn elem, stack -> 
-      Jux.Evaluator.evaluate_on(quot, [elem, stack])
+      Jux.Evaluator.evaluate_on(quot, [elem | stack])
     end)
   end
   def reduce(_), do: raise "Called `reduce` with wrong parameters."

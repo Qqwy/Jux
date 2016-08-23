@@ -17,6 +17,7 @@ defmodule Jux.Evaluator do
   end
 
   defp do_evaluate_on([identifier = %Jux.Identifier{} | rest], stack) do
-    do_evaluate_on(rest, Jux.Identifier.evaluate(identifier, stack))
+    {updated_stack, updated_fun_queue} = Jux.Identifier.evaluate(identifier, stack, rest)
+    do_evaluate_on(updated_fun_queue, updated_stack)
   end
 end
