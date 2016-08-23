@@ -180,6 +180,10 @@ defmodule Jux.Primitive do
     [Kernel.to_string(x), xs]
   end
 
+  def string_concat([b, a | xs]) do
+    [(a <> b) | xs]
+  end
+
   # Basic Output
 
   def print([x | xs]) do

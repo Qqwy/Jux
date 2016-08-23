@@ -18,7 +18,7 @@ defmodule Jux do
         _ when is_list(elem) ->
         "[#{stack_to_string(elem)}]"
         _ ->
-          elem
+          inspect(elem)
       end
     end)
     |> :lists.reverse
