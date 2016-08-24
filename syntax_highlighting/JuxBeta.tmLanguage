@@ -28,7 +28,7 @@
 		</dict>
 		<dict>
 			<key>include</key>
-			<string>#definition</string>
+			<string>#simple_definition</string>
 		</dict>
 		<dict>
 			<key>include</key>
@@ -63,52 +63,6 @@
 			<key>match</key>
 			<string>(?:^ *|\G *| +)((#).*\n?)</string>
 		</dict>
-		<key>definition</key>
-		<dict>
-			<key>begin</key>
-			<string>"([a-zA-Z_][\w]*[?!]?)"</string>
-			<key>captures</key>
-			<dict>
-				<key>1</key>
-				<dict>
-					<key>name</key>
-					<string>entity.name.function.jux-beta_syntax</string>
-				</dict>
-			</dict>
-			<key>contentName</key>
-			<string>support.constant.jux-beta_syntax</string>
-			<key>end</key>
-			<string>def</string>
-			<key>name</key>
-			<string>entity.other.function.jux-beta_syntax</string>
-			<key>patterns</key>
-			<array>
-				<dict>
-					<key>include</key>
-					<string>#comment</string>
-				</dict>
-				<dict>
-					<key>include</key>
-					<string>#quotation_start</string>
-				</dict>
-				<dict>
-					<key>include</key>
-					<string>#quotation_end</string>
-				</dict>
-				<dict>
-					<key>include</key>
-					<string>#string</string>
-				</dict>
-				<dict>
-					<key>include</key>
-					<string>#identifier</string>
-				</dict>
-				<dict>
-					<key>include</key>
-					<string>#integer</string>
-				</dict>
-			</array>
-		</dict>
 		<key>identifier</key>
 		<dict>
 			<key>match</key>
@@ -136,6 +90,13 @@
 			<string>(\[)</string>
 			<key>name</key>
 			<string>keyword.control.quotation.start.jux-beta_syntax</string>
+		</dict>
+		<key>simple_definition</key>
+		<dict>
+			<key>match</key>
+			<string>def</string>
+			<key>name</key>
+			<string>entity.other.function.jux-beta_syntax</string>
 		</dict>
 		<key>string</key>
 		<dict>

@@ -463,3 +463,10 @@ def
 def
 
 # Input
+"foo"
+  "baz"
+  [
+    10 11 12
+  ]
+def
+

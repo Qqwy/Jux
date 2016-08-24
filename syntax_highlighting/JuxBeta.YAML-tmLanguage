@@ -11,7 +11,8 @@ patterns:
 - include: '#comment'
 - include: '#quotation_start'
 - include: '#quotation_end'
-- include: '#definition'
+#- include: '#definition'
+- include: '#simple_definition'
 - include: '#string'
 - include: '#identifier'
 - include: '#integer'
@@ -42,20 +43,36 @@ repository:
   integer:
     name: "constant.numeric.jux-beta_syntax"
     match: ([+-]?\d+)
-  definition:
+  # TODO: Fix this, if possible
+  # mutliline-definitions are (nearly?) impossible in the tmLanguage.
+  # We want this to match:
+  # ```
+  # "foo"
+  #   ""
+  #   [
+  #    .. a program here..
+  #   ]
+  # def
+  # ```
+  # Most importantly, we only want it to match if the whole snippet exists; e.g. not make a string blue when no matching `def` is there.
+  # 
+  
+  # definition:
+  #   name: "entity.other.function.jux-beta_syntax"
+  #   begin: ("([a-zA-Z_][\w]*[?!]?)")
+  #   end: (def)
+  #   beginCaptures:
+  #     '1': {name: "entity.name.function.jux-beta_syntax"}
+  #   contentName: "support.constant.jux-beta_syntax"
+  #   patterns:
+  #   - include: '#comment'
+  #   - include: '#quotation_start'
+  #   - include: '#quotation_end'
+  #   #- include: '#definition'
+  #   - include: '#string'
+  #   - include: '#identifier'
+  #   - include: '#integer'
+  simple_definition:
     name: "entity.other.function.jux-beta_syntax"
-    begin: '"([a-zA-Z_][\w]*[?!]?)"'
-    end: 'def'
-    captures:
-      '1': {name: "entity.name.function.jux-beta_syntax"}
-    contentName: "support.constant.jux-beta_syntax"
-    patterns:
-    - include: '#comment'
-    - include: '#quotation_start'
-    - include: '#quotation_end'
-    #- include: '#definition'
-    - include: '#string'
-    - include: '#identifier'
-    - include: '#integer'
-
+    match: "def"
 
