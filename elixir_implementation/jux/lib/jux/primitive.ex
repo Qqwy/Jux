@@ -28,7 +28,7 @@ defmodule Jux.Primitive do
   # Combinators
 
   def dip([quot, x | xs]) when is_list(quot) do
-    new_stack = Jux.Evaluator.evaluate_on(quot, xs)
+    {new_stack, _} = Jux.Evaluator.evaluate_on(quot, xs)
     [x | new_stack]
   end
   def dip( xs = [_, _ | _]) do
@@ -42,10 +42,11 @@ defmodule Jux.Primitive do
   def ifte([else_quot, then_quot, condition_quot | xs]) when is_list(else_quot) and is_list(then_quot) and is_list(condition_quot) do
     condition_check_stack = Jux.Evaluator.evaluate_on(condition_quot, xs)
     if match?([false | _], condition_check_stack) do
-      Jux.Evaluator.evaluate_on(else_quot, xs)
+      {new_stack, _} = Jux.Evaluator.evaluate_on(else_quot, xs)
     else
-      Jux.Evaluator.evaluate_on(then_quot, xs)
+      {new_stack, _} = Jux.Evaluator.evaluate_on(then_quot, xs)
     end
+    new_stack
   end
 
   # Arithmetic
@@ -169,7 +170,8 @@ defmodule Jux.Primitive do
   def foldl([quot, acc, list | xs]) when is_list(quot) and is_list(list) do
     stack = [acc | xs]
     Enum.reduce(list, stack, fn elem, stack -> 
-      Jux.Evaluator.evaluate_on(quot, [elem | stack])
+      {new_stack, _} = Jux.Evaluator.evaluate_on(quot, [elem | stack])
+      new_stack
     end)
   end
   def foldl(_), do: raise "Called `reduce` with wrong parameters."

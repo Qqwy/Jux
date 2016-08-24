@@ -7,7 +7,7 @@ defmodule Jux.Parser do
   @comment_regexp ~r{^#.*}
   @float_regexp ~r{^[+-]?\d+\.\d+}
   @integer_regexp ~r{^[+-]?\d+}
-  @identifier_regexp ~r{^[a-z][\w]*[?!]?}
+  @identifier_regexp ~r{^[a-zA-Z_][\w]*[?!]?}
 
   @doc """
   Takes a string as input, returns a list of Jux tokens as output.
@@ -68,6 +68,7 @@ defmodule Jux.Parser do
   end
 
   defp do_parse_quotation({"[", rest}, bracket_count, length_acc) do
+    IO.puts "Position: #{length_acc}"
     do_parse_quotation(String.next_codepoint(rest), bracket_count+1, length_acc+1)
   end
 

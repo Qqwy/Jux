@@ -9,18 +9,22 @@ defmodule Jux.Evaluator do
   end
 
   defp do_evaluate_on([], stack, known_definitions) do
-    stack
+    {stack, known_definitions}
   end
 
   defp do_evaluate_on([literal | rest], stack, known_definitions) when is_integer(literal) or is_binary(literal) or is_float(literal) or is_list(literal) do
     do_evaluate_on(rest, [literal | stack], known_definitions)
   end
 
+  defp do_evaluate_on([identifier = %Jux.Identifier{name: "__PRIMITIVE__"} | rest], stack, known_definitions) do
+    raise "A function is missing a primitive implementation. Rest of function stack: #{inspect(rest)}"
+  end
+
   defp do_evaluate_on([identifier = %Jux.Identifier{name: "def"} | rest], stack, known_definitions) do
     #{updated_stack, updated_fun_queue} = Jux.Identifier.evaluate(identifier, stack, rest, known_definitions)
     #IO.puts "Defining a function!"
     [fun_implementation_quot, fun_documentation, fun_name | updated_stack] = stack
-    known_definitions = Map.put_new(known_definitions, fun_name, fun_implementation_quot |> Jux.Identifier.fully_expand |> :lists.reverse)
+    known_definitions = Map.put_new(known_definitions, fun_name, fun_implementation_quot |> Jux.Identifier.fully_expand(known_definitions) |> :lists.reverse)
     #IO.inspect known_definitions
     do_evaluate_on(rest, updated_stack, known_definitions)
   end

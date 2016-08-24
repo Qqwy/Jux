@@ -28,22 +28,16 @@ defmodule Jux.Identifier do
   def evaluate(identifier, stack, fun_queue, known_definitions) do
     #IO.inspect(known_definitions)
     #IO.inspect(known_definitions[identifier])
-    try do
-      identifier_atom = identifier.name |> String.to_existing_atom
-      cond do
-        Jux.Primitive.__info__(:functions)[identifier_atom] == 1 ->
-          {apply(Jux.Primitive, identifier_atom, [stack]), fun_queue}
-        Jux.Fallback.__info__(:functions)[identifier_atom] == 1 ->
-          {stack, apply(Jux.Fallback, identifier_atom, [fun_queue])}
-        known_definitions[identifier.name] != nil ->
-          {stack, known_definitions[identifier.name] ++ fun_queue}
-      true ->
-        raise "No implementation found for `#{identifier.name}`."
-      end
-    rescue 
-      ArgumentError -> 
-        # Simply skip this lookup step if the identifier is not an existing atom.
-        raise "No implementation found for `#{identifier.name}`."
+    identifier_atom = identifier.name |> Jux.Helper.safe_to_existing_atom
+    cond do
+      identifier_atom != 0 && Jux.Primitive.__info__(:functions)[identifier_atom] == 1 ->
+        {apply(Jux.Primitive, identifier_atom, [stack]), fun_queue}
+      identifier_atom != 0 && Jux.Fallback.__info__(:functions)[identifier_atom] == 1 ->
+        {stack, apply(Jux.Fallback, identifier_atom, [fun_queue])}
+      known_definitions[identifier.name] != nil ->
+        {stack, known_definitions[identifier.name] ++ fun_queue}
+      :otherwise ->
+        raise "Undefined identifier `#{identifier.name}`."
     end
   end
 
@@ -58,23 +52,20 @@ defmodule Jux.Identifier do
   end
 
   defp do_fully_expand([], result, known_definitions), do: result
+  defp do_fully_expand([identifier = %Jux.Identifier{name: "__PRIMITIVE__"} | rest], result, known_definitions) do
+    do_fully_expand(rest, [identifier | result], known_definitions)
+  end
   defp do_fully_expand([identifier = %Jux.Identifier{} | rest], result, known_definitions) do
-    try do
-      identifier_atom = identifier.name |> String.to_existing_atom
-      cond do
-        Jux.Primitive.__info__(:functions)[identifier_atom] == 1 ->
-          do_fully_expand(rest, [identifier | result], known_definitions)
-        Jux.Fallback.__info__(:functions)[identifier_atom] == 1 ->
-          do_fully_expand(apply(Jux.Fallback, identifier_atom, [rest]), result, known_definitions)
-        known_definitions[identifier] != nil ->
-          do_fully_expand(known_definitions[identifier] ++ rest, result, known_definitions)
-      true ->
-        raise "No implementation found for `#{identifier.name}`."
-      end
-    rescue 
-      ArgumentError -> 
-        # Simply skip this lookup step if the identifier is not an existing atom.
-        raise "No implementation found for `#{identifier.name}`."
+    identifier_atom = identifier.name |> Jux.Helper.safe_to_existing_atom
+    cond do
+      identifier_atom != 0 &&Jux.Primitive.__info__(:functions)[identifier_atom] == 1 ->
+        do_fully_expand(rest, [identifier | result], known_definitions)
+      identifier_atom != 0 &&Jux.Fallback.__info__(:functions)[identifier_atom] == 1 ->
+        do_fully_expand(apply(Jux.Fallback, identifier_atom, [rest]), result, known_definitions)
+      known_definitions[identifier.name] != nil ->
+        do_fully_expand(known_definitions[identifier.name] ++ rest, result, known_definitions)
+      :otherwise ->
+        raise "Undefined identifier `#{identifier.name}`."
     end
   end
   defp do_fully_expand([literal | rest], result, known_definitions), do: do_fully_expand(rest, [literal | result], known_definitions)

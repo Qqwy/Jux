@@ -1,0 +1,457 @@
+# foo!
+"foo"
+  "test"
+  [
+    1 2 3
+    1 2 3 # bar!
+    1 2 3
+  ]
+def
+
+
+# Basic
+  
+"noop"
+  ""
+  [  ]
+def
+
+ #does nothing.
+  
+"id"
+  ""
+  [ [] dip ]
+def
+
+ # No-op, but fails if stack is empty.
+
+# Stack manipulation
+"swapd"
+  ""
+  [ [swap] dip ]
+def
+
+"swap2"
+  ""
+  [ swap swapd ]
+def
+
+"popd"
+  ""
+  [ [pop] dip ]
+def
+
+"dupd"
+  ""
+  [ [dup] dip ]
+def
+
+"dupdd"
+  ""
+  [ [dupd] dip ]
+def
+
+"get2"
+  ""
+  [ dupd swap ]
+def
+
+"get3"
+  ""
+  [ [get2] dip swap ]
+def
+
+"get4"
+  ""
+  [ [get3] dip swap ]
+def
+
+"dup2"
+  ""
+  [ get2 get2 ]
+def
+
+"dup3"
+  ""
+  [ get3 get3 get3 ]
+def
+
+"dup4"
+  ""
+  [ get4 get4 get4 get4 ]
+def
+
+"flip"
+  ""
+  [ swapd swap swapd ]
+def
+ # 1 2 3 -> 3 2 1
+"flip4"
+  ""
+  [ swap [flip] dip swap ]
+def
+ # 1 2 3 4 -> 4 3 2 1
+"flip5"
+  ""
+  [ swap [flip4] dip swap ]
+def
+ # 1 2 3 4 5 -> 5 4 3 2 1
+
+
+# Combinators
+"dip2"
+  ""
+  [ swap [dip] dip ]
+def
+
+"dip3"
+  ""
+  [ swap [dip2] dip ]
+def
+
+"dip4"
+  ""
+  [ swap [dip3] dip ]
+def
+
+"i"
+  ""
+  [ dup dip pop ]
+def
+
+"keep_i"
+  ""
+  [ dup [i] dip ]
+def
+
+"b"
+  ""
+  [ [i] dip i ]
+def
+
+"m"
+  ""
+  [ dup i ]
+def
+
+"k"
+  ""
+  [ [pop] dip i ]
+def
+
+"c"
+  ""
+  [ [swap] dip i ]
+def
+
+"w"
+  ""
+  [ [dup] dip i ]
+def
+
+# y
+
+ 
+# Arithmetic
+"inc"
+  ""
+  [ 1 add ]
+def
+
+"dec"
+  ""
+  [ 1 sub ]
+def
+
+"odd?"
+  ""
+  [ 1 band truthy? ]
+def
+
+"even?"
+  ""
+  [ odd? not ]
+def
+
+
+
+
+# Conditionals
+"if"
+  ""
+  [ [] ifte ]
+def
+
+"unless"
+  ""
+  [ [] swap ifte ]
+def
+
+"ifeqte"
+  ""
+  [ [lift [eq?] append] dip2 ifte ]
+def
+
+"ifneqte"
+  ""
+  [ [lift [neq?] append] dip2 ifte ]
+def
+
+"ifzte"
+  ""
+  [ [[zero?]] dip2 ifte ]
+def
+
+"ifnzte"
+  ""
+  [ [[zero? not]] dip2 ifte ]
+def
+
+
+
+# Comparison
+"falsy?"
+  ""
+  [ not ]
+def
+
+"truthy?"
+  ""
+  [ falsy? not ]
+def
+
+"neq?"
+  ""
+  [ eq? not ]
+def
+
+"zero?"
+  ""
+  [ 0 eq? ]
+def
+
+"one?"
+  ""
+  [ 1 eq? ]
+def
+
+"lt?"
+  ""
+  [ compare -1 eq? ]
+def
+
+"gt?"
+  ""
+  [ compare 1 eq? ]
+def
+
+"gte?"
+  ""
+  [ compare -1 neq? ]
+def
+
+"lte?"
+  ""
+  [ compare  1 neq? ]
+def
+
+"empty?"
+  ""
+  [ [] compare zero? ]
+def
+
+"max"
+  ""
+  [ [gt?] [pop] [popd] ifte ]
+def
+
+"min"
+  ""
+  [ [lt?] [pop] [popd] ifte ]
+def
+
+
+# Helper
+
+# To be given an 'ifte' with the condition part not yet filled in.
+# Will change `[zero?] [...] [ [A] [B] ifte] prepend_fold_condition`
+# into  `[...] [[zero?] [A] [B] ifte]`
+# TODO: Better name?
+"prepend_fold_condition"
+  ""
+  [ swapd liftd append ]
+def
+ 
+
+# Quotations
+"negate"
+  ""
+  [ [not] append ]
+def
+
+"reverse_cons"
+  ""
+  [ swap cons ]
+def
+
+"reverse_uncons"
+  ""
+  [ uncons swap ]
+def
+
+"lift"
+  ""
+  [ [] reverse_cons ]
+def
+
+"liftd"
+  ""
+  [ [lift] dip ]
+def
+
+"lift2"
+  ""
+  [ [] swapd reverse_cons reverse_cons ]
+def
+
+"unlift"
+  ""
+  [ uncons popd ]
+def
+
+"unlift2"
+  ""
+  [ uncons [uncons popd] dip ]
+def
+
+"length"
+  ""
+  [ 0 [inc] foldl ]
+def
+
+"reverse"
+  ""
+  [ [] [cons] foldl ]
+def
+
+"foldr"
+  ""
+  [ [reverse] dip2 foldl ]
+def
+
+"reverse_append"
+  ""
+  [ [cons] foldr ]
+def
+
+"append"
+  ""
+  [ swap reverse_append ]
+def
+
+"map"
+  ""
+  [ [] swap [cons] append foldl ]
+def
+
+"flatten"
+  ""
+  [ [] [append] foldl ]
+def
+ # TODO: Improve
+"filter"
+  ""
+  [ [] [ [cons] [pop] ifte] prepend_fold_condition foldr ]
+def
+
+"reject"
+  ""
+  [ negate filter ]
+def
+
+"sum"
+  ""
+  [ 0 [add] foldl ]
+def
+
+#rewrite "product", "1 [mul] foldl"
+"list_max"
+  ""
+  [ uncons [max] foldl ]
+def
+
+"list_min"
+  ""
+  [ uncons [min] foldl ]
+def
+
+"list_max_min"
+  ""
+  [ uncons dup lift2 [dup [unlift2] dip2 swapd max [min] dip lift2] foldl ]
+def
+
+"all?"
+  ""
+  [ true [and] swapd append foldl ]
+def
+
+"any?"
+  ""
+  [ false [or] swapd append foldl ]
+def
+
+"contains?"
+  ""
+  [ lift [eq? or] append false swap foldl ]
+def
+ # [1 2 3] 1 contains? # TODO: fix append so reverse arguments not necessary in quotation.
+"in?"
+  ""
+  [ swap contains? ]
+def
+ # 1 [1 2 3] in?
+
+# TODO: take
+# TODO: drop
+# TODO: take_while
+# TODO: drop_while
+# TODO: partition
+
+# Boolean
+"xor"
+  ""
+  [ dup2 or [and not] dip and ]
+def
+
+
+# Bitwise
+"bxor"
+  ""
+  [ [dup] dip dup [swap] dip bor [band bnot] dip band ]
+def
+
+
+# Recursion
+#rewrite "Z X Y primrec", "Z [[ pop 0 eq?] [pop pop X] [[dup 1 sub] dip dup i Y] ifte] dup i"
+# TODO: Optimize with swap2, swap3, cons2, cons3 etc.
+# Primitive Recursion takes as (bottom-to-top) input: 
+# - value to calculate
+# - base case quotation
+# - recursive case quotation.
+"primrec"
+  ""
+  [ swap [pop pop] swap cons [pop 0 eq?] swap [[dup 1 sub] dip dup i] [[swap] dip] dip [swap] dip swap append [] swap [swap] dip [[reverse_cons] dip cons] dip cons [ifte] append dup i ]
+def
+
+#rewrite "mul", "[pop pop] [[add] dip] primrec"
+
+# 3 2 mul
+# 3 + 3
+
+# Output
+"puts"
+  ""
+  [ print "\n" print ]
+def
+
+# Input
