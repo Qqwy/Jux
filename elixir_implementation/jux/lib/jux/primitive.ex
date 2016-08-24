@@ -177,7 +177,7 @@ defmodule Jux.Primitive do
   # String operations
 
   def to_string([x | xs]) do
-    [Kernel.to_string(x), xs]
+    [Kernel.to_string(x) | xs]
   end
 
   def string_concat([b, a | xs]) do

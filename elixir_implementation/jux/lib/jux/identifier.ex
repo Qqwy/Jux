@@ -25,7 +25,9 @@ defmodule Jux.Identifier do
   - If these cannot be found, we look for a custom defined function. (TODO)
   - If these cannot be found either, an error is thrown as the identifier is unknown.
   """
-  def evaluate(identifier, stack, fun_queue) do
+  def evaluate(identifier, stack, fun_queue, known_definitions) do
+    #IO.inspect(known_definitions)
+    #IO.inspect(known_definitions[identifier])
     try do
       identifier_atom = identifier.name |> String.to_existing_atom
       cond do
@@ -33,6 +35,8 @@ defmodule Jux.Identifier do
           {apply(Jux.Primitive, identifier_atom, [stack]), fun_queue}
         Jux.Fallback.__info__(:functions)[identifier_atom] == 1 ->
           {stack, apply(Jux.Fallback, identifier_atom, [fun_queue])}
+        known_definitions[identifier.name] != nil ->
+          {stack, known_definitions[identifier.name] ++ fun_queue}
       true ->
         raise "No implementation found for `#{identifier.name}`."
       end
@@ -49,19 +53,21 @@ defmodule Jux.Identifier do
 
   This can be done because during execution, the built-in functions that our implementation supports do not change.
   """
-  def fully_expand(function_stack) do
-    do_fully_expand(:lists.reverse(function_stack), [])
+  def fully_expand(function_stack, known_definitions \\ %{}) do
+    do_fully_expand(:lists.reverse(function_stack), [], known_definitions)
   end
 
-  defp do_fully_expand([], result), do: result
-  defp do_fully_expand([identifier = %Jux.Identifier{} | rest], result) do
+  defp do_fully_expand([], result, known_definitions), do: result
+  defp do_fully_expand([identifier = %Jux.Identifier{} | rest], result, known_definitions) do
     try do
       identifier_atom = identifier.name |> String.to_existing_atom
       cond do
         Jux.Primitive.__info__(:functions)[identifier_atom] == 1 ->
-          do_fully_expand(rest, [identifier | result])
+          do_fully_expand(rest, [identifier | result], known_definitions)
         Jux.Fallback.__info__(:functions)[identifier_atom] == 1 ->
-          do_fully_expand(apply(Jux.Fallback, identifier_atom, [rest]), result)
+          do_fully_expand(apply(Jux.Fallback, identifier_atom, [rest]), result, known_definitions)
+        known_definitions[identifier] != nil ->
+          do_fully_expand(known_definitions[identifier] ++ rest, result, known_definitions)
       true ->
         raise "No implementation found for `#{identifier.name}`."
       end
@@ -71,7 +77,7 @@ defmodule Jux.Identifier do
         raise "No implementation found for `#{identifier.name}`."
     end
   end
-  defp do_fully_expand([literal | rest], result), do: do_fully_expand(rest, [literal | result])
+  defp do_fully_expand([literal | rest], result, known_definitions), do: do_fully_expand(rest, [literal | result], known_definitions)
 
 
   defimpl Inspect do

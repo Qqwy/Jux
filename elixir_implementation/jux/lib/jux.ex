@@ -3,7 +3,6 @@ defmodule Jux do
     final_stack = 
       str
       |> Jux.Parser.parse
-      |> IO.inspect
       |> Jux.Evaluator.evaluate
     IO.puts "stack: "<> stack_to_string(final_stack)      
   end

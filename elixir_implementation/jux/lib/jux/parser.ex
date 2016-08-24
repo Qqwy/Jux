@@ -21,7 +21,7 @@ defmodule Jux.Parser do
 
   defp do_parse("", tokens), do: tokens
   defp do_parse(source, tokens) do
-    IO.inspect {source, tokens}
+    #IO.inspect {source, tokens}
     cond do
       source =~ @whitespace_regexp ->
         [_, rest] = remove_token_from_string(source, @whitespace_regexp)
@@ -51,8 +51,8 @@ defmodule Jux.Parser do
 
   defp remove_token_from_string(source, regex) do 
     [prefix | _] = Regex.run(regex, source)
-    IO.inspect(prefix)
-    IO.inspect(String.replace_prefix(source, prefix, ""))
+    #IO.inspect(prefix)
+    #IO.inspect(String.replace_prefix(source, prefix, ""))
     [prefix, String.replace_prefix(source, prefix, "")]
   end
 
