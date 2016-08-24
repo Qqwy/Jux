@@ -32,8 +32,8 @@ defmodule Jux.Identifier do
     cond do
       identifier_atom != 0 && Jux.Primitive.__info__(:functions)[identifier_atom] == 1 ->
         {apply(Jux.Primitive, identifier_atom, [stack]), fun_queue}
-      identifier_atom != 0 && Jux.Fallback.__info__(:functions)[identifier_atom] == 1 ->
-        {stack, apply(Jux.Fallback, identifier_atom, [fun_queue])}
+      # identifier_atom != 0 && Jux.Fallback.__info__(:functions)[identifier_atom] == 1 ->
+      #   {stack, apply(Jux.Fallback, identifier_atom, [fun_queue])}
       known_definitions[identifier.name] != nil ->
         {stack, known_definitions[identifier.name] ++ fun_queue}
       :otherwise ->
@@ -60,8 +60,8 @@ defmodule Jux.Identifier do
     cond do
       identifier_atom != 0 &&Jux.Primitive.__info__(:functions)[identifier_atom] == 1 ->
         do_fully_expand(rest, [identifier | result], known_definitions)
-      identifier_atom != 0 &&Jux.Fallback.__info__(:functions)[identifier_atom] == 1 ->
-        do_fully_expand(apply(Jux.Fallback, identifier_atom, [rest]), result, known_definitions)
+      # identifier_atom != 0 &&Jux.Fallback.__info__(:functions)[identifier_atom] == 1 ->
+      #   do_fully_expand(apply(Jux.Fallback, identifier_atom, [rest]), result, known_definitions)
       known_definitions[identifier.name] != nil ->
         do_fully_expand(known_definitions[identifier.name] ++ rest, result, known_definitions)
       :otherwise ->

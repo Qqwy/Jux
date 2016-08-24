@@ -98,10 +98,32 @@ def
  # 1 2 3 4 5 -> 5 4 3 2 1
 
 
+
+
 # Combinators
 "dip2"
   ""
   [ swap [dip] dip ]
+def
+
+"reverse"
+  ""
+  [ [] [cons] foldl ]
+def
+
+"foldr"
+  ""
+  [ [reverse] dip2 foldl ]
+def
+
+"reverse_append"
+  ""
+  [ [cons] foldr ]
+def
+
+"append"
+  ""
+  [ swap reverse_append ]
 def
 
 "dip3"
@@ -150,63 +172,6 @@ def
 def
 
 # y
-
- 
-# Arithmetic
-"inc"
-  ""
-  [ 1 add ]
-def
-
-"dec"
-  ""
-  [ 1 sub ]
-def
-
-"odd?"
-  ""
-  [ 1 band truthy? ]
-def
-
-"even?"
-  ""
-  [ odd? not ]
-def
-
-
-
-
-# Conditionals
-"if"
-  ""
-  [ [] ifte ]
-def
-
-"unless"
-  ""
-  [ [] swap ifte ]
-def
-
-"ifeqte"
-  ""
-  [ [lift [eq?] append] dip2 ifte ]
-def
-
-"ifneqte"
-  ""
-  [ [lift [neq?] append] dip2 ifte ]
-def
-
-"ifzte"
-  ""
-  [ [[zero?]] dip2 ifte ]
-def
-
-"ifnzte"
-  ""
-  [ [[zero? not]] dip2 ifte ]
-def
-
 
 
 # Comparison
@@ -269,18 +234,47 @@ def
   ""
   [ [lt?] [pop] [popd] ifte ]
 def
-
-
-# Helper
-
-# To be given an 'ifte' with the condition part not yet filled in.
-# Will change `[zero?] [...] [ [A] [B] ifte] prepend_fold_condition`
-# into  `[...] [[zero?] [A] [B] ifte]`
-# TODO: Better name?
-"prepend_fold_condition"
+ 
+# Arithmetic
+"inc"
   ""
-  [ swapd liftd append ]
+  [ 1 add ]
 def
+
+"dec"
+  ""
+  [ 1 sub ]
+def
+
+"odd?"
+  ""
+  [ 1 band truthy? ]
+def
+
+"even?"
+  ""
+  [ odd? not ]
+def
+
+
+
+
+# Conditionals
+"if"
+  ""
+  [ [] ifte ]
+def
+
+"unless"
+  ""
+  [ [] swap ifte ]
+def
+
+
+
+
+
+
  
 
 # Quotations
@@ -324,30 +318,44 @@ def
   [ uncons [uncons popd] dip ]
 def
 
+
+
+"ifeqte"
+  ""
+  [ [lift [eq?] append] dip2 ifte ]
+def
+
+"ifneqte"
+  ""
+  [ [lift [neq?] append] dip2 ifte ]
+def
+
+"ifzte"
+  ""
+  [ [[zero?]] dip2 ifte ]
+def
+
+"ifnzte"
+  ""
+  [ [[zero? not]] dip2 ifte ]
+def
+
+  # (Helper)
+
+"prepend_fold_condition"
+  # To be given an 'ifte' with the condition part not yet filled in.
+  # Will change `[zero?] [...] [ [A] [B] ifte] prepend_fold_condition`
+  # into  `[...] [[zero?] [A] [B] ifte]`
+  # TODO: Better name?
+  ""
+  [ swapd liftd append ]
+def
+
 "length"
   ""
   [ 0 [inc] foldl ]
 def
 
-"reverse"
-  ""
-  [ [] [cons] foldl ]
-def
-
-"foldr"
-  ""
-  [ [reverse] dip2 foldl ]
-def
-
-"reverse_append"
-  ""
-  [ [cons] foldr ]
-def
-
-"append"
-  ""
-  [ swap reverse_append ]
-def
 
 "map"
   ""
