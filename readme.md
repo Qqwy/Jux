@@ -11,16 +11,33 @@ To be able to live up to both of these goals, Jux defines a very small set of li
 
 The same holds true for data types: The literal data types a target *has* to implement are `int`, `string`, `quotation`(linked lists), `symbol`(a name with a constant integer value). The other supported data types (`tuple`(pairs, triples, etc; fixed-size arrays of values), `dict`(an associative key->value store ) and `tree` are by default implemented on top of lists.)
 
+## Inspiration
+
+Jux is inspired by the concatenative languages [**Joy**](https://web.archive.org/web/20111007025556/http://www.latrobe.edu.au/phimvt/joy/j02maf.html)(WebArchive link; original website is down) and [**Cat**](https://web.archive.org/web/20140720143526/http://www.cat-language.com/index.html)(WebArchive link; original website is down).
+
 
 # Roadmap
 
 - Old Ruby implementation prototype: 100%; _(not in this repository)_
-- Flesh out this Readme: 50%;
-- Elixir implementation: 0%;
+- Flesh out this Readme: 60%;
+- Elixir implementation: 50%;
 - New Ruby implementation: 0%;
 
 - Think about custom function definitions.
-- Think about rewrite rules.
+- Think about fallback rewrite function implementations: 
+  - A Fallback rewrite _can_ contain its own name, as long as this happens inside a quotation, so we can expand a rewrite rule all at once without creating an infinite loop. These kinds of recursive rewrites with the same name used inside a quotation are however very useful sometimes.
+  - All of these functions need documentation just like normal functions.
+  - In the future, a file will be made that contains all these definitions, which an implementation should parse and fill in (possibly excluding the ones that already have a native implementation)
+
+- Think about efficiency:
+  - Fully expand fallback rewrites, so when a fallback function is found, only a single rewrite step is necessary.
+  - Custom rewrite rules to be applied before and after expanding that increase efficiency; Things like:
+    - `reverse length ==> length`
+    - `dup pop ==> `
+    - `dup swap ==> dup`
+    - `[] i ==> `
+    - `0 + ==> `
+    - _see the [Mathematical foundations of Joy](https://web.archive.org/web/20111007025556/http://www.latrobe.edu.au/phimvt/joy/j02maf.html) for more examples of rewrite rules in concatenative languages_
 
 # Future Goals
 
@@ -28,8 +45,8 @@ The same holds true for data types: The literal data types a target *has* to imp
 - Self-hosting
 - Multiple implementations.
 - Explore the advantages/drawbacks of a bytecode variant of Jux.
+- Explore differences between string-as-list and string-as-byte_arr for implementation/efficiency.
 - Explore (dependently?) statical typing and if/how it might work with a concatenative language.
-
 
 ________________
 
@@ -193,5 +210,57 @@ The standard library extends on this with:
 **TODO**
 
 
+# Syntax:
+
+### Whitespace
+
+Whitespace (including tabs and newlines) is ignored, but used to separate below expression types, as well as to improve human readability.
+
+### Comments
+
+Single-line comments start with `#` and continue until the end of the line.
+
+### Literals
+The following literal values are accepted anywhere in the program:
+
+- integers
+- floats
+- strings, delimited with `"`. These should escape `\n`, `\t`, etc. Quotes themselves can be escaped with `\"`.
+- quotations. These are lists, delimited with `[` and `]`. The contents of a quotation should be parsed, but immediately evaluated or expanded. Quotations can be nested. `[]` is an empty quotation.
+
+### Identifiers
+Identifiers, which are names of functions. The first character of an identifier has to be alphabetic or an underscore. All other characters can be alphanumeric, underscores or `.`. Identifiers are allowed to end on `?` or `!`.
+
+An example of above rules in practice:
+
+```
+# This is a comment
+
+1 2 3.0 "foo" dup swap [4 5 pop "bar"] # This is another comment
+i pop [42]
+```
+
+### Defining functions
+To define a function, the built-in `def` function can be used: `"functionname" "documentation" [function implementation here] def`. For clarity, this is usually written as:
+
+```
+"xor"
+  "
+  Calculates the boolean XOR of the top two arguments.
+  "
+  [
+    dup2
+    or            # get 'or' of top two arguments
+    [and not] dip # get 'nand' of bottom two arguments'
+    and           # only true if both of the above are true
+  ] 
+def
+```
+
+As can be seen, no special syntax is necessary to parse this.
 
 
+## To think about:
+
+- Heredoc multiline strings?
+- Do/don't have multiline comments?

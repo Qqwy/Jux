@@ -13,11 +13,11 @@ defmodule Jux.Evaluator do
   end
 
   defp do_evaluate_on([literal | rest], stack) when is_integer(literal) or is_binary(literal) or is_float(literal) or is_list(literal) do
-    do_evaluate_on(rest, IO.inspect [literal | stack])
+    do_evaluate_on(rest, [literal | stack])
   end
 
   defp do_evaluate_on([identifier = %Jux.Identifier{} | rest], stack) do
-    {updated_stack, updated_fun_queue} = IO.inspect Jux.Identifier.evaluate(identifier, stack, rest)
+    {updated_stack, updated_fun_queue} = Jux.Identifier.evaluate(identifier, stack, rest)
     do_evaluate_on(updated_fun_queue, updated_stack)
   end
 

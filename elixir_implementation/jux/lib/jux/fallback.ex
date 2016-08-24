@@ -103,11 +103,21 @@ defmodule Jux.Fallback do
   rewrite "max", "[gt?] [pop] [popd] ifte"
   rewrite "min", "[lt?] [pop] [popd] ifte"
 
+  # Helper
+
+  # To be given an 'ifte' with the condition part not yet filled in.
+  # Will change `[zero?] [...] [ [A] [B] ifte] prepend_fold_condition`
+  # into  `[...] [[zero?] [A] [B] ifte]`
+  # TODO: Better name?
+  rewrite "prepend_fold_condition", "swapd liftd append" 
+
   # Quotations
+  rewrite "negate", "[not] append"
   rewrite "reverse_cons", "swap cons"
   rewrite "reverse_uncons", "uncons swap"
   
   rewrite "lift", "[] reverse_cons"
+  rewrite "liftd", "[lift] dip"
   rewrite "lift2", "[] swapd reverse_cons reverse_cons"
   rewrite "unlift", "uncons popd"
   rewrite "unlift2", "uncons [uncons popd] dip"
@@ -115,22 +125,32 @@ defmodule Jux.Fallback do
   rewrite "length", "0 [inc] foldl"
   rewrite "reverse", "[] [cons] foldl"
   rewrite "foldr", "[reverse] dip2 foldl"
-  rewrite "reverse_append", "[cons] foldr" # TODO: Fix.
+  rewrite "reverse_append", "[cons] foldr"
   rewrite "append", "swap reverse_append"
   rewrite "map", "[] swap [cons] append foldl"
   rewrite "flatten", "[] [append] foldl" # TODO: Improve
+  rewrite "filter", "[] [ [cons] [pop] ifte] prepend_fold_condition foldr"
+  rewrite "reject", "negate filter"
 
   rewrite "sum", "0 [add] foldl"
   #rewrite "product", "1 [mul] foldl"
   rewrite "list_max", "uncons [max] foldl"
   rewrite "list_min", "uncons [min] foldl"
   rewrite "list_max_min", "uncons dup lift2 [dup [unlift2] dip2 swapd max [min] dip lift2] foldl"
+  rewrite "all?", "true [and] swapd append foldl"
+  rewrite "any?", "false [or] swapd append foldl"
 
-  rewrite "elem?", "lift [eq? or] append false swap foldl" # [1 2 3] 1 elem? # TODO: fix append so reverse arguments not necessary in quotation.
-  rewrite "in?", "swap elem?" # 1 [1 2 3] in?
+  rewrite "contains?", "lift [eq? or] append false swap foldl" # [1 2 3] 1 contains? # TODO: fix append so reverse arguments not necessary in quotation.
+  rewrite "in?", "swap contains?" # 1 [1 2 3] in?
+
+  # TODO: take
+  # TODO: drop
+  # TODO: take_while
+  # TODO: drop_while
+  # TODO: partition
 
   # Boolean
-  rewrite "xor", "[dup] dip dup [swap] dip or [and not] dip and"
+  rewrite "xor", "dup2 or [and not] dip and"
 
   # Bitwise  
   rewrite "bxor", "[dup] dip dup [swap] dip bor [band bnot] dip band"
@@ -147,4 +167,9 @@ defmodule Jux.Fallback do
 
   # 3 2 mul
   # 3 + 3
+
+  # Output
+  rewrite "puts", ~s{print "\n" print}
+
+  # Input
 end

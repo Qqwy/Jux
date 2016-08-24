@@ -3,7 +3,8 @@ defmodule Jux.Parser do
   Parses a string into a list of Jux tokens that can then be applied to a stack.
   """
 
-  @whitespace_regexp ~r{^\s+}
+  @whitespace_regexp ~r{\A\s+}m
+  @comment_regexp ~r{^#.*}
   @float_regexp ~r{^[+-]?\d+\.\d+}
   @integer_regexp ~r{^[+-]?\d+}
   @identifier_regexp ~r{^[a-z][\w]*[?!]?}
@@ -20,9 +21,13 @@ defmodule Jux.Parser do
 
   defp do_parse("", tokens), do: tokens
   defp do_parse(source, tokens) do
+    IO.inspect {source, tokens}
     cond do
       source =~ @whitespace_regexp ->
         [_, rest] = remove_token_from_string(source, @whitespace_regexp)
+        do_parse(rest, tokens)
+      source =~ @comment_regexp ->
+        [_, rest] = remove_token_from_string(source, @comment_regexp)
         do_parse(rest, tokens)
       String.starts_with?(source, "[") ->
         [quotation, rest] = parse_quotation(source)
@@ -46,6 +51,8 @@ defmodule Jux.Parser do
 
   defp remove_token_from_string(source, regex) do 
     [prefix | _] = Regex.run(regex, source)
+    IO.inspect(prefix)
+    IO.inspect(String.replace_prefix(source, prefix, ""))
     [prefix, String.replace_prefix(source, prefix, "")]
   end
 
@@ -94,9 +101,9 @@ defmodule Jux.Parser do
   defp do_parse_string({"\\", rest}, length) do
     case String.next_codepoint(rest) do
       {"\"", restrest} ->
-        do_parse_string(restrest, length+2)
-      {_, _} ->
-        do_parse_string(rest, length+1)
+        do_parse_string(String.next_codepoint(restrest), length+2)
+      {chars, _} ->
+        do_parse_string(String.next_codepoint(rest), length+1)
     end
   end
 
