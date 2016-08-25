@@ -68,7 +68,7 @@ defmodule Jux.Parser do
   end
 
   defp do_parse_quotation({"[", rest}, bracket_count, length_acc) do
-    IO.puts "Position: #{length_acc}"
+    # IO.puts "Position: #{length_acc}"
     do_parse_quotation(String.next_codepoint(rest), bracket_count+1, length_acc+1)
   end
 

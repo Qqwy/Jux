@@ -26,9 +26,9 @@ defmodule Jux.Identifier do
   - If these cannot be found either, an error is thrown as the identifier is unknown.
   """
   def evaluate(identifier, stack, fun_queue, known_definitions) do
-    IO.inspect(identifier.name)
-    IO.inspect(known_definitions)
-    IO.inspect(known_definitions[identifier])
+    #IO.inspect(identifier.name)
+    #IO.inspect(known_definitions)
+    #IO.inspect(known_definitions[identifier])
 
     identifier_atom = identifier.name |> Jux.Helper.safe_to_existing_atom
     cond do

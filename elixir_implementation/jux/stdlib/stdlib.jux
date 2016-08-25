@@ -144,6 +144,8 @@ def
   [ dup [i] dip ]
 def
 
+
+
 "b"
   ""
   [ [i] dip i ]
@@ -168,8 +170,6 @@ def
   ""
   [ [dup] dip i ]
 def
-
-# y
 
 
 # Comparison
@@ -315,6 +315,35 @@ def
   ""
   [ uncons [uncons popd] dip ]
 def
+
+
+
+"papply"
+  "
+  Takes the quotation `q` on top, and the value `v` below it.
+  Returns a new quotation, which, when evaluated, would first put `v` on the stack, and then run `q`.
+  Therefore, it applies the argument `v` to `q`, but does not yet evaluate it. 
+  `3 [inc] partial_apply` ==> `[3 inc]`.
+  "
+  [ [lift] dip append ]
+def
+
+"papply2"
+  "
+  Takes the quotation `q` on top, and the values `v1` and `v2` below it.
+  Returns a new quotation, which, when evaluated, would first put `v2`, then `v1` on the stack, and then run `q`.
+  Therefore, it applies the arguments `v1` and `v2` to `q`, but does not yet evaluate it. 
+  `2 4 [add] partial_apply2` ==> `[2 4 add]`.
+  "
+  [ papply papply ]
+def
+
+# y
+"y"
+  ""
+  [ [dup papply] swap append dup i ]
+def
+
 
 
 

@@ -14,9 +14,9 @@ defmodule Jux do
       end
 
     {final_stack, known_definitions} = Jux.Evaluator.evaluate_on(parsed_representation, stack, known_definitions)
-    IO.inspect({final_stack, known_definitions})
+    #IO.inspect({final_stack, known_definitions})
     IO.puts "stack: "<> stack_to_string(final_stack)
-    IO.puts "known_definitions:" <> inspect(known_definitions)
+    # IO.puts "known_definitions:" <> inspect(known_definitions)
     {final_stack, known_definitions}
   end
 
