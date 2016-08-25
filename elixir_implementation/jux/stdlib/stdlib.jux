@@ -208,6 +208,17 @@ def
 def
 
 
+"papply1"
+  "This is a very simple implementation akin to papply, but it only works with a single function argument.
+  Its advantage is that we don't need recursion, which means that we can use papply1 _inside_ the definition of the y-combinator.
+
+  4 [inc] papply1 ==> [4 inc]
+  "
+
+  [ inspect_stack liftd unlift cons ]
+def
+
+
 "partial_y"
   "
   Does most of the work for the y-combinator,

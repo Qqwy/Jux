@@ -1,0 +1,24 @@
+
+
+"partial_y"
+  "
+  Does most of the work for the y-combinator,
+  but does not run the created self-referencing quotation yet.
+
+  Can be used to create generators (?)
+  "
+  [
+    [dup papply1] swap lift2 [b] unlift cons
+  ]
+def
+
+
+# y
+"y"
+  "The y-combinator. Executes a quotation with itself wrapped in the y-combinator as the topmost element on the stack.
+  This means that the quotation can call itself recursively by using `i` again inside itself.
+
+  The y-combinator is very useful to build recursive function definitions.
+  "
+  [ partial_y dup i ]
+def

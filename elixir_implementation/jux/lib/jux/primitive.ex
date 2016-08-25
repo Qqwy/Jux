@@ -41,8 +41,8 @@ defmodule Jux.Primitive do
 
   def ifte([else_quot, then_quot, condition_quot | xs], known_definitions) when Kernel.and(is_list(else_quot), Kernel.and(is_list(then_quot), is_list(condition_quot))) do
     {condition_check_stack, _} = Jux.Evaluator.evaluate_on(condition_quot, xs, known_definitions)
-    IO.inspect(condition_check_stack)
-    IO.inspect(match?([false | _], condition_check_stack))
+    #IO.inspect(condition_check_stack)
+    #IO.inspect(match?([false | _], condition_check_stack))
     if match?([false | _], condition_check_stack) do
       {new_stack, _} = Jux.Evaluator.evaluate_on(else_quot, xs, known_definitions)
     else
