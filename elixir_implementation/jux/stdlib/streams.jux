@@ -7,4 +7,32 @@
 
 
 
-# ~j{5 [[zero?] [1] [inspect_stack [dec] dip i] ifte] y}
+# ~j{5 [[pop zero?] [1] [inspect_stack [dec] dip i] ifte] y}
+
+[1 2 3] []
+[1 2] 3 []  #[uncons] dip
+[1 2] [3] # reverse_cons
+[1] 2 [3] #  [uncons] dip
+[1] [3 2] # reverse_cons
+
+
+[3 2 1]
+
+
+# Setup: ... []
+# Base case: popd
+# Recursive case: unconsd reverse_cons
+
+
+# [] [[pop2 empty?] [pop popd] [[unconsd reverse_cons] dip i] ifte] y
+# [1 2 3] [A] B reduce ==>  
+# [1 2 3] B [[pop2 empty?] [pop popd] [[unconsd A] dip i] ifte] y
+
+[dip i] # ... How to put `unconsd` before [A]? (without using something built on `reduce`?)
+
+
+
+# reverse_append
+ [[pop2 empty?] [pop popd] [[unconsd reverse_cons] dip i] ifte] y
+# reverse ==> [] reverse_append
+# append = reverse reverse_append

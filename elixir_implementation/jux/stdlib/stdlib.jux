@@ -306,6 +306,11 @@ def
   [ uncons swap ]
 def
 
+"unconsd"
+  ""
+  [ [uncons] dip ]
+def
+
 "lift"
   ""
   [ [] reverse_cons ]
@@ -353,6 +358,17 @@ def
   [ papply papply ]
 def
 
+"papply3"
+  "
+  Takes the quotation `q` on top, and the values `v1`, `v2` and `v3` below it.
+  Returns a new quotation, which, when evaluated, would first put `v3`, then `v2` and then `v1` on the stack, and then run `q`.
+  Therefore, it applies the arguments `v1`, `v2` and `v3` to `q`, but does not yet evaluate it. 
+  `2 4 3 [add add] partial_apply3` ==> `[2 4 3 add add]`.
+  "
+  [ papply papply papply]
+def
+
+
 # y
 "y"
   ""
@@ -360,6 +376,56 @@ def
 def
 
 
+
+"reverse_append2"
+  "
+  Uses the y-combinator to append a list in reverse order to another list.
+  "
+  [
+    [[pop2 empty?] # Stop recursion if original list is empty 
+      [pop popd] 
+      [
+        [unconsd reverse_cons] dip  # take one element from the top of the old (bottom-most) list
+                                    # And put it at the head of the new list.
+        i]                          # And then call recursively.
+    ifte] 
+  y
+  
+  ]
+def
+
+"reduce"
+  ""
+  [
+
+  ]
+def
+
+# "reverse2"
+#   ""
+#   [
+#      [] # start of the new list being built
+#      [
+#      [pop2 empty?] # Stop recursion if original list is empty 
+#       [pop popd] 
+#        [
+#         [unconsd reverse_cons] dip  # take one element from the top of the old (bottom-most) list
+#                                     # And put it at the head of the new list.
+#         i]                          # And then call recursively.
+#     ifte] 
+#   y
+#   ]
+# def
+
+"reverse2"
+  ""
+  [ [] reverse_append ]
+def
+
+"append2"
+  ""
+  [ reverse reverse_append ]
+def
 
 
 "ifeqte"
@@ -488,10 +554,10 @@ def
 # - value to calculate
 # - base case quotation
 # - recursive case quotation.
-"primrec"
-  ""
-  [ swap [pop pop] swap cons [pop 0 eq?] swap [[dup 1 sub] dip dup i] [[swap] dip] dip [swap] dip swap append [] swap [swap] dip [[reverse_cons] dip cons] dip cons [ifte] append dup i ]
-def
+# "primrec"
+#   ""
+#   [ swap [pop pop] swap cons [pop 0 eq?] swap [[dup 1 sub] dip dup i] [[swap] dip] dip [swap] dip swap append [] swap [swap] dip [[reverse_cons] dip cons] dip cons [ifte] append dup i ]
+# def
 
 #rewrite "mul", "[pop pop] [[add] dip] primrec"
 
@@ -512,7 +578,7 @@ def
 
 # Recursive
 
-"factorial"
+"y_factorial"
   "
   Calculates the factorial of the item on top of the stack, using a recursive algorithm.
   `5 factorial` == `5*4*3*2*1` == `120`.
@@ -533,4 +599,32 @@ def
   ]
 def
 
+"primrec"
+  "
+  input as follows:
+  `5 [zero?] [1] [mul] primrec2`
+  "
+  [
+    inspect_stack
+    [[pop] reverse_append] dip2         # Changes `... [zero?] [1] [mul]` to `... [pop zero?] [1] [mul]`
+    inspect_stack
+    [[pop2] reverse_append] dip         # Changes `... [1] [mul]` to `... [pop2 1] [mul]
+    inspect_stack
+    [[dup dec] dip i] reverse_append  # Changes `... [mul]` to `... [[dup dec] dip i mul]`
+    inspect_stack
+    [ifte] papply3                      # Combines the different parts to form [[c] [t] [e] ifte]
+    inspect_stack
+    y
+  ]
+def
+
+"triangular"
+  ""
+  [ [0] [add] primrec ]
+def
+
+"factorial"
+  ""
+  [ [1] [mul] primrec ]
+def
 
