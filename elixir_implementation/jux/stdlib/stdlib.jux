@@ -119,25 +119,171 @@ def
   [ swap [dip] dip ]
 def
 
+# "reverse"
+#   ""
+#   [ [] [cons] foldl ]
+# def
+
+
+
+# Quotations
+
+"reverse_cons"
+  ""
+  [ swap cons ]
+def
+
+"reverse_uncons"
+  ""
+  [ uncons swap ]
+def
+
+"unconsd"
+  ""
+  [ [uncons] dip ]
+def
+
+"lift"
+  ""
+  [ [] reverse_cons ]
+def
+
+"liftd"
+  ""
+  [ [lift] dip ]
+def
+
+"lift2"
+  ""
+  [ [] swapd reverse_cons reverse_cons ]
+def
+
+"unlift"
+  ""
+  [ uncons popd ]
+def
+
+"unlift2"
+  ""
+  [ uncons [uncons popd] dip ]
+def
+
+
+
+"papply"
+  "
+  Takes the quotation `q` on top, and the value `v` below it.
+  Returns a new quotation, which, when evaluated, would first put `v` on the stack, and then run `q`.
+  Therefore, it applies the argument `v` to `q`, but does not yet evaluate it. 
+  `3 [inc] partial_apply` ==> `[3 inc]`.
+  "
+  [ [lift] dip append ]
+def
+
+"papply2"
+  "
+  Takes the quotation `q` on top, and the values `v1` and `v2` below it.
+  Returns a new quotation, which, when evaluated, would first put `v2`, then `v1` on the stack, and then run `q`.
+  Therefore, it applies the arguments `v1` and `v2` to `q`, but does not yet evaluate it. 
+  `2 4 [add] partial_apply2` ==> `[2 4 add]`.
+  "
+  [ papply papply ]
+def
+
+"papply3"
+  "
+  Takes the quotation `q` on top, and the values `v1`, `v2` and `v3` below it.
+  Returns a new quotation, which, when evaluated, would first put `v3`, then `v2` and then `v1` on the stack, and then run `q`.
+  Therefore, it applies the arguments `v1`, `v2` and `v3` to `q`, but does not yet evaluate it. 
+  `2 4 3 [add add] partial_apply3` ==> `[2 4 3 add add]`.
+  "
+  [ papply papply papply]
+def
+
+
+# y
+"y"
+  ""
+  [ [dup papply] swap append dup i ]
+def
+
+
+
+"backwards_append"
+  "
+  Uses the y-combinator to append a list in reverse order to another list (which is still in original order).
+  "
+  [
+    [[pop2 empty?] # Stop recursion if original list is empty 
+      [pop popd] 
+      [
+        [unconsd reverse_cons] dip  # take one element from the top of the old (bottom-most) list
+                                    # And put it at the head of the new list.
+        i]                          # And then call recursively.
+    ifte] 
+  y
+  
+  ]
+def
+
+"reduce"
+  ""
+  [
+
+  ]
+def
+
+# "reverse2"
+#   ""
+#   [
+#      [] # start of the new list being built
+#      [
+#      [pop2 empty?] # Stop recursion if original list is empty 
+#       [pop popd] 
+#        [
+#         [unconsd reverse_cons] dip  # take one element from the top of the old (bottom-most) list
+#                                     # And put it at the head of the new list.
+#         i]                          # And then call recursively.
+#     ifte] 
+#   y
+#   ]
+# def
+
 "reverse"
   ""
-  [ [] [cons] foldl ]
+  [ [] backwards_append ]
 def
+
+"append"
+  ""
+  [ reverse backwards_append reverse ]
+def
+
+"reverse_append"
+  ""
+  [ swap append ]
+def
+
+"negate"
+  ""
+  [ [not] papply ]
+def
+
 
 "foldr"
   ""
   [ [reverse] dip2 foldl ]
 def
 
-"reverse_append"
-  ""
-  [ [cons] foldr ]
-def
+# "reverse_append"
+#   ""
+#   [ [cons] foldr ]
+# def
 
-"append"
-  ""
-  [ swap reverse_append ]
-def
+# "append"
+#   ""
+#   [ swap reverse_append ]
+# def
 
 "dip3"
   ""
@@ -289,143 +435,6 @@ def
 
 
  
-
-# Quotations
-"negate"
-  ""
-  [ [not] append ]
-def
-
-"reverse_cons"
-  ""
-  [ swap cons ]
-def
-
-"reverse_uncons"
-  ""
-  [ uncons swap ]
-def
-
-"unconsd"
-  ""
-  [ [uncons] dip ]
-def
-
-"lift"
-  ""
-  [ [] reverse_cons ]
-def
-
-"liftd"
-  ""
-  [ [lift] dip ]
-def
-
-"lift2"
-  ""
-  [ [] swapd reverse_cons reverse_cons ]
-def
-
-"unlift"
-  ""
-  [ uncons popd ]
-def
-
-"unlift2"
-  ""
-  [ uncons [uncons popd] dip ]
-def
-
-
-
-"papply"
-  "
-  Takes the quotation `q` on top, and the value `v` below it.
-  Returns a new quotation, which, when evaluated, would first put `v` on the stack, and then run `q`.
-  Therefore, it applies the argument `v` to `q`, but does not yet evaluate it. 
-  `3 [inc] partial_apply` ==> `[3 inc]`.
-  "
-  [ [lift] dip append ]
-def
-
-"papply2"
-  "
-  Takes the quotation `q` on top, and the values `v1` and `v2` below it.
-  Returns a new quotation, which, when evaluated, would first put `v2`, then `v1` on the stack, and then run `q`.
-  Therefore, it applies the arguments `v1` and `v2` to `q`, but does not yet evaluate it. 
-  `2 4 [add] partial_apply2` ==> `[2 4 add]`.
-  "
-  [ papply papply ]
-def
-
-"papply3"
-  "
-  Takes the quotation `q` on top, and the values `v1`, `v2` and `v3` below it.
-  Returns a new quotation, which, when evaluated, would first put `v3`, then `v2` and then `v1` on the stack, and then run `q`.
-  Therefore, it applies the arguments `v1`, `v2` and `v3` to `q`, but does not yet evaluate it. 
-  `2 4 3 [add add] partial_apply3` ==> `[2 4 3 add add]`.
-  "
-  [ papply papply papply]
-def
-
-
-# y
-"y"
-  ""
-  [ [dup papply] swap append dup i ]
-def
-
-
-
-"reverse_append2"
-  "
-  Uses the y-combinator to append a list in reverse order to another list.
-  "
-  [
-    [[pop2 empty?] # Stop recursion if original list is empty 
-      [pop popd] 
-      [
-        [unconsd reverse_cons] dip  # take one element from the top of the old (bottom-most) list
-                                    # And put it at the head of the new list.
-        i]                          # And then call recursively.
-    ifte] 
-  y
-  
-  ]
-def
-
-"reduce"
-  ""
-  [
-
-  ]
-def
-
-# "reverse2"
-#   ""
-#   [
-#      [] # start of the new list being built
-#      [
-#      [pop2 empty?] # Stop recursion if original list is empty 
-#       [pop popd] 
-#        [
-#         [unconsd reverse_cons] dip  # take one element from the top of the old (bottom-most) list
-#                                     # And put it at the head of the new list.
-#         i]                          # And then call recursively.
-#     ifte] 
-#   y
-#   ]
-# def
-
-"reverse2"
-  ""
-  [ [] reverse_append ]
-def
-
-"append2"
-  ""
-  [ reverse reverse_append ]
-def
 
 
 "ifeqte"
