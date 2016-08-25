@@ -26,12 +26,14 @@ defmodule Jux.Identifier do
   - If these cannot be found either, an error is thrown as the identifier is unknown.
   """
   def evaluate(identifier, stack, fun_queue, known_definitions) do
-    #IO.inspect(known_definitions)
-    #IO.inspect(known_definitions[identifier])
+    IO.inspect(identifier.name)
+    IO.inspect(known_definitions)
+    IO.inspect(known_definitions[identifier])
+
     identifier_atom = identifier.name |> Jux.Helper.safe_to_existing_atom
     cond do
-      identifier_atom != 0 && Jux.Primitive.__info__(:functions)[identifier_atom] == 1 ->
-        {apply(Jux.Primitive, identifier_atom, [stack]), fun_queue}
+      identifier_atom != 0 && Jux.Primitive.__info__(:functions)[identifier_atom] == 2 ->
+        {apply(Jux.Primitive, identifier_atom, [stack, known_definitions]), fun_queue}
       # identifier_atom != 0 && Jux.Fallback.__info__(:functions)[identifier_atom] == 1 ->
       #   {stack, apply(Jux.Fallback, identifier_atom, [fun_queue])}
       known_definitions[identifier.name] != nil ->
@@ -58,7 +60,7 @@ defmodule Jux.Identifier do
   defp do_fully_expand([identifier = %Jux.Identifier{} | rest], result, known_definitions) do
     identifier_atom = identifier.name |> Jux.Helper.safe_to_existing_atom
     cond do
-      identifier_atom != 0 &&Jux.Primitive.__info__(:functions)[identifier_atom] == 1 ->
+      identifier_atom != 0 && Jux.Primitive.__info__(:functions)[identifier_atom] == 2 ->
         do_fully_expand(rest, [identifier | result], known_definitions)
       # identifier_atom != 0 &&Jux.Fallback.__info__(:functions)[identifier_atom] == 1 ->
       #   do_fully_expand(apply(Jux.Fallback, identifier_atom, [rest]), result, known_definitions)
