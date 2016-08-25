@@ -255,10 +255,94 @@ def
 
 
 
+
+"papply"
+  "
+  Takes the quotation `q` on top, and the value `v` below it.
+  Returns a new quotation, which, when evaluated, would first put `v` on the stack, and then run `q`.
+  Therefore, it applies the argument `v` to `q`, but does not yet evaluate it. 
+  `3 [inc] partial_apply` ==> `[3 inc]`.
+  "
+  [ [lift] dip append ]
+def
+
+"papply2"
+  "
+  Takes the quotation `q` on top, and the values `v1` and `v2` below it.
+  Returns a new quotation, which, when evaluated, would first put `v2`, then `v1` on the stack, and then run `q`.
+  Therefore, it applies the arguments `v1` and `v2` to `q`, but does not yet evaluate it. 
+  `2 4 [add] partial_apply2` ==> `[2 4 add]`.
+  "
+  [ papply papply ]
+def
+
+"papply3"
+  "
+  Takes the quotation `q` on top, and the values `v1`, `v2` and `v3` below it.
+  Returns a new quotation, which, when evaluated, would first put `v3`, then `v2` and then `v1` on the stack, and then run `q`.
+  Therefore, it applies the arguments `v1`, `v2` and `v3` to `q`, but does not yet evaluate it. 
+  `2 4 3 [add add] partial_apply3` ==> `[2 4 3 add add]`.
+  "
+  [ papply papply papply]
+def
+
+
+
+
+"partial_y"
+  "
+  Does most of the work for the y-combinator,
+  but does not run the created self-referencing quotation yet.
+
+  Can be used to create generators (?)
+  "
+  [
+    [dup papply] swap append
+  ]
+def
+
+"simple_generator"
+  "
+  When invoked with `i`, returns the result of the quotation passed in at the top of the stack,
+  while keeping itself as the second element.
+  `[3] generator ==> [[dup papply 3] dup papply 3]`
+  "
+  [
+  partial_y dup papply
+  ]
+def
+
+"generator"
+  "
+  Create a generator by passing it a starting value and a quotation to execute each time it is invoked.
+  The first time the generator is invoked, the starting value is returned.
+  The second time, the next value (that is created from executing the quotation with the starting value on the stack).
+  The third time, the next value from that computation, etc.
+
+  The value that is found by executing the quotation on the starting value is output,
+  and stored in the generator itself, so that when it is invoked again, the output value is used as new
+  starting value.
+
+  Example:
+  ```
+  [3] [inc] generator i # 4
+  pop i # 5
+  pop i # 6
+  ``` 
+  "
+  [
+    [uncons] reverse_append [cons dup papply] append swap cons dup papply
+  ]
+def
+
 # y
 "y"
-  ""
-  [ [dup papply] swap append dup i ]
+  "The y-combinator. Executes a quotation with itself wrapped in the y-combinator as the topmost element on the stack.
+  This means that the quotation can call itself recursively by using `i` again inside itself.
+
+  The y-combinator is very useful to build recursive function definitions.
+  "
+  [ partial_y dup i ]
 def
 
 
@@ -292,37 +376,6 @@ def
 "keep_i"
   ""
   [ dup [i] dip ]
-def
-
-
-"papply"
-  "
-  Takes the quotation `q` on top, and the value `v` below it.
-  Returns a new quotation, which, when evaluated, would first put `v` on the stack, and then run `q`.
-  Therefore, it applies the argument `v` to `q`, but does not yet evaluate it. 
-  `3 [inc] partial_apply` ==> `[3 inc]`.
-  "
-  [ [lift] dip append ]
-def
-
-"papply2"
-  "
-  Takes the quotation `q` on top, and the values `v1` and `v2` below it.
-  Returns a new quotation, which, when evaluated, would first put `v2`, then `v1` on the stack, and then run `q`.
-  Therefore, it applies the arguments `v1` and `v2` to `q`, but does not yet evaluate it. 
-  `2 4 [add] partial_apply2` ==> `[2 4 add]`.
-  "
-  [ papply papply ]
-def
-
-"papply3"
-  "
-  Takes the quotation `q` on top, and the values `v1`, `v2` and `v3` below it.
-  Returns a new quotation, which, when evaluated, would first put `v3`, then `v2` and then `v1` on the stack, and then run `q`.
-  Therefore, it applies the arguments `v1`, `v2` and `v3` to `q`, but does not yet evaluate it. 
-  `2 4 3 [add add] partial_apply3` ==> `[2 4 3 add add]`.
-  "
-  [ papply papply papply]
 def
 
 
