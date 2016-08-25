@@ -172,6 +172,13 @@ def
   [ uncons [uncons popd] dip ]
 def
 
+
+"ucons"
+  "first unlifts the value, then appends it to the quotation at the second place.
+  "
+  [ unlift cons ]
+def
+
 "tail"
   ""
   [uncons pop]
@@ -215,10 +222,22 @@ def
 def
 
 
-"reduce"
-  ""
-  [
-     [[pop2 empty?] [pop popd] [ [unconsd dip] dip dup i] ifte] dup i
+"foldl"
+  "
+  This new reduce algorithm works without:
+  - needing to be defined primitively.
+  - the Y Combinator.
+  "
+  [ 
+    swapd # Swaps [1 2 3] with 0, so list is second element after quotation to be done at each step.
+    [[pop empty?] [pop2]] # The first two clauses of the `ifte`.
+     swap # Now bring the new clause on top
+     [[reverse_uncons] dip] reverse_cons # Change clauce `[q]` to `[[reverse_uncons] dip [q]]
+
+    [dip2] ucons [dup] ucons [i] ucons # Change `[[tail] dip [q]]` to [[[reverse_uncons] dip [q] dup i] ifte]
+    cons [ifte] ucons # combine first and second parts of the ifte.
+
+    dup i # Start execution
   ]
 def
 
@@ -548,13 +567,13 @@ def
 
 "length"
   ""
-  [ 0 [inc] foldl ]
+  [ 0 [pop inc] foldl ]
 def
 
 
 "map"
   ""
-  [ [] swap [cons] append foldl ]
+  [ [] swap [cons] append foldr ]
 def
 
 "flatten"
@@ -692,15 +711,10 @@ def
   `5 [zero?] [1] [mul] primrec2`
   "
   [
-    inspect_stack
     [[pop] reverse_append] dip2         # Changes `... [zero?] [1] [mul]` to `... [pop zero?] [1] [mul]`
-    inspect_stack
     [[pop2] reverse_append] dip         # Changes `... [1] [mul]` to `... [pop2 1] [mul]
-    inspect_stack
     [[dup dec] dip i] reverse_append  # Changes `... [mul]` to `... [[dup dec] dip i mul]`
-    inspect_stack
     [ifte] papply3                      # Combines the different parts to form [[c] [t] [e] ifte]
-    inspect_stack
     y
   ]
 def

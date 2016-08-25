@@ -45,5 +45,19 @@
 
 # To count the length of a list:
 # [1 2 3] 0 swap [[pop empty? inspect_stack] [pop2] [[tail] dip [inc] dip2 dup i] ifte] dup i
-# To change this to an arbitrary reduce:
 
+# swap [[pop empty? inspect_stack] [pop2] [[reverse_uncons] dip dup i [pop inc] dip2] ifte] dup i 
+#
+
+# To change this to an arbitrary reduce:
+# swapd [[pop empty?] [pop2]] swap [[tail] dip] reverse_cons [dip2] ucons [dup] ucons [i] ucons cons [ifte] ucons dup i
+
+swapd # Swaps [1 2 3] with 0, so list is second element after quotation to be done at each step.
+[[pop empty?] [pop2]] # The first two clauses of the `ifte`.
+ swap # Now bring the new clause on top
+ [[reverse_uncons] dip] reverse_cons # Change clauce `[q]` to `[[reverse_uncons] dip [q]]
+
+[dip2] ucons [dup] ucons [i] ucons # Change `[[tail] dip [q]]` to [[[reverse_uncons] dip [q] dup i] ifte]
+cons [ifte] ucons # combine first and second parts of the ifte.
+
+dup i # Start execution

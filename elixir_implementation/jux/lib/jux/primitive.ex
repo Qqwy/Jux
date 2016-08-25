@@ -41,8 +41,8 @@ defmodule Jux.Primitive do
 
   def ifte([else_quot, then_quot, condition_quot | xs], known_definitions) when Kernel.and(is_list(else_quot), Kernel.and(is_list(then_quot), is_list(condition_quot))) do
     {condition_check_stack, _} = Jux.Evaluator.evaluate_on(condition_quot, xs, known_definitions)
-    IO.inspect(condition_check_stack)
-    IO.inspect(match?([false | _], condition_check_stack))
+    #IO.inspect(condition_check_stack)
+    #IO.inspect(match?([false | _], condition_check_stack))
     if match?([false | _], condition_check_stack) do
       {new_stack, _} = Jux.Evaluator.evaluate_on(else_quot, xs, known_definitions)
     else
@@ -59,8 +59,8 @@ defmodule Jux.Primitive do
   def add(_, _), do: raise "Called `add` with non-numeric parameters."
 
   def sub([b, a | xs], _) do
-    IO.inspect(a)
-    IO.inspect(b)
+    #IO.inspect(a)
+    #IO.inspect(b)
     [a - b | xs]
   end
   def sub(_, _), do: raise "Called `sub` with non-numeric parameters."
@@ -176,17 +176,17 @@ defmodule Jux.Primitive do
   def uncons(_, _), do: raise "Called `uncons` without a quotation to deconstruct."
 
   # TODO
-  def foldl([quot, acc, list | xs], _) when Kernel.and(is_list(quot), is_list(list)) do
-    stack = [acc | xs]
-    Enum.reduce(list, stack, fn elem, stack -> 
-      {new_stack, _} = Jux.Evaluator.evaluate_on(quot, [elem | stack])
-      new_stack
-    end)
-  end
-  def foldl(xs, _) do
-    IO.puts(Jux.stack_to_string(xs))
-    raise "Called `foldl` with wrong parameters."
- end
+ #  def foldl([quot, acc, list | xs], _) when Kernel.and(is_list(quot), is_list(list)) do
+ #    stack = [acc | xs]
+ #    Enum.reduce(list, stack, fn elem, stack -> 
+ #      {new_stack, _} = Jux.Evaluator.evaluate_on(quot, [elem | stack])
+ #      new_stack
+ #    end)
+ #  end
+ #  def foldl(xs, _) do
+ #    IO.puts(Jux.stack_to_string(xs))
+ #    raise "Called `foldl` with wrong parameters."
+ # end
   # String operations
 
   def to_string([x | xs], _) do
