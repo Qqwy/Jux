@@ -227,7 +227,7 @@ def
   Can be used to create generators (?)
   "
   [
-    [dup papply1] swap lift2 [b] unlift cons
+    [dup papply1] swap lift2
   ]
 def
 
@@ -239,7 +239,7 @@ def
 
   The y-combinator is very useful to build recursive function definitions.
   "
-  [ partial_y dup i ]
+  [ partial_y dup2 b ]
 def
 
 
@@ -682,9 +682,9 @@ def
     inspect_stack
     [[pop] reverse_append] dip2         # Changes `... [zero?] [1] [mul]` to `... [pop zero?] [1] [mul]`
     inspect_stack
-    [[pop2] reverse_append] dip         # Changes `... [1] [mul]` to `... [pop2 1] [mul]
+    [[pop3] reverse_append] dip         # Changes `... [1] [mul]` to `... [pop2 1] [mul]
     inspect_stack
-    [[dup dec] dip i] reverse_append  # Changes `... [mul]` to `... [[dup dec] dip i mul]`
+    [[dup dec] dip2 i] reverse_append  # Changes `... [mul]` to `... [[dup dec] dip i mul]`
     inspect_stack
     [ifte] papply3                      # Combines the different parts to form [[c] [t] [e] ifte]
     inspect_stack
