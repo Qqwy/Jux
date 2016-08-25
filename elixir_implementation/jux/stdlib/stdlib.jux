@@ -336,6 +336,12 @@ def
   [ uncons [uncons popd] dip ]
 def
 
+"ucons"
+  "first unlifts the value, then appends it to the quotation at the second place.
+  "
+  [ unlift cons ]
+def
+
 
 "papply1"
   "This is a very simple implementation akin to papply, but it only works with a single function argument.
@@ -398,6 +404,29 @@ def
   "
   [
   partial_y dup papply
+  ]
+def
+
+"generator"
+  "
+  Create a generator by passing it a starting value and a quotation to execute each time it is invoked.
+  The first time the generator is invoked, the starting value is returned.
+  The second time, the next value (that is created from executing the quotation with the starting value on the stack).
+  The third time, the next value from that computation, etc.
+
+  The value that is found by executing the quotation on the starting value is output,
+  and stored in the generator itself, so that when it is invoked again, the output value is used as new
+  starting value.
+
+  Example:
+  ```
+  [3] [inc] generator i # 4
+  pop i # 5
+  pop i # 6
+  ``` 
+  "
+  [
+    [uncons] reverse_append [cons dup papply] append swap cons dup papply
   ]
 def
 
@@ -656,11 +685,33 @@ def
 
 "triangular"
   ""
-  [ [0] [add] primrec ]
+  [ [zero?] [0] [add] primrec ]
 def
 
 "factorial"
   ""
-  [ [1] [mul] primrec ]
+  [ [zero?] [1] [mul] primrec ]
+def
+
+"factorial2"
+  "
+  Calculates the same as `factorial`, but uses rewrite-recursion instead of the y-combinator.
+
+  This function exists to be able to see the difference in speed between the two approaches.
+  "
+  [
+    [zero?] [pop 1] [dup dec factorial2 mul] ifte
+  ]
+def
+
+"fibonacchi_generator"
+  ""
+  [
+    [1 1]
+    [unlift2 
+      dup2 add [popd] dip # Add the numbers together to obtain the new number; discard the oldest of the three: 3 5 -> 5 8 
+    lift2]
+    generator
+  ]
 def
 

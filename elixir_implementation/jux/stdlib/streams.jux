@@ -36,3 +36,7 @@
  [[pop2 empty?] [pop popd] [[unconsd reverse_cons] dip i] ifte] y
 # reverse ==> [] reverse_append
 # append = reverse reverse_append
+
+
+
+# [dup papply] swap lift2 [b] unlift cons dup i

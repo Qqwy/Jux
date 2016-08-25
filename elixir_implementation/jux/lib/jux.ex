@@ -24,6 +24,7 @@ defmodule Jux do
     str
     |> Macro.unescape_string
     |> i
+    :ok
   end
 
   def i_file(file_path, load_standard_library? \\ true) do
