@@ -864,7 +864,7 @@ def
   "
   Experimental integer division.
   
-  Very slow.
+  Very slow. Ansewr still incorrect for negative numbers.
   "
   [ 
     [zero?]
@@ -876,7 +876,7 @@ def
           [
             # If divisor is negative, negate result.
             [pop negative?]
-              [[negate] dip mod_div negate [negate] dip]
+              [[negate] dip mod_div negate]
               [
                 # Recursive implementation.
                 # Subtracts divisor from dividend
