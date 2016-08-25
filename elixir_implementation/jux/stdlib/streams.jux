@@ -40,3 +40,10 @@
 
 
 # [dup papply] swap lift2 [b] unlift cons dup i
+
+
+
+# To count the length of a list:
+# [1 2 3] 0 swap [[pop empty? inspect_stack] [pop2] [[tail] dip [inc] dip2 dup i] ifte] dup i
+# To change this to an arbitrary reduce:
+

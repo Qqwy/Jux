@@ -172,6 +172,11 @@ def
   [ uncons [uncons popd] dip ]
 def
 
+"tail"
+  ""
+  [uncons pop]
+def
+
 
 "papply1"
   "This is a very simple implementation akin to papply, but it only works with a single function argument.
@@ -213,7 +218,7 @@ def
 "reduce"
   ""
   [
-
+     [[pop2 empty?] [pop popd] [ [unconsd dip] dip dup i] ifte] dup i
   ]
 def
 
