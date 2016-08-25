@@ -183,8 +183,10 @@ defmodule Jux.Primitive do
       new_stack
     end)
   end
-  def foldl(_, _), do: raise "Called `reduce` with wrong parameters."
-
+  def foldl(xs, _) do
+    IO.puts(Jux.stack_to_string(xs))
+    raise "Called `foldl` with wrong parameters."
+ end
   # String operations
 
   def to_string([x | xs], _) do

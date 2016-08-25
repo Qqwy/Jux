@@ -58,6 +58,7 @@ defmodule Jux.Identifier do
     do_fully_expand(rest, [identifier | result], known_definitions)
   end
   defp do_fully_expand([identifier = %Jux.Identifier{} | rest], result, known_definitions) do
+    Code.ensure_loaded(Jux.Primitive)
     identifier_atom = identifier.name |> Jux.Helper.safe_to_existing_atom
     cond do
       identifier_atom != 0 && Jux.Primitive.__info__(:functions)[identifier_atom] == 2 ->
