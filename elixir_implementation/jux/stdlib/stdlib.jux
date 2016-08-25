@@ -858,3 +858,47 @@ def
     ifte
   ]
 def
+
+
+"mod_div"
+  "
+  Experimental integer division.
+  
+  Very slow.
+  "
+  [ 
+    [zero?]
+      [ DIVISION_BY_ZERO ]
+      [
+        # If dividend is negative, negate result.
+        [negative?]
+          [negate mod_div negate [negate] dip]
+          [
+            # If divisor is negative, negate result.
+            [pop negative?]
+              [[negate] dip mod_div negate [negate] dip]
+              [
+                # Recursive implementation.
+                # Subtracts divisor from dividend
+                # and increments counter
+                # unless the divisor is smaller than the dividend.
+                0 [[pop2 lt?] [pop popd] [[dupd [sub] dip2 inc] dip dup i] ifte] dup i
+              ]
+            ifte
+          ]
+        ifte
+      ]
+    ifte
+  ]
+def
+
+"div"
+  ""
+  [ mod_div popd ]
+def
+
+"mod"
+  ""
+  [ mod_div pop ]
+def
+
