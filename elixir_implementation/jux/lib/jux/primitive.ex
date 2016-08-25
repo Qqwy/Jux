@@ -65,10 +65,10 @@ defmodule Jux.Primitive do
   end
   def sub(_, _), do: raise "Called `sub` with non-numeric parameters."
 
-  def mul([b, a | xs], _) do
-    [a * b | xs]
-  end
-  def mul(_, _), do: raise "Called `mul` with non-numeric parameters."
+  # def mul([b, a | xs], _) do
+  #   [a * b | xs]
+  # end
+  # def mul(_, _), do: raise "Called `mul` with non-numeric parameters."
 
   # Boolean
 
@@ -80,18 +80,23 @@ defmodule Jux.Primitive do
     [false | xs]
   end
 
-  def unquote(:not)(xs, _)
-  def unquote(:not)([false | xs], _), do: [true | xs]
-  def unquote(:not)([_ | xs], _), do: [false | xs]
+  # def unquote(:not)(xs, _)
+  # def unquote(:not)([false | xs], _), do: [true | xs]
+  # def unquote(:not)([_ | xs], _), do: [false | xs]
 
-  def unquote(:or)([false, false | xs], _), do: [false | xs]
-  def unquote(:or)([_    , _     | xs], _), do: [true | xs]
-  def unquote(:or)(_, _), do: raise "Called `or` without two values to compare."
+  # def unquote(:or)([false, false | xs], _), do: [false | xs]
+  # def unquote(:or)([_    , _     | xs], _), do: [true | xs]
+  # def unquote(:or)(_, _), do: raise "Called `or` without two values to compare."
 
-  def unquote(:and)([false, _     | xs], _), do: [false | xs]
-  def unquote(:and)([_    , false | xs], _), do: [false | xs]
-  def unquote(:and)([_    , _     | xs], _), do: [true | xs]
-  def unquote(:and)(_, _), do: raise "Called `and` without two values to compare."
+  # def unquote(:and)([false, _     | xs], _), do: [false | xs]
+  # def unquote(:and)([_    , false | xs], _), do: [false | xs]
+  # def unquote(:and)([_    , _     | xs], _), do: [true | xs]
+  # def unquote(:and)(_, _), do: raise "Called `and` without two values to compare."
+
+  def nand([false, _     | xs], _), do: [true  | xs]
+  def nand([_    , false | xs], _), do: [true  | xs]
+  def nand([_    , _     | xs], _), do: [false | xs]
+  def nand(_, _), do: raise "Called `nand` without two values to compare."
 
   # Bitwise
 

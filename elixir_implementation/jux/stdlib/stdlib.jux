@@ -112,6 +112,34 @@ def
 def
  # 1 2 3 4 5 -> 5 4 3 2 1
 
+"not"
+  "boolean NOT, made from nand-logic"
+  [ dup nand]
+def
+
+"and"
+  "boolean AND, made from nand-logic"
+  [nand not]
+def
+
+"or"
+  "boolean OR, made from nand-logic"
+  [ not swap not nand ]
+def
+
+"nor"
+  "boolean NOR, made from nand-logic"
+  [ or not ]
+def
+
+"xor"
+  "
+  boolean XOR, made from nand-logic
+  
+  This implementation might be suboptimal as-is.
+  "
+  [ dup2 nand dup swapd nand swap2 nand nand ]
+def
 
 # Combinators
 "dip2"
@@ -272,7 +300,7 @@ def
   [ swap append ]
 def
 
-"negate"
+"invert"
   ""
   [ [not] papply1 ]
 def
@@ -588,7 +616,7 @@ def
 
 "reject"
   ""
-  [ negate filter ]
+  [ invert filter ]
 def
 
 "sum"
@@ -751,3 +779,82 @@ def
   ]
 def
 
+"negative?"
+  "true if the number is smaller than 0"
+  [ 0 lt?]
+def
+
+"negate"
+  "negates a number to its opposite sign"
+  [ 0 swap sub ]
+def
+
+"abs"
+  "changes a number to a positive number, regardless of original sign"
+  [ [negative?] [invert] if ]
+def
+
+# "experimental_mul"
+#   "
+#   An experimental recursive implementation of multiplication,
+#   using only integer addition.
+# 
+#   This so far only works for multiplicands >= 1
+#   "
+#   [
+#     dupd [[pop one?] [pop2 popd] [[[dupd add] dip dec] dip dup i] ifte] dup i
+#   ]
+# def
+
+
+# "emul2"
+#   "
+#   Will try to optimize to put the smaller number (which will be iterated over)at the top
+#   
+#   Also ensures that zero is a valid input, by short-circuiting in that case.
+#   "
+#   [
+#     
+#     [zero?] 
+#       [popd] 
+#       [inspect_stack experimental_mul] 
+#     ifte
+#   ]
+# def
+
+"mul"
+  ""
+  [
+    # Make sure that the smaller number is on top
+    [lt?] 
+      [swap] 
+    if 
+
+    # If the top (smaller) number is negative, call the function again, but this time with the number positive.
+    # In the case that both inputs are negative, this new call will swap the number order once more.
+    # No more than two recursive calls get made ever. 
+    [negative?] 
+      [negate emul3 negate] 
+      [
+        # If the top number is zero, we can return a short-circuit answer; namely the zero already on top.
+        [zero?] 
+          [popd] 
+          [
+            # The actual experimental integer multiplication algorithm.
+            # Duplicates ther lower of the two values
+            dupd 
+            # And then iterates until the topmost value is equal to one,
+            [
+              [pop one?] 
+                [pop2 popd] 
+                # 1. adding a duplicate of the third value from top to the second value from top
+                # 2. decrementing the topmost value
+                [[[dupd add] dip dec] dip dup i] 
+              ifte
+            ] dup i
+          ] 
+        ifte
+      ]
+    ifte
+  ]
+def
