@@ -1,0 +1,10 @@
+[[1 2 3] [inc] unlift2 keep_i ]
+
+
+# y ==> [dup papply] swap append dup i 
+# papply ==>
+
+
+
+
+# ~j{5 [[zero?] [1] [inspect_stack [dec] dip i] ifte] y}

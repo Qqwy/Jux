@@ -39,12 +39,14 @@ defmodule Jux.Primitive do
 
   # Conditionals
 
-  def ifte([else_quot, then_quot, condition_quot | xs], _) when Kernel.and(is_list(else_quot), Kernel.and(is_list(then_quot), is_list(condition_quot))) do
-    condition_check_stack = Jux.Evaluator.evaluate_on(condition_quot, xs)
+  def ifte([else_quot, then_quot, condition_quot | xs], known_definitions) when Kernel.and(is_list(else_quot), Kernel.and(is_list(then_quot), is_list(condition_quot))) do
+    {condition_check_stack, _} = Jux.Evaluator.evaluate_on(condition_quot, xs, known_definitions)
+    IO.inspect(condition_check_stack)
+    IO.inspect(match?([false | _], condition_check_stack))
     if match?([false | _], condition_check_stack) do
-      {new_stack, _} = Jux.Evaluator.evaluate_on(else_quot, xs)
+      {new_stack, _} = Jux.Evaluator.evaluate_on(else_quot, xs, known_definitions)
     else
-      {new_stack, _} = Jux.Evaluator.evaluate_on(then_quot, xs)
+      {new_stack, _} = Jux.Evaluator.evaluate_on(then_quot, xs, known_definitions)
     end
     new_stack
   end
@@ -57,9 +59,16 @@ defmodule Jux.Primitive do
   def add(_, _), do: raise "Called `add` with non-numeric parameters."
 
   def sub([b, a | xs], _) do
+    IO.inspect(a)
+    IO.inspect(b)
     [a - b | xs]
   end
   def sub(_, _), do: raise "Called `sub` with non-numeric parameters."
+
+  def mul([b, a | xs], _) do
+    [a * b | xs]
+  end
+  def mul(_, _), do: raise "Called `mul` with non-numeric parameters."
 
   # Boolean
 
@@ -190,6 +199,11 @@ defmodule Jux.Primitive do
 
   def print([x | xs], _) do
     IO.write(x)
+    xs
+  end
+
+  def inspect_stack(xs, _) do
+    IO.puts("inspected stack: " <> Jux.stack_to_string(xs))
     xs
   end
 

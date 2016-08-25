@@ -41,6 +41,21 @@ def
   [ [pop] dip ]
 def
 
+"pop2"
+  ""
+  [ pop pop ]
+def
+
+"pop3"
+  ""
+  [ pop pop pop pop ]
+def
+
+"pop4"
+  ""
+  [ pop pop pop pop ]
+def
+
 "dupd"
   ""
   [ [dup] dip ]
@@ -490,3 +505,32 @@ def
 def
 
 # Input
+
+
+
+
+
+# Recursive
+
+"factorial"
+  "
+  Calculates the factorial of the item on top of the stack, using a recursive algorithm.
+  `5 factorial` == `5*4*3*2*1` == `120`.
+  
+  Uses the `y`-combinator internally.
+  "
+  [
+    [
+    [pop zero?] # As the y-combinator puts the evaluated function on top, check against the second value. 
+      [pop2 1] # Base case: Remove the function and the `0` that is on top, and return `1`.
+      [ 
+      [dup dec] dip # Duplicate the current number and decrease it by one.
+      i             # Then call recusively on that number.
+      mul           # After the recursive result is known, multiply the obtained result by our current number.
+      ] 
+    ifte] 
+  y
+  ]
+def
+
+
