@@ -1,0 +1,111 @@
+%YAML 1.2
+---
+# See http://www.sublimetext.com/docs/3/syntax.html
+file_extensions:
+  - jux
+scope: source.jux-gamma_syntax
+name: Jux Gamma Syntax
+variables:
+  identifier: ([a-zA-Z_][\w]*[?!]?)
+  integer: ([+-]?\d+)
+  float: ([+-]?\d+\.\d+)
+contexts:
+  main:
+    - match: '(\s*)"""'
+      push: heredoc
+
+    - match: '"{{identifier}}"'
+      scope: string.quoted.double.jux-gamma_syntax
+      push: definition_identifier
+
+
+    # Strings begin and end with double quotes, and use backslashes as an escape
+    # character
+    - match: '"'
+      scope: punctuation.definition.string.begin.jux-gamma_syntax
+      push: double_quoted_string
+
+    # Comments begin with a '#' and finish at the end of the line
+    - match: '#'
+      scope: punctuation.definition.comment.jux-gamma_syntax
+      push: line_comment
+
+    # Float
+    - match: '{{float}}'
+      scope: constant.numeric.jux-gamma_syntax
+
+    # Integers
+    - match: '{{integer}}'
+      scope: constant.numeric.jux-gamma_syntax
+
+    # Identifiers
+    - match: ({{identifier}})
+      scope: variable.language.jux-gamma_syntax
+
+
+    # Quotations, begin with `[`, end with `]` and can contain any other thing inside.
+    - match: (\[)
+      push: quotation
+      scope: keyword.control.jux-gamma_syntax
+    # highlight stray closing brackets.
+    - match: (\])
+      scope: invalid.illegal.stray-bracket.jux-gamma_syntax
+
+  heredoc:
+    - meta_scope: string.unquoted.heredoc
+    - match: '\1"""'
+      pop: true
+
+  double_quoted_string:
+    - meta_scope: string.quoted.double.jux-gamma_syntax
+    - match: '\\.'
+      scope: constant.character.escape.jux-gamma_syntax
+    - match: '"'
+      scope: punctuation.definition.string.end.jux-gamma_syntax
+      pop: true
+
+  line_comment:
+    - meta_scope: comment.line.number-sign.jux-gamma_syntax
+    - match: $
+      pop: true
+
+  quotation:
+    - match: (\])
+      scope: keyword.control.jux-gamma_syntax
+      pop: true
+    - include: main
+
+  definition_identifier:
+    - match: '(\s*)"""'
+      scope: comment.multiline.jux-gamma_syntax
+      set: [definition_body_start, documentation_heredoc]
+    - match: '"'
+      set: [definition_body_start, double_quoted_string]
+
+  # documentation_string:
+    # - meta_scope: comment.multiline.jux-gamma_syntax
+    # - match: '\\.'
+    #   scope: constant.character.escape.jux-gamma_syntax
+    # - match: '"'
+    #   scope: punctuation.definition.string.end.jux-gamma_syntax
+    #   pop: true
+
+  documentation_heredoc:
+    - meta_scope: comment.block.documentation.jux-gamma_syntax
+    - match: '\1"""'
+      pop: true
+  definition_body_start:
+    - match: (\[)
+      scope: support.other.jux-gamma_syntax
+      set: [definition_def_keyword, definition_quotation]
+  definition_quotation:
+    - match: (\])
+      scope: support.other.jux-gamma_syntax
+      pop: true
+    - include: main
+  definition_def_keyword:
+    - match: (\bdef\b)
+      scope: entity.name.function.definition.jux-gamma_syntax
+      pop: true
+    - include: quotation
+
