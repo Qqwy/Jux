@@ -222,6 +222,12 @@ defmodule Jux.Primitive do
     xs
   end
 
+  # Prevention of malformedness
+  def crash([x | xs], _) when is_binary(x) do
+    raise "The Jux Program crashed with: " <> x
+  end
+
+  # Not a required function, but a nice-to-have during development.
   def inspect_stack(xs, _) do
     IO.puts("inspected stack: " <> Jux.stack_to_string(xs))
     xs
