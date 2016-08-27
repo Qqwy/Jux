@@ -27,7 +27,7 @@ defmodule Jux.Primitive do
 
   # Combinators
 
-  def dip([quot, x | xs], known_definitions) when is_list(quot) do
+  def dip([{quot, _t}, x | xs], known_definitions) when is_list(quot) do
     {new_stack, _} = Jux.Evaluator.evaluate_on(quot, xs, known_definitions)
     [x | new_stack]
   end
@@ -37,14 +37,14 @@ defmodule Jux.Primitive do
   end
   def dip([_], _), do: raise "Called `dip` without enough elements on the stack"
 
-  def infra([quot, list | xs], known_definitions) when Kernel.and(is_list(quot), is_list(list)) do
+  def infra([{quot, _t}, {list, _lt} | xs], known_definitions) when Kernel.and(is_list(quot), is_list(list)) do
     {result_stack, _} = Jux.Evaluator.evaluate_on(quot, list, known_definitions)
-    [result_stack | xs]
+    [{result_stack, "Quotation"} | xs]
   end
 
   # Conditionals
 
-  def ifte([else_quot, then_quot, condition_quot | xs], known_definitions) when Kernel.and(is_list(else_quot), Kernel.and(is_list(then_quot), is_list(condition_quot))) do
+  def ifte([{else_quot, _}, {then_quot, _}, {condition_quot, _} | xs], known_definitions) when Kernel.and(is_list(else_quot), Kernel.and(is_list(then_quot), is_list(condition_quot))) do
     {condition_check_stack, _} = Jux.Evaluator.evaluate_on(condition_quot, xs, known_definitions)
     #IO.inspect(condition_check_stack)
     #IO.inspect(match?([false | _], condition_check_stack))
@@ -58,15 +58,15 @@ defmodule Jux.Primitive do
 
   # Arithmetic
 
-  def add([b, a | xs], _) do
-    [a + b | xs]
+  def add([{b, t}, {a, t} | xs], _) do
+    [{a + b, t} | xs]
   end
   def add(_, _), do: raise "Called `add` with non-numeric parameters."
 
-  def sub([b, a | xs], _) do
+  def sub([{b, t}, {a, t} | xs], _) do
     #IO.inspect(a)
     #IO.inspect(b)
-    [a - b | xs]
+    [{a - b, t} | xs]
   end
   def sub(_, _), do: raise "Called `sub` with non-numeric parameters."
 
@@ -98,21 +98,21 @@ defmodule Jux.Primitive do
   # def unquote(:and)([_    , _     | xs], _), do: [true | xs]
   # def unquote(:and)(_, _), do: raise "Called `and` without two values to compare."
 
-  def nand([false, _     | xs], _), do: [true  | xs]
-  def nand([_    , false | xs], _), do: [true  | xs]
-  def nand([_    , _     | xs], _), do: [false | xs]
+  def nand([{false, "Boolean"}, _     | xs], _), do: [{true, "Boolean"}  | xs]
+  def nand([_    , {false, "Boolean"} | xs], _), do: [{true, "Boolean"}  | xs]
+  def nand([_    , _     | xs], _), do: [{false, "Boolean"} | xs]
   def nand(_, _), do: raise "Called `nand` without two values to compare."
 
   # Bitwise
 
-  def bnot([x | xs], _), do: [Bitwise.bnot(x) | xs]
-  def bor([b, a | xs], _), do: [Bitwise.bor(a, b) | xs]
-  def band([b, a | xs], _), do: [Bitwise.band(a, b) | xs]
+  def bnot([{x, t} | xs], _), do: [{Bitwise.bnot(x), t} | xs]
+  def bor([{b, t}, {a, t} | xs], _), do: [{Bitwise.bor(a, b), t} | xs]
+  def band([{b, t}, {a, t} | xs], _), do: [Bitwise.band(a, b) | xs]
 
   # Comparisons
 
-  def compare([b, a | xs], _) do
-    [do_compare(b, a) | xs]
+  def compare([{b, _}, {a, _} | xs], _) do
+    [{do_compare(b, a), "Integer"} | xs]
   end
 
   # element always eq to itself
@@ -165,22 +165,22 @@ defmodule Jux.Primitive do
     end
   end
 
-  def eq?([b, a | xs], _) do
-    [do_compare(b, a) == 0 | xs]
+  def eq?([{b, tb}, {a, ta} | xs], _) do
+    [do_compare(b, a) == 0 && tb == ta | xs]
   end
 
   # Quotation operations
 
-  def cons([x, quot | xs], _) when is_list(quot) do
-    [[x | quot] | xs]
+  def cons([x, {quot, t} | xs], _) when is_list(quot) do
+    [{[x | quot], t} | xs]
   end
   def cons(_, _), do: raise "Called `cons` without a quotation to construct with."
 
-  def uncons([[x | quot] | xs], _) when is_list(quot) do
-    [x, quot | xs]
+  def uncons([{[x | quot], t} | xs], _) when is_list(quot) do
+    [x, {quot, t} | xs]
   end
 
-  def uncons([[] | _xs], _) do
+  def uncons([{[], _} | _xs], _) do
     raise "Called `uncons` with an empty quotation to deconstruct."  
   end
   def uncons(_, _), do: raise "Called `uncons` without a quotation to deconstruct."
@@ -199,11 +199,11 @@ defmodule Jux.Primitive do
  # end
   # String operations
 
-  def to_string([x | xs], _) do
+  def to_string([{x, _} | xs], _) do
     [Kernel.to_string(x) | xs]
   end
 
-  def to_identifier([x | xs], _) when is_binary(x) do
+  def to_identifier([{x, "String"} | xs], _) when is_binary(x) do
     if Jux.Parser.valid_identifier?(x) do
       [Jux.Identifier.new(x) | xs]
     else
@@ -211,25 +211,33 @@ defmodule Jux.Primitive do
     end
   end
 
-  def callable?([x = %Jux.Identifier{name: name} | xs], known_definitions) do
+  def callable?([{x = %Jux.Identifier{name: name}, t} | xs], known_definitions) do
     result = known_definitions[name] != nil
     [result | xs]
   end
 
-  def string_concat([b, a | xs], _) do
+  def string_concat([{b, "String"}, {a, "String"} | xs], _) do
     [(a <> b) | xs]
   end
 
   # Basic Output
 
-  def print([x | xs], _) do
+  def print([{x, "String"} | xs], _) do
     IO.write(x)
     xs
   end
 
   # Prevention of malformedness
-  def crash([x | xs], _) when is_binary(x) do
+  def crash([{x, _} | xs], _) when is_binary(x) do
     raise "The Jux Program crashed with: " <> x
+  end
+
+  def type([{x, type} | xs], _) do
+    [{Jux.Identifier.new(type), "Type"} | xs]
+  end
+
+  def cast_to([{%Jux.Identifier{name: name}, _}, {x, _} | xs], _) do
+    [{x, name} | xs]
   end
 
   # Not a required function, but a nice-to-have during development.

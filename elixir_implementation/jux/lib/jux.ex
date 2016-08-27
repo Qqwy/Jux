@@ -38,12 +38,12 @@ defmodule Jux do
 
   def stack_to_string(list) do
     list
-    |> Enum.map(fn elem -> 
-      case elem do 
-        _ when is_list(elem) ->
+    |> Enum.map(fn labeled_elem -> 
+      case labeled_elem do 
+        {elem, _elem_type} when is_list(elem) ->
         "[#{stack_to_string(elem)}]"
-        _ ->
-          inspect(elem)
+        {elem, elem_type} ->
+          "#{inspect(elem)}(#{elem_type})"
       end
     end)
     |> :lists.reverse
