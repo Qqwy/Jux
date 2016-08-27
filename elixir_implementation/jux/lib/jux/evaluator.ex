@@ -26,7 +26,7 @@ defmodule Jux.Evaluator do
 
 
   defp do_evaluate_on([identifier = %Jux.Identifier{name: "redef"} | rest], stack, known_definitions) do
-    [fun_implementation_quot, fun_documentation, fun_name | updated_stack] = stack
+    [fun_implementation_quot, fun_documentation, %Jux.Identifier{name: fun_name} | updated_stack] = stack
     known_definitions = define(fun_name, fun_documentation, fun_implementation_quot, known_definitions)
     do_evaluate_on(rest, updated_stack, known_definitions)
   end
@@ -35,7 +35,7 @@ defmodule Jux.Evaluator do
     #{updated_stack, updated_fun_queue} = Jux.Identifier.evaluate(identifier, stack, rest, known_definitions)
     #IO.puts "Defining a function!"
     #IO.inspect known_definitions
-    [fun_implementation_quot, fun_documentation, fun_name | updated_stack] = stack
+    [fun_implementation_quot, fun_documentation, %Jux.Identifier{name: fun_name} | updated_stack] = stack
     if known_definitions[fun_name] != nil do
       raise "Tried to define an implementation for the already-defined function #{fun_name}"
     end
