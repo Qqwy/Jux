@@ -37,6 +37,11 @@ defmodule Jux.Primitive do
   end
   def dip([_], _), do: raise "Called `dip` without enough elements on the stack"
 
+  def infra([quot, list | xs], known_definitions) when Kernel.and(is_list(quot), is_list(list)) do
+    {result_stack, _} = Jux.Evaluator.evaluate_on(quot, list, known_definitions)
+    [result_stack | xs]
+  end
+
   # Conditionals
 
   def ifte([else_quot, then_quot, condition_quot | xs], known_definitions) when Kernel.and(is_list(else_quot), Kernel.and(is_list(then_quot), is_list(condition_quot))) do
