@@ -39,6 +39,8 @@ defmodule Jux.Identifier do
       known_definitions[identifier.name] != nil ->
         {stack, known_definitions[identifier.name] ++ fun_queue}
       :otherwise ->
+        IO.inspect(Jux.stack_to_string(stack))
+        IO.inspect(fun_queue)
         raise "Undefined identifier `#{identifier.name}`."
     end
   end
@@ -68,6 +70,8 @@ defmodule Jux.Identifier do
       known_definitions[identifier.name] != nil ->
         do_fully_expand(known_definitions[identifier.name] ++ rest, result, known_definitions)
       :otherwise ->
+        IO.inspect(Jux.stack_to_string(result))
+        IO.inspect(Jux.stack_to_string(rest))
         raise "Undefined identifier `#{identifier.name}`."
     end
   end

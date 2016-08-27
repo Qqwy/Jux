@@ -6,7 +6,7 @@
     1 2 3 # bar!
     1 2 3
   ]
-def
+redef
 
 
 # Primitive
@@ -17,7 +17,22 @@ def
   which will raise an error.
   "
   [ ]
-def
+redef
+
+"redef"
+  ""
+  [ __PRIMITIVE__ ]
+redef
+
+"def"
+  ""
+  [
+    [pop pop to_identifier callable?]
+    [[swap] dip swap "Tried to define an already-existing function: " swap string_concat crash]
+    [redef]
+    ifte
+  ]
+redef
 
 "dup"
   "duplicates the top value of the stack"
