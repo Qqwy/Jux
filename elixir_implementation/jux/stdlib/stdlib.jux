@@ -9,6 +9,116 @@
 def
 
 
+# Primitive
+"__PRIMITIVE__"
+  "
+  All functions that are primitive use this as 'fallback' implementation.
+  This special keyword does nothing by itself, but it is intercepted during evaluation,
+  which will raise an error.
+  "
+  [ ]
+def
+
+"dup"
+  "duplicates the top value of the stack"
+  [ __PRIMITIVE__ ]
+def
+
+"pop"
+  "Removes the top value from the stack"
+  [ __PRIMITIVE__ ]
+def
+
+"swap"
+  "Swaps the order of the two topmost values on the stack"
+  [ __PRIMITIVE__ ]
+def
+
+"dip"
+  "
+  Takes the quotation from the top, temporarily stores the value below that elsewhere, 
+  and then executes this quotation on the rest of the stack. 
+  "
+  [ __PRIMITIVE__ ]
+def
+
+"ifte"
+  "TODO"
+  [ __PRIMITIVE__ ]
+def
+
+"add"
+  "TODO"
+  [ __PRIMITIVE__ ]
+def
+
+"sub"
+  "TODO"
+  [ __PRIMITIVE__ ]
+def
+
+"cons"
+  "TODO"
+  [ __PRIMITIVE__ ]
+def
+
+"uncons"
+  "TODO"
+  [ __PRIMITIVE__ ]
+def
+
+"compare"
+  "TODO"
+  [ __PRIMITIVE__ ]
+def
+
+"eq?"
+  "TODO"
+  [ __PRIMITIVE__ ]
+def
+
+"nand"
+  "
+  Returns the Boolean NAND of the top two values.
+  
+  `nand` is supposed to use truthy-logic, which means that only `false` is false,
+  and everything else, including numbers, strings, identifiers, etc. is considered to be true.
+
+  So `nand` returns true as long as at least one of the two topmost values is `false`. 
+  "
+  [ __PRIMITIVE__ ]
+def
+
+"to_string"
+  "
+  Turns a value of any type into a string.
+  "
+  [ __PRIMITIVE__ ]
+def
+
+"to_identifier"
+  "
+  Turns a string into an identifier, as long as this string is a valid identifier.
+
+  Valid identifiers start with a letter (or underscore) and can contain any alphanumeric symbols, underscores and `.`.
+  As final character, a `?` or `!` is also allowed.
+  "
+  [ __PRIMITIVE__ ]
+def
+
+"callable?"
+  "
+  Tests if the identifier on top of the stack is implemented as a function and is therefore callable.
+  "
+  [ __PRIMITIVE__ ]
+def
+
+"print"
+  "TODO"
+  [ __PRIMITIVE__ ]
+def
+
+
 # Basic
   
 "noop"

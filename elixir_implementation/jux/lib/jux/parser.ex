@@ -7,7 +7,11 @@ defmodule Jux.Parser do
   @comment_regexp ~r{^#.*}
   @float_regexp ~r{^[+-]?\d+\.\d+}
   @integer_regexp ~r{^[+-]?\d+}
-  @identifier_regexp ~r{^[a-zA-Z_][\w]*[?!]?}
+  @identifier_regexp ~r{^[a-zA-Z_][\w.]*[?!]?}
+
+  def valid_identifier?(str) do
+    str =~ @identifier_regexp
+  end
 
   @doc """
   Takes a string as input, returns a list of Jux tokens as output.

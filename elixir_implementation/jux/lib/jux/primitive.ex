@@ -199,7 +199,16 @@ defmodule Jux.Primitive do
   end
 
   def to_identifier([x | xs], _) when is_binary(x) do
-    [Jux.Identifier.new(x) | xs]
+    if Jux.Parser.valid_identifier?(x) do
+      [Jux.Identifier.new(x) | xs]
+    else
+      raise "`#{x}` is not a valid Jux identifier!"
+    end
+  end
+
+  def callable?([x = %Jux.Identifier{name: name} | xs], known_definitions) do
+    result = known_definitions[name] != nil
+    [result | xs]
   end
 
   def string_concat([b, a | xs], _) do
