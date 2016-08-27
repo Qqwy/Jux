@@ -15,6 +15,10 @@ defmodule Jux.Evaluator do
   defp do_evaluate_on([literal | rest], stack, known_definitions) when is_integer(literal) or is_binary(literal) or is_float(literal) or is_list(literal) do
     do_evaluate_on(rest, [literal | stack], known_definitions)
   end
+  
+  defp do_evaluate_on([escaped_identifier = %Jux.EscapedIdentifier{name: name} | rest], stack, known_definitions) do
+    do_evaluate_on(rest, [Jux.Identifier.new(name) | stack], known_definitions)
+  end
 
   defp do_evaluate_on([identifier = %Jux.Identifier{name: "__PRIMITIVE__"} | rest], stack, known_definitions) do
     raise "A function is missing a primitive implementation. Rest of function stack: #{inspect(rest)}"

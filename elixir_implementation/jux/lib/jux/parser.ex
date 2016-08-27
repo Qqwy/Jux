@@ -8,6 +8,7 @@ defmodule Jux.Parser do
   @float_regexp ~r{^[+-]?\d+\.\d+}
   @integer_regexp ~r{^[+-]?\d+}
   @identifier_regexp ~r{^[a-zA-Z_][\w.]*[?!]?}
+  @escaped_identifier_regexp ~r{^/[a-zA-Z_][\w.]*[?!]?}
 
   def valid_identifier?(str) do
     str =~ @identifier_regexp
@@ -39,6 +40,9 @@ defmodule Jux.Parser do
       String.starts_with?(source, "\"") ->
         [string, rest] = parse_string(source)
         do_parse(rest, [string | tokens])
+      source =~ @escaped_identifier_regexp ->
+        [escaped_identifier, rest] = remove_token_from_string(source, @escaped_identifier_regexp)
+        do_parse(rest, [parse_escaped_identifier(escaped_identifier) | tokens])
       source =~ @identifier_regexp ->
         [identifier, rest] = remove_token_from_string(source, @identifier_regexp)
         do_parse(rest, [parse_identifier(identifier) | tokens])
@@ -126,6 +130,12 @@ defmodule Jux.Parser do
     # atom
     Jux.Identifier.new(str)
     #apply(Jux.Stdlib, atom, [stack])
+  end
+
+  def parse_escaped_identifier(str) do
+    str
+    |> String.replace_prefix("/", "")
+    |> Jux.EscapedIdentifier.new
   end
 
   def parse_integer(str) do
