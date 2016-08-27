@@ -19,33 +19,81 @@ Jux is inspired by the concatenative languages [**Joy**](https://web.archive.org
 # Roadmap
 
 - Old Ruby implementation prototype: 100%; _(not in this repository)_
-- Flesh out this Readme: 60%;
-- Elixir implementation: 50%;
+- Flesh out this Readme: 65%;
+- Elixir implementation version: 0.2;
 - New Ruby implementation: 0%;
 
-- Think about custom function definitions.
-- Think about fallback rewrite function implementations: 
-  - A Fallback rewrite _can_ contain its own name, as long as this happens inside a quotation, so we can expand a rewrite rule all at once without creating an infinite loop. These kinds of recursive rewrites with the same name used inside a quotation are however very useful sometimes.
-  - All of these functions need documentation just like normal functions.
-  - In the future, a file will be made that contains all these definitions, which an implementation should parse and fill in (possibly excluding the ones that already have a native implementation)
+- [x] Think about custom function definitions: Syntax: `"name" "documentation" [implementation] def`
+- [x] Think about fallback rewrite function implementations: 
+  - > A Fallback rewrite _can_ contain its own name, as long as this happens inside a quotation, so we can expand a rewrite rule all at once without creating an infinite loop. These kinds of recursive rewrites with the same name used inside a quotation are however very useful sometimes.
+  - [x] All of these functions need documentation just like normal functions.
+    - Have definitions of all functions, including primitive ones.
+    - primitive function definitions contain a quotation with `__PRIMITIVE__` inside, which itself is a defined no-op, but handled by the evaluator to raise an error when encountered during execution.
+  
 
 - Think about efficiency:
-  - Fully expand fallback rewrites, so when a fallback function is found, only a single rewrite step is necessary.
+  - [x] Fully expand fallback rewrites, so when a fallback definition is found, only a single rewrite step is necessary.
   - Custom rewrite rules to be applied before and after expanding that increase efficiency; Things like:
-    - `reverse length ==> length`
-    - `dup pop ==> `
-    - `dup swap ==> dup`
-    - `[] i ==> `
-    - `0 + ==> `
-    - _see the [Mathematical foundations of Joy](https://web.archive.org/web/20111007025556/http://www.latrobe.edu.au/phimvt/joy/j02maf.html) for more examples of rewrite rules in concatenative languages_
+    - How do we make them? When/how do we run them?
+    - examples:
+      - `reverse length ==> length`
+      - `dup pop ==> `
+      - `dup swap ==> dup`
+      - `[] i ==> `
+      - `0 + ==> `
+      - _see the [Mathematical foundations of Joy](https://web.archive.org/web/20111007025556/http://www.latrobe.edu.au/phimvt/joy/j02maf.html) for more examples of rewrite rules in concatenative languages_
+
+Minimize core language:
+
+Current required operations:
+
+- the integer, string and quotation literals.
+- `dup, pop, swap` Stack manipulation.
+- `dip` Combinators.
+- `cons, uncons` Quotation manipulation.
+- `add, sub` Integer arithmetic.
+- `ifte` Conditionals.
+- `eq?` Equality.
+- `compare` Comparisons of ordering.
+- `string_concat` Combine two strings. TODO: Strings as integer quotations would mean that this is not needed.
+- `print` Output to STDOUT.
+- `bnot, band, bor` Bitwise operations. TODO: Can these be emulated? How necessary are they?
+
+Probably going to add:
+
+- Some way to listen to STDIN.
+- Some way to access the file system.
+- Some way to talk to external programs?
+- Some way to crash with an error message.
+
+Here is in greater detail what certain functions are used for:
+
+- core stack manipulation: `dup pop swap`.
+- core stack manipulation combined with `dip` is enough to define the following combinators:
+  - `i` (interpret)
+  - `b` (interpret lower, then upper)
+  - `k` (interpret, then put source of interpretation on top)
+  - `m`
+  - `w`
+- comparisons done by primitive functions `compare` and `eq?`, which are enough for `eq?, neq? lt?, lte?, gt?, gte?, zero?, one?, empty?`. Together with math used for `even?, odd?`.
+- `ifte` to allow conditionals.
+  - together with above enough for many recursive definitions, as seen below.
+- fallback (slow) integer multiplication/division/modulo built on recursion with `add`/`sub`.
+  - TODO: `pow, isqrt, gcd, lcm`.
+- boolean operations: based on [NAND-logic](https://en.wikipedia.org/wiki/NAND_logic), so with only `nand` we can define `nand, not, and, or, nor, xor`.
+  - because of the truthiness nature of these operations, defining `true` and `false` is not necessary, as they are trivially `[] not not` and `[] not`, respectively.
+  - maybe something similar can be done with bitwise operators?
+- `cons` and `uncons`, together with comparisons, `ifte` and `dip` is enough for recursion through lists, which allows: `foldl, foldr, append, reverse_append, backwards_append, map, length, any?, all?, filter, reject, sum, product`
+- recursion also allows nice definitions for functions like `factorial`, `triangular`, etc.
 
 # Future Goals
 
 - Create a way to use rewrite rules to enhance efficiency; things like `reverse length === length`
-- Self-hosting
+- Self-hosting.
 - Multiple implementations.
-- Explore the advantages/drawbacks of a bytecode variant of Jux.
+- Explore data types, and how to 'fake' more advanced data types when you only have integers and quotations.
 - Explore differences between string-as-list and string-as-byte_arr for implementation/efficiency.
+- Explore the advantages/drawbacks of a bytecode variant of Jux.
 - Explore (dependently?) statical typing and if/how it might work with a concatenative language.
 
 ________________
@@ -264,3 +312,46 @@ As can be seen, no special syntax is necessary to parse this.
 
 - Heredoc multiline strings?
 - Do/don't have multiline comments?
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+## Custom DataType System
+
+Idea: Data Types built on Records:
+
+- New syntax: `:foo` === `[foo] uncons popd`. Puts a single identifier on the stack without evaluating it. Not _required_, but a lot nicer for below explanations. Could also be used for function names in normal `def` statements.
+- Namespaces are used to keep the language explicit and to prevent name clashes. To keep the language simple, _only conventions_ enforce the use of namespaces. `redef`ining a function in a namespace you're not working on is possible (and required for some inner workings of below things), but greatly frowned upon.
+  - If there is a way to enforce this on language-level, or have certain implementations enforce this once they are mature enough, I would love to know.
+
+- CDTs are 'just' quotations, where the header is an identifier; the Record's Type.
+- This identifier is implemented as a function which constructs the CDT itself. (so `2 0 Point` ==> `[2 0 Point]`, and `[2 0 Point] i` === `[2 0 Point]`)
+- A function (`Typename.__ancestors__` e.g. `Point.__ancestors__`) that returns a list of all the (super)types a CDT implements.
+  - implemented using `to_string`, `string_append` and `to_identifier`.
+  - This function's definition is updated every time this type is listed as being part of a supertype.
+    - take old function result (list of supertypes)
+    - add new supertype to end
+    - remove duplicates from result
+    - use this new list in new definition. (`redef`)
+- Allow the definition of dispatching multimethods, which take the type of the input value, and then attempt to dispatch to an implementation of the desired function name.
+  - Check for implementations using `callable?` on each of the supertype function implementations, e.g. `:Circle.Protocol.radius callable?`, then call the first one that exists.
+- Allow similar multimethods for functions with multiple inputs:
+  - Protocol for custom Comparisons of CDTs with each other; Only needs a single implementation for two-way comparisons.
+
+
+
+New required functions for this stuff:
+- `callable?` -> True if identifier is implemented as function.
+- `to_string`/`to_identifier` -> turns anything to a string, turns a string to an identifier (as long as it is a _valid_ identifier!)
+- `redef` -> defines a function, possibly overriding an already-existing definition.
+  - maybe `def` could be defined in terms of `redef` and `callable`?

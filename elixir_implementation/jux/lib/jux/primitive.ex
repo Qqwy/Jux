@@ -72,13 +72,13 @@ defmodule Jux.Primitive do
 
   # Boolean
 
-  def unquote(true)(xs, _) do
-    [true | xs]
-  end
+  # def unquote(true)(xs, _) do
+  #   [true | xs]
+  # end
 
-  def unquote(false)(xs, _) do
-    [false | xs]
-  end
+  # def unquote(false)(xs, _) do
+  #   [false | xs]
+  # end
 
   # def unquote(:not)(xs, _)
   # def unquote(:not)([false | xs], _), do: [true | xs]
@@ -196,6 +196,10 @@ defmodule Jux.Primitive do
 
   def to_string([x | xs], _) do
     [Kernel.to_string(x) | xs]
+  end
+
+  def to_identifier([x | xs], _) when is_binary(x) do
+    [Jux.Identifier.new(x) | xs]
   end
 
   def string_concat([b, a | xs], _) do

@@ -117,6 +117,16 @@ def
   [ dup nand]
 def
 
+"false"
+  "puts `false` on the stack"
+  [ [] not ]
+def
+
+"true"
+  "Puts `true` on the stack"
+  [ false not ]
+def
+
 "and"
   "boolean AND, made from nand-logic"
   [nand not]
