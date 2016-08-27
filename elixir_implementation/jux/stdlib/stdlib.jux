@@ -788,10 +788,10 @@ def
 # TODO: partition
 
 # Boolean
-"xor"
-  ""
-  [ dup2 or [and not] dip and ]
-def
+# "xor"
+#   ""
+#   [ dup2 or [and not] dip and ]
+# def
 
 
 # Bitwise
@@ -1020,4 +1020,30 @@ def
 "mod"
   ""
   [ mod_div pop ]
+def
+
+
+"call"
+  "evaluates the single identifier on top of the stack."
+  [lift i]
+def
+
+"one"
+  "temp to test."
+  [1]
+def
+
+"redefine_from_old"
+  ""
+  [
+    [
+      dup
+      ""
+      swap # order is now "foo" "" "foo"
+      to_identifier call # "foo" "" output_of_foo
+    ] dip
+    i # Run quotation on top on the output of foo.
+    lift # Wrap the result (which should be a single-value) in a quotation, so we can use `redef`.
+    redef
+  ]
 def

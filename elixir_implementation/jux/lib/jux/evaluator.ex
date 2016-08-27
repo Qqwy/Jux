@@ -20,17 +20,32 @@ defmodule Jux.Evaluator do
     raise "A function is missing a primitive implementation. Rest of function stack: #{inspect(rest)}"
   end
 
+
+  defp do_evaluate_on([identifier = %Jux.Identifier{name: "redef"} | rest], stack, known_definitions) do
+    [fun_implementation_quot, fun_documentation, fun_name | updated_stack] = stack
+    known_definitions = define(fun_name, fun_documentation, fun_implementation_quot, known_definitions)
+    do_evaluate_on(rest, updated_stack, known_definitions)
+  end
+
   defp do_evaluate_on([identifier = %Jux.Identifier{name: "def"} | rest], stack, known_definitions) do
     #{updated_stack, updated_fun_queue} = Jux.Identifier.evaluate(identifier, stack, rest, known_definitions)
     #IO.puts "Defining a function!"
+    #IO.inspect known_definitions
     [fun_implementation_quot, fun_documentation, fun_name | updated_stack] = stack
+    if known_definitions[fun_name] != nil do
+      raise "Tried to define an implementation for the already-defined function #{fun_name}"
+    end
+    known_definitions = define(fun_name, fun_documentation, fun_implementation_quot, known_definitions)
+    do_evaluate_on(rest, updated_stack, known_definitions)
+  end
+
+  defp define(fun_name, fun_documentation, fun_implementation_quot, known_definitions) do
     #IO.inspect(fun_implementation_quot)
     if !is_list(fun_implementation_quot) do
       raise "Function definition for #{fun_name} (#{inspect(fun_implementation_quot)}) is not a quotation!"
-    end 
-    known_definitions = Map.put_new(known_definitions, fun_name, fun_implementation_quot |> Jux.Identifier.fully_expand(known_definitions) |> :lists.reverse)
-    #IO.inspect known_definitions
-    do_evaluate_on(rest, updated_stack, known_definitions)
+    end
+    known_definitions = Map.put(known_definitions, fun_name, fun_implementation_quot |> Jux.Identifier.fully_expand(known_definitions) |> :lists.reverse)
+    known_definitions
   end
 
   defp do_evaluate_on([identifier = %Jux.Identifier{} | rest], stack, known_definitions) do
