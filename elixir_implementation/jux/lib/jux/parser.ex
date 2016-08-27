@@ -36,7 +36,7 @@ defmodule Jux.Parser do
         do_parse(rest, tokens)
       String.starts_with?(source, "[") ->
         [quotation, rest] = parse_quotation(source)
-        do_parse(rest, [quotation | tokens])
+        do_parse(rest, [{quotation, "Quotation"} | tokens])
       String.starts_with?(source, "\"") ->
         [string, rest] = parse_string(source)
         do_parse(rest, [string | tokens])
@@ -96,7 +96,7 @@ defmodule Jux.Parser do
   def parse_string(source) do
     [string_length, rest] = do_parse_string(String.next_codepoint(source), 0)
     string = String.slice(source, 1, string_length - 2)
-    [string, rest]
+    [{string, "String"}, rest]
   end
 
   defp do_parse_string({"\"", rest}, 0) do
@@ -128,24 +128,30 @@ defmodule Jux.Parser do
     #   raise ArgumentError, "unknown identifier `#{str}`"
     # end
     # atom
-    Jux.Identifier.new(str)
+    {Jux.Identifier.new(str), "Identifier"}
     #apply(Jux.Stdlib, atom, [stack])
   end
 
   def parse_escaped_identifier(str) do
-    str
-    |> String.replace_prefix("/", "")
-    |> Jux.EscapedIdentifier.new
+    identifier = 
+      str
+      |> String.replace_prefix("/", "")
+      |> Jux.EscapedIdentifier.new
+    {identifier, "Identifier"}
   end
 
   def parse_integer(str) do
+    integer = 
       str
       |> String.to_integer
+    {integer, "Integer"}
   end
 
   def parse_float(str) do
+    float =  
       str
       |> String.to_float
+    {float, "Float"}
   end
 
 end

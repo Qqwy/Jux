@@ -1,5 +1,5 @@
 defmodule Jux do
-  def i(str, load_standard_library? \\ true) do
+  def i(str, load_standard_library? \\ true, show_types \\ false) do
     parsed_representation = Jux.Parser.parse(str)
 
     {stack, known_definitions} = 
@@ -15,15 +15,17 @@ defmodule Jux do
 
     {final_stack, known_definitions} = Jux.Evaluator.evaluate_on(parsed_representation, stack, known_definitions)
     #IO.inspect({final_stack, known_definitions})
-    IO.puts "stack: "<> stack_to_string(final_stack)
+    IO.puts "stack: "<> stack_to_string(final_stack, show_types)
     # IO.puts "known_definitions:" <> inspect(known_definitions)
     {final_stack, known_definitions}
   end
 
   def sigil_j(str, opts) do
+    show_types = Enum.any?(opts, fn x-> x== ?t end)
+    load_standard_library? = !Enum.any?(opts, fn x-> x== ?e end)
     str
     |> Macro.unescape_string
-    |> i
+    |> i(load_standard_library?, show_types)
     :ok
   end
 
@@ -36,14 +38,21 @@ defmodule Jux do
     i_file("stdlib/stdlib.jux", false)
   end
 
-  def stack_to_string(list) do
+  def stack_to_string(list, show_types \\ false) do
     list
     |> Enum.map(fn labeled_elem -> 
       case labeled_elem do 
-        {elem, _elem_type} when is_list(elem) ->
+        {elem, elem_type} when is_list(elem) and show_types->
+        "[#{stack_to_string(elem)}](#{elem_type})"
+        {elem, elem_type} when is_list(elem) ->
         "[#{stack_to_string(elem)}]"
-        {elem, elem_type} ->
+        {elem, elem_type} when show_types ->
           "#{inspect(elem)}(#{elem_type})"
+        {elem, elem_type} ->
+          "#{inspect(elem)}"
+        elem ->
+          # This case should (normally?) not happen.
+          inspect(elem)
       end
     end)
     |> :lists.reverse

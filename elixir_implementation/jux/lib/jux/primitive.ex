@@ -48,7 +48,7 @@ defmodule Jux.Primitive do
     {condition_check_stack, _} = Jux.Evaluator.evaluate_on(condition_quot, xs, known_definitions)
     #IO.inspect(condition_check_stack)
     #IO.inspect(match?([false | _], condition_check_stack))
-    if match?([false | _], condition_check_stack) do
+    if match?([{false, "Boolean"} | _], condition_check_stack) do
       {new_stack, _} = Jux.Evaluator.evaluate_on(else_quot, xs, known_definitions)
     else
       {new_stack, _} = Jux.Evaluator.evaluate_on(then_quot, xs, known_definitions)
@@ -112,6 +112,8 @@ defmodule Jux.Primitive do
   # Comparisons
 
   def compare([{b, _}, {a, _} | xs], _) do
+    IO.inspect(b)
+    IO.inspect(a)
     [{do_compare(b, a), "Integer"} | xs]
   end
 
@@ -156,7 +158,7 @@ defmodule Jux.Primitive do
   # Quotation vs Quotation
   defp do_compare([], _as), do: 1
   defp do_compare(_bs, []), do: -1
-  defp do_compare([b|bs], [a|as]) do
+  defp do_compare([{b, _}|bs], [{a, _}|as]) do
     case do_compare(b, a) do
       0 ->
         do_compare(bs, as)
@@ -165,8 +167,8 @@ defmodule Jux.Primitive do
     end
   end
 
-  def eq?([{b, tb}, {a, ta} | xs], _) do
-    [do_compare(b, a) == 0 && tb == ta | xs]
+  def eq?([{b, _}, {a, _} | xs], _) do
+    [{do_compare(b, a) == 0, "Boolean"} | xs]
   end
 
   # Quotation operations

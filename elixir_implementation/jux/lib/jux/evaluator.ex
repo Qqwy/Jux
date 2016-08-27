@@ -12,39 +12,39 @@ defmodule Jux.Evaluator do
     {stack, known_definitions}
   end
 
-  defp do_evaluate_on([literal | rest], stack, known_definitions) when is_integer(literal) do
-    do_evaluate_on(rest, [{literal, "Integer"} | stack], known_definitions)
+  defp do_evaluate_on([{literal, t} | rest], stack, known_definitions) when is_integer(literal) do
+    do_evaluate_on(rest, [{literal, t} | stack], known_definitions)
   end
 
-  defp do_evaluate_on([literal | rest], stack, known_definitions) when is_binary(literal) do
-    do_evaluate_on(rest, [{literal, "String"} | stack], known_definitions)
+  defp do_evaluate_on([{literal, t} | rest], stack, known_definitions) when is_binary(literal) do
+    do_evaluate_on(rest, [{literal, t} | stack], known_definitions)
   end
 
-  defp do_evaluate_on([literal | rest], stack, known_definitions) when is_float(literal) do
-    do_evaluate_on(rest, [{literal, "Float"} | stack], known_definitions)
+  defp do_evaluate_on([{literal, t} | rest], stack, known_definitions) when is_float(literal) do
+    do_evaluate_on(rest, [{literal, t} | stack], known_definitions)
   end
 
-  defp do_evaluate_on([literal | rest], stack, known_definitions) when is_list(literal) do
-    do_evaluate_on(rest, [{literal, "Quotation"} | stack], known_definitions)
+  defp do_evaluate_on([{literal, t} | rest], stack, known_definitions) when is_list(literal) do
+    do_evaluate_on(rest, [{literal, t} | stack], known_definitions)
   end
 
   
-  defp do_evaluate_on([escaped_identifier = %Jux.EscapedIdentifier{name: name} | rest], stack, known_definitions) do
-    do_evaluate_on(rest, [{Jux.Identifier.new(name), "Identifier"} | stack], known_definitions)
+  defp do_evaluate_on([{escaped_identifier = %Jux.EscapedIdentifier{name: name}, t} | rest], stack, known_definitions) do
+    do_evaluate_on(rest, [{Jux.Identifier.new(name), t} | stack], known_definitions)
   end
 
-  defp do_evaluate_on([identifier = %Jux.Identifier{name: "__PRIMITIVE__"} | rest], stack, known_definitions) do
+  defp do_evaluate_on([{identifier = %Jux.Identifier{name: "__PRIMITIVE__"}, _t} | rest], stack, known_definitions) do
     raise "A function is missing a primitive implementation. Rest of function stack: #{inspect(rest)}"
   end
 
 
-  defp do_evaluate_on([identifier = %Jux.Identifier{name: "redef"} | rest], stack, known_definitions) do
+  defp do_evaluate_on([{identifier = %Jux.Identifier{name: "redef"}, "Identifier"} | rest], stack, known_definitions) do
     [{fun_implementation_quot, "Quotation"}, {fun_documentation, "String"}, {%Jux.Identifier{name: fun_name}, "Identifier"} | updated_stack] = stack
     known_definitions = define(fun_name, fun_documentation, fun_implementation_quot, known_definitions)
     do_evaluate_on(rest, updated_stack, known_definitions)
   end
 
-  defp do_evaluate_on([identifier = %Jux.Identifier{name: "def"} | rest], stack, known_definitions) do
+  defp do_evaluate_on([{identifier = %Jux.Identifier{name: "def"}, "Identifier"} | rest], stack, known_definitions) do
     #{updated_stack, updated_fun_queue} = Jux.Identifier.evaluate(identifier, stack, rest, known_definitions)
     #IO.puts "Defining a function!"
     #IO.inspect known_definitions
@@ -65,7 +65,7 @@ defmodule Jux.Evaluator do
     known_definitions
   end
 
-  defp do_evaluate_on([identifier = %Jux.Identifier{} | rest], stack, known_definitions) do
+  defp do_evaluate_on([{identifier = %Jux.Identifier{}, "Identifier"} | rest], stack, known_definitions) do
     {updated_stack, updated_fun_queue} = Jux.Identifier.evaluate(identifier, stack, rest, known_definitions)
     do_evaluate_on(updated_fun_queue, updated_stack, known_definitions)
   end

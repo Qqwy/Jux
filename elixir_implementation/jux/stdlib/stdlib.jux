@@ -772,8 +772,13 @@ def
 def
 
 /contains?
-  ""
-  [ lift [eq? or] append false swap foldl ]
+  "
+  Checks if the quotation contains the value above it.
+
+  To prevent evaluation of escaped identifiers during checking, all to-be-compared values are lifted.
+  Maybe there is a better approach to do this?
+  "
+  [ lift [ [lift] dip eq? or] papply false swap foldl ]
 def
  # [1 2 3] 1 contains? # TODO: fix append so reverse arguments not necessary in quotation.
 /in?
