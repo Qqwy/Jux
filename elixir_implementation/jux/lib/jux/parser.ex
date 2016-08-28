@@ -96,7 +96,7 @@ defmodule Jux.Parser do
   def parse_string(source) do
     [string_length, rest] = do_parse_string(String.next_codepoint(source), 0)
     string = String.slice(source, 1, string_length - 2)
-    [{string, "String"}, rest]
+    [{String.to_charlist(string) |> Jux.elixir_charlist_to_jux_string, "String"}, rest]
   end
 
   defp do_parse_string({"\"", rest}, 0) do

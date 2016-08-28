@@ -16,9 +16,9 @@ defmodule Jux.Evaluator do
     do_evaluate_on(rest, [{literal, t} | stack], known_definitions)
   end
 
-  defp do_evaluate_on([{literal, t} | rest], stack, known_definitions) when is_binary(literal) do
-    do_evaluate_on(rest, [{literal, t} | stack], known_definitions)
-  end
+  # defp do_evaluate_on([{literal, t} | rest], stack, known_definitions) when is_binary(literal) do
+  #   do_evaluate_on(rest, [{literal, t} | stack], known_definitions)
+  # end
 
   defp do_evaluate_on([{literal, t} | rest], stack, known_definitions) when is_float(literal) do
     do_evaluate_on(rest, [{literal, t} | stack], known_definitions)

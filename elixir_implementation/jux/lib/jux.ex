@@ -41,9 +41,13 @@ defmodule Jux do
   def stack_to_string(list, show_types \\ false) do
     list
     |> Enum.map(fn labeled_elem -> 
-      case labeled_elem do 
+      case labeled_elem do
+        {elem, "String"} when is_list(elem) and show_types->
+        "\"#{jux_string_to_elixir_charlist(elem)}\"(String)"
+        {elem, "String"} when is_list(elem)->
+        "\"#{jux_string_to_elixir_charlist(elem)}\""
         {elem, elem_type} when is_list(elem) and show_types->
-        "[#{stack_to_string(elem)}](#{elem_type})"
+        "[#{stack_to_string(elem, show_types)}](#{elem_type})"
         {elem, elem_type} when is_list(elem) ->
         "[#{stack_to_string(elem)}]"
         {elem, elem_type} when show_types ->
@@ -57,5 +61,19 @@ defmodule Jux do
     end)
     |> :lists.reverse
     |> Enum.join(" ")
+  end
+
+  def elixir_charlist_to_jux_string(charlist) do
+    charlist
+    |> Enum.map(fn int -> 
+      {int, "Integer"}
+    end)
+  end
+
+  def jux_string_to_elixir_charlist(string) do
+    string
+    |> Enum.map(fn {int, "Integer"} ->
+      int
+    end)
   end
 end

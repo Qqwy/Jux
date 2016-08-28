@@ -201,13 +201,37 @@ defmodule Jux.Primitive do
  # end
   # String operations
 
-  def to_string([{x, _} | xs], _) do
-    [Kernel.to_string(x) | xs]
+  def to_string([x | xs], _) do
+    [{do_to_string(x) |> Jux.elixir_charlist_to_jux_string, "String"} | xs]
   end
 
-  def to_identifier([{x, "String"} | xs], _) when is_binary(x) do
-    if Jux.Parser.valid_identifier?(x) do
-      [Jux.Identifier.new(x) | xs]
+  def do_to_string({elem, "String"}) do
+    elem
+  end
+
+  def do_to_string({list, _type}) when is_list(list) do
+    content_str = 
+      list
+      |> Enum.map(fn elem -> 
+        elem_str = do_to_string(elem)
+        elem_str 
+      end)
+      |> Enum.reverse
+      |> Enum.join(" ")
+    "[#{content_str}]"
+    |> String.to_charlist
+  end
+
+  def do_to_string({elem, _type}) do
+    elem
+    |> Kernel.to_charlist
+    #|> Jux.elixir_charlist_to_jux_string
+  end
+
+  def to_identifier([{x, "String"} | xs], _) when is_list(x) do
+    x_str = Jux.jux_string_to_elixir_charlist
+    if Jux.Parser.valid_identifier?(x_str) do
+      [Jux.Identifier.new(x_str) | xs]
     else
       raise "`#{x}` is not a valid Jux identifier!"
     end
@@ -230,7 +254,7 @@ defmodule Jux.Primitive do
   end
 
   # Prevention of malformedness
-  def crash([{x, _} | xs], _) when is_binary(x) do
+  def crash([{x, "String"} | xs], _) when is_list(x) do
     raise "The Jux Program crashed with: " <> x
   end
 
