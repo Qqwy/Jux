@@ -321,6 +321,14 @@ def
   [ uncons [uncons popd] dip ]
 def
 
+/empty_of_same_type
+  "
+  Returns [] of same type as element below it.
+  "
+  [
+  dup type [] swap cast_to
+  ]
+def
 
 /ucons
   "first unlifts the value, then appends it to the quotation at the second place.
@@ -380,12 +388,11 @@ def
   [ 
     swapd # Swaps [1 2 3] with 0, so list is second element after quotation to be done at each step.
     [[pop empty?] [pop2]] # The first two clauses of the `ifte`.
-     swap # Now bring the new clause on top
-     [[reverse_uncons] dip] reverse_cons # Change clauce `[q]` to `[[reverse_uncons] dip [q]]
-
+      swap # Now bring the new clause on top
+      [[reverse_uncons] dip] reverse_cons # Change clauce `[q]` to `[[reverse_uncons] dip [q]]
     [dip2] ucons [dup] ucons [i] ucons # Change `[[tail] dip [q]]` to [[[reverse_uncons] dip [q] dup i] ifte]
     cons [ifte] ucons # combine first and second parts of the ifte.
-
+    inspect_stack
     dup i # Start execution
   ]
 def
@@ -407,8 +414,12 @@ def
 # def
 
 /reverse
-  ""
-  [ [] backwards_append ]
+  "
+  Makes sure that the new quotation has the same type
+  as the original one,
+  by first copying over the type label.
+  "
+  [ empty_of_same_type backwards_append ]
 def
 
 /append
@@ -722,17 +733,17 @@ def
 
 /map
   ""
-  [ [] swap [cons] append foldr ]
+  [ [empty_of_same_type] dip [cons] append foldr ]
 def
 
 /flatten
   ""
-  [ [] [append] foldl ]
+  [ empty_of_same_type [append] foldl ]
 def
  # TODO: Improve
 /filter
   ""
-  [ [] [ [cons] [pop] ifte] prepend_fold_condition foldr ]
+  [ empty_of_same_type [ [cons] [pop] ifte] prepend_fold_condition foldr ]
 def
 
 /reject
