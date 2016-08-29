@@ -53,7 +53,7 @@ module Jux
           when integer_str = token_str.match(integer_regexp)
             integer = integer_str[0].to_i
             function_queue << Jux::Token.new(integer, "Integer")
-            token_str = token_str[integer_str.length..-1]
+            token_str = token_str[integer_str.to_s.length..-1]
           when token_str == ""
             break
           else
