@@ -355,3 +355,64 @@ New required functions for this stuff:
 - `to_string`/`to_identifier` -> turns anything to a string, turns a string to an identifier (as long as it is a _valid_ identifier!)
 - `redef` -> defines a function, possibly overriding an already-existing definition.
   - maybe `def` could be defined in terms of `redef` and `callable`?
+
+
+
+
+________________
+
+System overview:
+
+A Jux implementation environment consists of two parts:
+
+## 1. the Stack. 
+This is a linked-list esque structure (the head of the stack should be available in O(1), the other end of the stack might be available in O(n)). All data that is being calculated arrives on the stack.
+
+
+
+## 2. The HashTable with Identifier Definitions
+This hash table stores the implementations that certain identifiers have.
+In other words, it gives certain identifiers a 'meaning'.
+
+This HashTable is altered by the primitive `def`, `redef` or `undef` operations. Furthermore, the `callable?` primitive checks if a certain identifier is a key in the hash table.
+
+HashTable Implementations are used both to define ordinary functions, as well as auxillary information about e.g. data types; 
+
+Data stored here is _not_ garbage collected. It stays in here until explicitly `undef`ined.
+
+## (3. The Function Queue)
+This is a _queue_ filled with the not-yet consumed operations that will be executed on the stack. An interpreter usually first parses a source code file, and reads it into this in-memory list.
+
+For some implementations, it might make most sense to first read the source file in a linked list (where the head is the lastly-read operation), and then reverse this list before starting execution.
+
+The head of the Function Queue is changed when:
+
+- An identifier with a non-native implementation is encountered. At this time, the identifiers making up its implementation are pushed to the front of the function queue (also known as 'unshifting').
+- A quotation is passed in a Combinator: This unshifts the contents of this quotation to the front of the Function Queue (so that the tail-most part of the quotation is the new front of the queue, and the element originally at the head of the quotation is the element just on top of the original next function).
+
+The Function Queue is an implementation 'artefact' and not considered to really be part of the current environment. Rather, it is a list of future steps to change the current environment by. There is no way for any Jux function to directly access any part of the Function Queue. The only thing that might happen, is for a quotation
+
+## 'Purely' Functional?
+
+Most Jux functions/operations are purely functional, as they take the current environment (Stack + HashTable), and return a new environment (Stack+HashTable).
+
+The only exceptions to this are functions that deal with input/output:
+
+- `print`
+- STDIO-stuff that hasn't been created yet.
+
+# STDIO:
+
+- `fopen` opens a stream to the file at the given filename.
+- `fclose` closes an open stream. (Is this necessary? Should we maybe close as soon as stream handle is popped from stack?)
+- `fgetc` gets a single character from the stream. This is either an integer withe labeltype `Integer` or it is a `0` with labeltype `EOF` if the end of the file was reached.
+- `fputc` puts a single character (byte) to the stream.
+- `fseek` moves the file position indicator to a specific point (in bytes) in the file.
+- `ftell` gets the current file position (in bytes).
+
+- `stdin` puts the STDIN stream handle on top of the stack.
+- `stdout` puts the STDOUT stream handle on top of the stack.
+- `stderr` puts the STDERR stream handle on top of the stack. (is this one absolutely necessary?)
+
+
+TODO: File system names (ls, cd, etc).

@@ -58,12 +58,12 @@ defmodule Jux.Primitive do
 
   # Arithmetic
 
-  def add([{b, t}, {a, t} | xs], _) do
+  def add([{b, _t}, {a, t} | xs], _) do
     [{a + b, t} | xs]
   end
   def add(_, _), do: raise "Called `add` with non-numeric parameters."
 
-  def sub([{b, t}, {a, t} | xs], _) do
+  def sub([{b, _t}, {a, t} | xs], _) do
     #IO.inspect(a)
     #IO.inspect(b)
     [{a - b, t} | xs]
@@ -242,9 +242,9 @@ defmodule Jux.Primitive do
     [result | xs]
   end
 
-  def string_concat([{b, "String"}, {a, "String"} | xs], _) do
-    [(a <> b) | xs]
-  end
+  # def string_concat([{b, "String"}, {a, "String"} | xs], _) do
+  #   [(a <> b) | xs]
+  # end
 
   # Basic Output
 
@@ -268,7 +268,7 @@ defmodule Jux.Primitive do
 
   # Not a required function, but a nice-to-have during development.
   def inspect_stack(xs, _) do
-    IO.puts("inspected stack: " <> Jux.stack_to_string(xs))
+    IO.puts("inspected stack: " <> Jux.stack_to_string(xs, true))
     xs
   end
 
