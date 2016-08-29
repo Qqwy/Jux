@@ -37,15 +37,13 @@ module Jux
           when whitespace_str = token_str.match(whitespace_regexp)
             token_str = token_str[whitespace_str.length..-1]
           when comment_str = token_str.match(comment_regexp)
-            puts "COMMENT"
             token_str = token_str[comment_str.length..-1]
           when token_str.match(/^\[/)
             quotation, token_str = parse_quotation(token_str)
             function_queue << Jux::Token.new(quotation, "Quotation")
           when token_str.match(/^"/)
-            token_str = token_str[1..-1]
             str, token_str = parse_string(token_str)
-            function_queue << str # TODO: Change string to charlist format.
+            function_queue << str
           when escaped_identifier_str = token_str.match(escaped_identifier_regexp)
             function_queue << Jux::Token.new(Jux::EscapedIdentifier.new(escaped_identifier_str.to_s[1..-1]), "Identifier")
             token_str = token_str[escaped_identifier_str.to_s.length..-1]
@@ -73,7 +71,7 @@ module Jux
           i+= 1 if token_str[i..(i+1)] == '\"'
           i+= 1
         end
-        new_str = token_str[1...i]
+        new_str = Jux::Helper.ruby_str_to_jux_str(token_str[1...i])
         token_str = token_str[(i+1)..-1]
         [new_str, token_str]
       end
