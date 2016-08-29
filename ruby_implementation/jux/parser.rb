@@ -33,53 +33,37 @@ module Jux
         function_queue = []
 
         loop do
-          puts token_str.inspect
-          puts function_queue.inspect
           case
           when whitespace_str = token_str.match(whitespace_regexp)
-            puts "Whitespace"
             token_str = token_str[whitespace_str.length..-1]
-            #function_queue << 'Whitespace'
           when comment_str = token_str.match(comment_regexp)
             puts "COMMENT"
             token_str = token_str[comment_str.length..-1]
-            #function_queue << 'comment'
           when token_str.match(/^\[/)
-            #function_queue << 'quotation_start'
             quotation, token_str = parse_quotation(token_str)
-            function_queue << quotation
-            #token_str = token_str[1..-1]
+            function_queue << Jux::Token.new(quotation, "Quotation")
           when token_str.match(/^"/)
-            #function_queue << 'string_start'
             token_str = token_str[1..-1]
             str, token_str = parse_string(token_str)
             function_queue << str # TODO: Change string to charlist format.
           when escaped_identifier_str = token_str.match(escaped_identifier_regexp)
-            puts "escaped identifier"
-            function_queue << Jux::EscapedIdentifier.new(escaped_identifier_str.to_s[1..-1])
+            function_queue << Jux::Token.new(Jux::EscapedIdentifier.new(escaped_identifier_str.to_s[1..-1]), "Identifier")
             token_str = token_str[escaped_identifier_str.to_s.length..-1]
           when identifier_str = token_str.match(identifier_regexp)
-            puts "identifier"
-            function_queue << Jux::Identifier.new(identifier_str.to_s)
+            function_queue << Jux::Token.new(Jux::Identifier.new(identifier_str.to_s), "Identifier")
             token_str = token_str[identifier_str.to_s.length..-1]
           when integer_str = token_str.match(integer_regexp)
-            puts "integer"
             integer = integer_str[0].to_i
-            function_queue << integer
+            function_queue << Jux::Token.new(integer, "Integer")
             token_str = token_str[integer_str.length..-1]
           when token_str == ""
-            puts "empty"
-            puts "BOOM "
             break
           else
-            function_queue << 'unknown'
-            puts "unknown"
-            token_str = token_str[1..-1]
+            raise "Improper Jux syntax: `#{token_str}`"
           end
         end
         function_queue
       end
-
 
       def parse_string(token_str)
         i = 1
