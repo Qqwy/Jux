@@ -6,23 +6,23 @@ module Jux
       end
 
       def comment_regexp
-        %r{^#.*}
+        %r{\A#.*}
       end
 
       def float_regexp
-        %r{^[+-]?\d+\.\d+}
+        %r{\A[+-]?\d+\.\d+}
       end
 
       def integer_regexp
-        %r{^[+-]?\d+}
+        %r{\A[+-]?\d+}
       end
 
       def identifier_regexp
-        %r{^[a-zA-Z_][\w.]*[?!]?}
+        %r{\A[a-zA-Z_][\w.]*[?!]?}
       end
 
       def escaped_identifier_regexp
-        %r{^/[a-zA-Z_][\w.]*[?!]?}
+        %r{\A/[a-zA-Z_][\w.]*[?!]?}
       end
 
       def parse(str)
@@ -43,9 +43,11 @@ module Jux
             function_queue << str
           when escaped_identifier_str = token_str.match(escaped_identifier_regexp)
             function_queue << Jux::Token.new(Jux::EscapedIdentifier.new(escaped_identifier_str.to_s[1..-1]), "Identifier")
+          	puts "EscapedIdentifier #{escaped_identifier_str}; Left token str: #{token_str.inspect}"
             token_str = token_str[escaped_identifier_str.to_s.length..-1]
           when identifier_str = token_str.match(identifier_regexp)
             function_queue << Jux::Token.new(Jux::Identifier.new(identifier_str.to_s), "Identifier")
+          	puts "Identifier #{identifier_str}; Left token str: #{token_str.inspect}"
             token_str = token_str[identifier_str.to_s.length..-1]
           when integer_str = token_str.match(integer_regexp)
             integer = integer_str[0].to_i
@@ -57,6 +59,7 @@ module Jux
             raise "Improper Jux syntax: `#{token_str}`"
           end
         end
+        puts Jux::Helper.stack_to_str(function_queue)  
         function_queue
       end
 

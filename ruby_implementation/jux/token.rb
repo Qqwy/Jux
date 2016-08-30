@@ -24,7 +24,12 @@ module Jux
       end
     end
     def inspect
-      "#{self.val.inspect}(#{self.type})"
+    	if  self.type == "String"
+    	  str = Jux::Helper.jux_str_to_ruby_str(self)
+        "\"#{str}\"(String)"
+     	else
+	      "#{self.val.inspect}(#{self.type})"
+  		end
     end
 
     # Used by methods like +, -, etc.
