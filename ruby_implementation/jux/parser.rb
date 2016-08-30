@@ -94,6 +94,10 @@ module Jux
         token_str = token_str[(i+1)..-1]
         [quotation, token_str]
       end
+
+      def valid_identifier?(str)
+        str =~ %r{^[a-zA-Z_][\w.]*[?!]?$}
+      end
     end
   end
 end

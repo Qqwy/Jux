@@ -44,6 +44,7 @@ defmodule Jux.Primitive do
 
   # Conditionals
 
+  # TODO: Tail-recursive
   def ifte([{else_quot, _}, {then_quot, _}, {condition_quot, _} | xs], known_definitions) when Kernel.and(is_list(else_quot), Kernel.and(is_list(then_quot), is_list(condition_quot))) do
     {condition_check_stack, _} = Jux.Evaluator.evaluate_on(condition_quot, xs, known_definitions)
     #IO.inspect(condition_check_stack)

@@ -14,6 +14,14 @@ module Jux
         quotation.map(&:val)
                  .pack('c*')
       end
+
+      def stack_to_str(stack, show_types = false)
+        if show_types
+          stack.map(&:inspect).join(' ')
+        else 
+          stack.map(&:to_s).join(' ')
+        end
+      end
     end
   end
 end
