@@ -81,6 +81,7 @@ module Jux
         implementation = stack.pop
         _documentation = stack.pop
         fun_name = stack.pop
+        puts "Defining #{fun_name} as `#{implementation}`"
         raise "Attempted to define already existing function `#{fun_name.val}`" unless known_definitions[fun_name.val.name].nil?
         known_definitions[fun_name.val.name] = implementation.val # Note the mutability of known_definitions
         stack

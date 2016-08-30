@@ -1,32 +1,29 @@
 module Jux
   class Parser
     class << self
-      def whitespace_regexp         
+      def whitespace_regexp
         %r{\A\s+}m
       end
 
-      def comment_regexp            
+      def comment_regexp
         %r{^#.*}
       end
 
-      def float_regexp              
+      def float_regexp
         %r{^[+-]?\d+\.\d+}
       end
 
-      def integer_regexp            
+      def integer_regexp
         %r{^[+-]?\d+}
       end
 
-      def identifier_regexp         
+      def identifier_regexp
         %r{^[a-zA-Z_][\w.]*[?!]?}
       end
 
-      def escaped_identifier_regexp 
+      def escaped_identifier_regexp
         %r{^/[a-zA-Z_][\w.]*[?!]?}
       end
-
-
-
 
       def parse(str)
         token_str = str
@@ -37,7 +34,7 @@ module Jux
           when whitespace_str = token_str.match(whitespace_regexp)
             token_str = token_str[whitespace_str.length..-1]
           when comment_str = token_str.match(comment_regexp)
-            token_str = token_str[comment_str.length..-1]
+            token_str = token_str[comment_str.to_s.length..-1]
           when token_str.match(/^\[/)
             quotation, token_str = parse_quotation(token_str)
             function_queue << Jux::Token.new(quotation, "Quotation")

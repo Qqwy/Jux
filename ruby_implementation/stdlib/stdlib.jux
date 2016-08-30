@@ -1,0 +1,1066 @@
+# foo!
+/foo
+  "test"
+  [
+    1 2 3
+    1 2 3 # bar!
+    1 2 3
+  ]
+def
+
+
+# Primitive
+/__PRIMITIVE__
+  "
+  All functions that are primitive use this as 'fallback' implementation.
+  This special keyword does nothing by itself, but it is intercepted during evaluation,
+  which will raise an error.
+  "
+  [ ]
+def
+
+/dup
+  "duplicates the top value of the stack"
+  [ __PRIMITIVE__ ]
+def
+
+/pop
+  "Removes the top value from the stack"
+  [ __PRIMITIVE__ ]
+def
+
+/swap
+  "Swaps the order of the two topmost values on the stack"
+  [ __PRIMITIVE__ ]
+def
+
+/dip
+  "
+  Takes the quotation from the top, temporarily stores the value below that elsewhere, 
+  and then executes this quotation on the rest of the stack. 
+  "
+  [ __PRIMITIVE__ ]
+def
+
+/ifte
+  "TODO"
+  [ __PRIMITIVE__ ]
+def
+
+/add
+  "TODO"
+  [ __PRIMITIVE__ ]
+def
+
+/sub
+  "TODO"
+  [ __PRIMITIVE__ ]
+def
+
+/cons
+  "TODO"
+  [ __PRIMITIVE__ ]
+def
+
+/uncons
+  "TODO"
+  [ __PRIMITIVE__ ]
+def
+
+/compare
+  "TODO"
+  [ __PRIMITIVE__ ]
+def
+
+/eq?
+  "TODO"
+  [ __PRIMITIVE__ ]
+def
+
+/nand
+  "
+  Returns the Boolean NAND of the top two values.
+  
+  `nand` is supposed to use truthy-logic, which means that only `false` is false,
+  and everything else, including numbers, strings, identifiers, etc. is considered to be true.
+
+  So `nand` returns true as long as at least one of the two topmost values is `false`. 
+  "
+  [ __PRIMITIVE__ ]
+def
+
+/to_string
+  "
+  Turns a value of any type into a string.
+  "
+  [ __PRIMITIVE__ ]
+def
+
+/to_identifier
+  "
+  Turns a string into an identifier, as long as this string is a valid identifier.
+
+  Valid identifiers start with a letter (or underscore) and can contain any alphanumeric symbols, underscores and `.`.
+  As final character, a `?` or `!` is also allowed.
+  "
+  [ __PRIMITIVE__ ]
+def
+
+/callable?
+  "
+  Tests if the identifier on top of the stack is implemented as a function and is therefore callable.
+  "
+  [ __PRIMITIVE__ ]
+def
+
+/print
+  "TODO"
+  [ __PRIMITIVE__ ]
+def
+
+
+# Basic
+  
+/noop
+  ""
+  [  ]
+def
+
+ #does nothing.
+  
+/id
+  ""
+  [ [] dip ]
+def
+
+ # No-op, but fails if stack is empty.
+
+# Stack manipulation
+/swapd
+  ""
+  [ [swap] dip ]
+def
+
+/swap2
+  ""
+  [ swap swapd ]
+def
+
+/popd
+  ""
+  [ [pop] dip ]
+def
+
+/pop2
+  ""
+  [ pop pop ]
+def
+
+/pop3
+  ""
+  [ pop pop pop pop ]
+def
+
+/pop4
+  ""
+  [ pop pop pop pop ]
+def
+
+/dupd
+  ""
+  [ [dup] dip ]
+def
+
+/dupdd
+  ""
+  [ [dupd] dip ]
+def
+
+/get2
+  ""
+  [ dupd swap ]
+def
+
+/get3
+  ""
+  [ [get2] dip swap ]
+def
+
+/get4
+  ""
+  [ [get3] dip swap ]
+def
+
+/dup2
+  ""
+  [ get2 get2 ]
+def
+
+/dup3
+  ""
+  [ get3 get3 get3 ]
+def
+
+/dup4
+  ""
+  [ get4 get4 get4 get4 ]
+def
+
+/flip
+  ""
+  [ swapd swap swapd ]
+def
+ # 1 2 3 -> 3 2 1
+/flip4
+  ""
+  [ swap [flip] dip swap ]
+def
+
+ # 1 2 3 4 -> 4 3 2 1
+/flip5
+  ""
+  [ swap [flip4] dip swap ]
+def
+ # 1 2 3 4 5 -> 5 4 3 2 1
+
+/not
+  "boolean NOT, made from nand-logic"
+  [ dup nand]
+def
+
+/false
+  "puts `false` on the stack"
+  [ [] not ]
+def
+
+/true
+  "Puts `true` on the stack"
+  [ false not ]
+def
+
+/and
+  "boolean AND, made from nand-logic"
+  [nand not]
+def
+
+/or
+  "boolean OR, made from nand-logic"
+  [ not swap not nand ]
+def
+
+/nor
+  "boolean NOR, made from nand-logic"
+  [ or not ]
+def
+
+/xor
+  "
+  boolean XOR, made from nand-logic
+  
+  This implementation might be suboptimal as-is.
+  "
+  [ dup2 nand dup swapd nand swap2 nand nand ]
+def
+
+# Combinators
+/dip2
+  ""
+  [ swap [dip] dip ]
+def
+
+/i
+  ""
+  [ dup dip pop ]
+def
+
+# "reverse"
+#   ""
+#   [ [] [cons] foldl ]
+# def
+
+
+# Quotations
+
+/reverse_cons
+  ""
+  [ swap cons ]
+def
+
+/reverse_uncons
+  ""
+  [ uncons swap ]
+def
+
+/unconsd
+  ""
+  [ [uncons] dip ]
+def
+
+/lift
+  ""
+  [ [] reverse_cons ]
+def
+
+/liftd
+  ""
+  [ [lift] dip ]
+def
+
+/lift2
+  ""
+  [ [] swapd reverse_cons reverse_cons ]
+def
+
+/unlift
+  ""
+  [ uncons popd ]
+def
+
+/unlift2
+  ""
+  [ uncons [uncons popd] dip ]
+def
+
+/empty_of_same_type
+  "
+  Returns [] of same type as element below it.
+  "
+  [
+  dup type [] swap cast_to
+  ]
+def
+
+/ucons
+  "first unlifts the value, then appends it to the quotation at the second place.
+  "
+  [ unlift cons ]
+def
+
+/tail
+  ""
+  [uncons pop]
+def
+
+
+/papply1
+  "This is a very simple implementation akin to papply, but it only works with a single function argument.
+  Its advantage is that we don't need recursion, which means that we can use papply1 _inside_ the definition of the y-combinator.
+
+  4 [inc] papply1 ==> [4 inc]
+  "
+
+  [ liftd unlift cons ]
+def
+
+
+
+#"backwards_append"
+#  "
+#  Uses the y-combinator to append a list in reverse order to another list (which is still in original order).
+#  "
+#  [
+#    [[pop2 empty?] # Stop recursion if original list is empty 
+#      [pop popd] 
+#      [
+#        [unconsd reverse_cons] dip  # take one element from the top of the old (bottom-most) list
+#                                    # And put it at the head of the new list.
+#        i]                          # And then call recursively.
+#    ifte] 
+#  y
+#  
+#  ]
+#def
+
+/backwards_append
+  "a backwards append that does not use the y-combinator!"
+  [
+    [[pop2 empty?] [pop popd] [[unconsd reverse_cons] dip dup i] ifte] dup i
+  ]
+def
+
+
+/foldl
+  "
+  This new reduce algorithm works without:
+  - needing to be defined primitively.
+  - the Y Combinator.
+  "
+  [ 
+    swapd # Swaps [1 2 3] with 0, so list is second element after quotation to be done at each step.
+    [[pop empty?] [pop2]] # The first two clauses of the `ifte`.
+      swap # Now bring the new clause on top
+      [[reverse_uncons] dip] reverse_cons # Change clauce `[q]` to `[[reverse_uncons] dip [q]]
+    [dip2] ucons [dup] ucons [i] ucons # Change `[[tail] dip [q]]` to [[[reverse_uncons] dip [q] dup i] ifte]
+    cons [ifte] ucons # combine first and second parts of the ifte.
+    inspect_stack
+    dup i # Start execution
+  ]
+def
+
+# "reverse2"
+#   ""
+#   [
+#      [] # start of the new list being built
+#      [
+#      [pop2 empty?] # Stop recursion if original list is empty 
+#       [pop popd] 
+#        [
+#         [unconsd reverse_cons] dip  # take one element from the top of the old (bottom-most) list
+#                                     # And put it at the head of the new list.
+#         i]                          # And then call recursively.
+#     ifte] 
+#   y
+#   ]
+# def
+
+/reverse
+  "
+  Makes sure that the new quotation has the same type
+  as the original one,
+  by first copying over the type label.
+  "
+  [ empty_of_same_type backwards_append ]
+def
+
+/append
+  ""
+  [ reverse backwards_append reverse ]
+def
+
+/reverse_append
+  ""
+  [ swap append ]
+def
+
+/invert
+  ""
+  [ [not] papply1 ]
+def
+
+
+
+
+/papply
+  "
+  Takes the quotation `q` on top, and the value `v` below it.
+  Returns a new quotation, which, when evaluated, would first put `v` on the stack, and then run `q`.
+  Therefore, it applies the argument `v` to `q`, but does not yet evaluate it. 
+  `3 [inc] partial_apply` ==> `[3 inc]`.
+  "
+  [ [lift] dip append ]
+def
+
+/papply2
+  "
+  Takes the quotation `q` on top, and the values `v1` and `v2` below it.
+  Returns a new quotation, which, when evaluated, would first put `v2`, then `v1` on the stack, and then run `q`.
+  Therefore, it applies the arguments `v1` and `v2` to `q`, but does not yet evaluate it. 
+  `2 4 [add] partial_apply2` ==> `[2 4 add]`.
+  "
+  [ papply papply ]
+def
+
+/papply3
+  "
+  Takes the quotation `q` on top, and the values `v1`, `v2` and `v3` below it.
+  Returns a new quotation, which, when evaluated, would first put `v3`, then `v2` and then `v1` on the stack, and then run `q`.
+  Therefore, it applies the arguments `v1`, `v2` and `v3` to `q`, but does not yet evaluate it. 
+  `2 4 3 [add add] partial_apply3` ==> `[2 4 3 add add]`.
+  "
+  [ papply papply papply]
+def
+
+
+
+
+/partial_y
+  "
+  Does most of the work for the y-combinator,
+  but does not run the created self-referencing quotation yet.
+
+  Can be used to create generators (?)
+  "
+  [
+    [dup papply] swap append
+  ]
+def
+
+/simple_generator
+  "
+  When invoked with `i`, returns the result of the quotation passed in at the top of the stack,
+  while keeping itself as the second element.
+  `[3] generator ==> [[dup papply 3] dup papply 3]`
+  "
+  [
+  partial_y dup papply
+  ]
+def
+
+/generator
+  "
+  Create a generator by passing it a starting value and a quotation to execute each time it is invoked.
+  The first time the generator is invoked, the starting value is returned.
+  The second time, the next value (that is created from executing the quotation with the starting value on the stack).
+  The third time, the next value from that computation, etc.
+
+  The value that is found by executing the quotation on the starting value is output,
+  and stored in the generator itself, so that when it is invoked again, the output value is used as new
+  starting value.
+
+  Example:
+  ```
+  [3] [inc] generator i # 4
+  pop i # 5
+  pop i # 6
+  ``` 
+  "
+  [
+    [uncons] reverse_append [cons dup papply] append swap cons dup papply
+  ]
+def
+
+# y
+/y
+  "The y-combinator. Executes a quotation with itself wrapped in the y-combinator as the topmost element on the stack.
+  This means that the quotation can call itself recursively by using `i` again inside itself.
+
+  The y-combinator is very useful to build recursive function definitions.
+  "
+  [ partial_y dup i ]
+def
+
+
+
+/foldr
+  ""
+  [ [reverse] dip2 foldl ]
+def
+
+# "reverse_append"
+#   ""
+#   [ [cons] foldr ]
+# def
+
+# "append"
+#   ""
+#   [ swap reverse_append ]
+# def
+
+/dip3
+  ""
+  [ swap [dip2] dip ]
+def
+
+/dip4
+  ""
+  [ swap [dip3] dip ]
+def
+
+
+/keep_i
+  ""
+  [ dup [i] dip ]
+def
+
+
+
+/b
+  ""
+  [ [i] dip i ]
+def
+
+/m
+  ""
+  [ dup i ]
+def
+
+/k
+  ""
+  [ [pop] dip i ]
+def
+
+/c
+  ""
+  [ [swap] dip i ]
+def
+
+/w
+  ""
+  [ [dup] dip i ]
+def
+
+
+# Comparison
+/falsy?
+  ""
+  [ not ]
+def
+
+/truthy?
+  ""
+  [ falsy? not ]
+def
+
+/neq?
+  ""
+  [ eq? not ]
+def
+
+/zero?
+  ""
+  [ 0 eq? ]
+def
+
+/one?
+  ""
+  [ 1 eq? ]
+def
+
+/lt?
+  ""
+  [ compare -1 eq? ]
+def
+
+/gt?
+  ""
+  [ compare 1 eq? ]
+def
+
+/gte?
+  ""
+  [ compare -1 neq? ]
+def
+
+/lte?
+  ""
+  [ compare  1 neq? ]
+def
+
+/empty?
+  ""
+  [ [] compare zero? ]
+def
+
+/max
+  ""
+  [ [gt?] [pop] [popd] ifte ]
+def
+
+/min
+  ""
+  [ [lt?] [pop] [popd] ifte ]
+def
+ 
+# Arithmetic
+/inc
+  ""
+  [ 1 add ]
+def
+
+/dec
+  ""
+  [ 1 sub ]
+def
+
+/odd?
+  ""
+  [ 1 band truthy? ]
+def
+
+/even?
+  ""
+  [ odd? not ]
+def
+
+
+
+
+# Conditionals
+/if
+  ""
+  [ [] ifte ]
+def
+
+/unless
+  ""
+  [ [] swap ifte ]
+def
+
+
+
+
+
+
+ 
+
+
+/ifeqte
+  ""
+  [ [lift [eq?] append] dip2 ifte ]
+def
+
+/ifneqte
+  ""
+  [ [lift [neq?] append] dip2 ifte ]
+def
+
+/ifzte
+  ""
+  [ [[zero?]] dip2 ifte ]
+def
+
+/ifnzte
+  ""
+  [ [[zero? not]] dip2 ifte ]
+def
+
+  # (Helper)
+
+/prepend_fold_condition
+  # To be given an 'ifte' with the condition part not yet filled in.
+  # Will change `[zero?] [...] [ [A] [B] ifte] prepend_fold_condition`
+  # into  `[...] [[zero?] [A] [B] ifte]`
+  # TODO: Better name?
+  ""
+  [ swapd liftd append ]
+def
+
+/length
+  ""
+  [ 0 [pop inc] foldl ]
+def
+
+
+/map
+  ""
+  [ [empty_of_same_type] dip [cons] append foldr ]
+def
+
+/flatten
+  ""
+  [ empty_of_same_type [append] foldl ]
+def
+ # TODO: Improve
+/filter
+  ""
+  [ empty_of_same_type [ [cons] [pop] ifte] prepend_fold_condition foldr ]
+def
+
+/reject
+  ""
+  [ invert filter ]
+def
+
+/sum
+  ""
+  [ 0 [add] foldl ]
+def
+
+#rewrite "product", "1 [mul] foldl"
+/list_max
+  ""
+  [ uncons [max] foldl ]
+def
+
+/list_min
+  ""
+  [ uncons [min] foldl ]
+def
+
+/list_max_min
+  ""
+  [ uncons dup lift2 [dup [unlift2] dip2 swapd max [min] dip lift2] foldl ]
+def
+
+/all?
+  ""
+  [ true [and] swapd append foldl ]
+def
+
+/any?
+  ""
+  [ false [or] swapd append foldl ]
+def
+
+/contains?
+  "
+  Checks if the quotation contains the value above it.
+
+  To prevent evaluation of escaped identifiers during checking, all to-be-compared values are lifted.
+  Maybe there is a better approach to do this?
+  "
+  [ lift [ [lift] dip eq? or] papply false swap foldl ]
+def
+ # [1 2 3] 1 contains? # TODO: fix append so reverse arguments not necessary in quotation.
+/in?
+  ""
+  [ swap contains? ]
+def
+ # 1 [1 2 3] in?
+
+# TODO: take
+# TODO: drop
+# TODO: take_while
+# TODO: drop_while
+# TODO: partition
+
+# Boolean
+# "xor"
+#   ""
+#   [ dup2 or [and not] dip and ]
+# def
+
+
+# Bitwise
+/bxor
+  ""
+  [ [dup] dip dup [swap] dip bor [band bnot] dip band ]
+def
+
+
+# Recursion
+#rewrite "Z X Y primrec", "Z [[ pop 0 eq?] [pop pop X] [[dup 1 sub] dip dup i Y] ifte] dup i"
+# TODO: Optimize with swap2, swap3, cons2, cons3 etc.
+# Primitive Recursion takes as (bottom-to-top) input: 
+# - value to calculate
+# - base case quotation
+# - recursive case quotation.
+# "primrec"
+#   ""
+#   [ swap [pop pop] swap cons [pop 0 eq?] swap [[dup 1 sub] dip dup i] [[swap] dip] dip [swap] dip swap append [] swap [swap] dip [[reverse_cons] dip cons] dip cons [ifte] append dup i ]
+# def
+
+#rewrite "mul", "[pop pop] [[add] dip] primrec"
+
+# 3 2 mul
+# 3 + 3
+
+# Output
+/puts
+  ""
+  [ print "\n" print ]
+def
+
+# Input
+
+
+
+
+
+# Recursive
+
+/y_factorial
+  "
+  Calculates the factorial of the item on top of the stack, using a recursive algorithm.
+  `5 factorial` == `5*4*3*2*1` == `120`.
+  
+  Uses the `y`-combinator internally.
+  "
+  [
+    [
+    [pop zero?] # As the y-combinator puts the evaluated function on top, check against the second value. 
+      [pop2 1] # Base case: Remove the function and the `0` that is on top, and return `1`.
+      [ 
+      [dup dec] dip # Duplicate the current number and decrease it by one.
+      i             # Then call recusively on that number.
+      mul           # After the recursive result is known, multiply the obtained result by our current number.
+      ] 
+    ifte] 
+  y
+  ]
+def
+
+/primrec
+  "
+  input as follows:
+  `5 [zero?] [1] [mul] primrec2`
+  "
+  [
+    [[pop] reverse_append] dip2         # Changes `... [zero?] [1] [mul]` to `... [pop zero?] [1] [mul]`
+    [[pop2] reverse_append] dip         # Changes `... [1] [mul]` to `... [pop2 1] [mul]
+    [[dup dec] dip i] reverse_append  # Changes `... [mul]` to `... [[dup dec] dip i mul]`
+    [ifte] papply3                      # Combines the different parts to form [[c] [t] [e] ifte]
+    y
+  ]
+def
+
+/triangular
+  ""
+  [ [zero?] [0] [add] primrec ]
+def
+
+/factorial
+  ""
+  [ [zero?] [1] [mul] primrec ]
+def
+
+/factorial2
+  "
+  Calculates the same as `factorial`, but uses rewrite-recursion instead of the y-combinator.
+
+  This function exists to be able to see the difference in speed between the two approaches.
+  "
+  [
+    [zero?] [pop 1] [dup dec factorial2 mul] ifte
+  ]
+def
+
+/fibonacchi_generator
+  ""
+  [
+    [1 1]
+    [unlift2 
+      dup2 add [popd] dip # Add the numbers together to obtain the new number; discard the oldest of the three: 3 5 -> 5 8 
+    lift2]
+    generator
+  ]
+def
+
+/negative?
+  "true if the number is smaller than 0"
+  [ 0 lt?]
+def
+
+/negate
+  "negates a number to its opposite sign"
+  [ 0 swap sub ]
+def
+
+/abs
+  "changes a number to a positive number, regardless of original sign"
+  [ [negative?] [invert] if ]
+def
+
+# "experimental_mul"
+#   "
+#   An experimental recursive implementation of multiplication,
+#   using only integer addition.
+# 
+#   This so far only works for multiplicands >= 1
+#   "
+#   [
+#     dupd [[pop one?] [pop2 popd] [[[dupd add] dip dec] dip dup i] ifte] dup i
+#   ]
+# def
+
+
+# "emul2"
+#   "
+#   Will try to optimize to put the smaller number (which will be iterated over)at the top
+#   
+#   Also ensures that zero is a valid input, by short-circuiting in that case.
+#   "
+#   [
+#     
+#     [zero?] 
+#       [popd] 
+#       [inspect_stack experimental_mul] 
+#     ifte
+#   ]
+# def
+
+/mul
+  ""
+  [
+    # Make sure that the smaller number is on top
+    [lt?] 
+      [swap] 
+    if 
+
+    # If the top (smaller) number is negative, call the function again, but this time with the number positive.
+    # In the case that both inputs are negative, this new call will swap the number order once more.
+    # No more than two recursive calls get made ever. 
+    [negative?] 
+      [negate emul3 negate] 
+      [
+        # If the top number is zero, we can return a short-circuit answer; namely the zero already on top.
+        [zero?] 
+          [popd] 
+          [
+            # The actual experimental integer multiplication algorithm.
+            # Duplicates ther lower of the two values
+            dupd 
+            # And then iterates until the topmost value is equal to one,
+            [
+              [pop one?] 
+                [pop2 popd] 
+                # 1. adding a duplicate of the third value from top to the second value from top
+                # 2. decrementing the topmost value
+                [[[dupd add] dip dec] dip dup i] 
+              ifte
+            ] dup i
+          ] 
+        ifte
+      ]
+    ifte
+  ]
+def
+
+
+/mod_div
+  "
+  Experimental integer division.
+  
+  Very slow. Ansewr still incorrect for negative numbers.
+  "
+  [ 
+    [zero?]
+      [ DIVISION_BY_ZERO ]
+      [
+        # If dividend is negative, negate result.
+        [negative?]
+          [negate mod_div negate [negate] dip]
+          [
+            # If divisor is negative, negate result.
+            [pop negative?]
+              [[negate] dip mod_div negate]
+              [
+                # Recursive implementation.
+                # Subtracts divisor from dividend
+                # and increments counter
+                # unless the divisor is smaller than the dividend.
+                0 [[pop2 lt?] [pop popd] [[dupd [sub] dip2 inc] dip dup i] ifte] dup i
+              ]
+            ifte
+          ]
+        ifte
+      ]
+    ifte
+  ]
+def
+
+/div
+  ""
+  [ mod_div popd ]
+def
+
+/mod
+  ""
+  [ mod_div pop ]
+def
+
+
+/call
+  "evaluates the single identifier on top of the stack."
+  [lift i]
+def
+
+/one
+  "temp to test."
+  [1]
+def
+
+/redefine_from_old
+  ""
+  [
+    [
+      dup
+      ""
+      swap # order is now "foo" "" "foo"
+      to_identifier call # "foo" "" output_of_foo
+    ] dip
+    i # Run quotation on top on the output of foo.
+    lift # Wrap the result (which should be a single-value) in a quotation, so we can use `redef`.
+    redef
+  ]
+def
