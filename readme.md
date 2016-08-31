@@ -416,3 +416,25 @@ The only exceptions to this are functions that deal with input/output:
 
 
 TODO: File system names (ls, cd, etc).
+
+
+
+
+
+#
+
+A Jux Token is either a single identifier, or a pair of two jux tokens.
+
+a 'simple' identifier:
+- (identifier, type)
+where integers and [],(the empty quotation) are also identifiers.
+
+or:
+((a, b), type), where a and b are both a Jux Token. ` (a, b)` might also be written as `[a | b]`.
+
+This second definition lets us create more advanced data structures, such as quotations and trees.
+Many definitions abstract the second definition, to make it more fast, saying 'a token is either a single token with a type or a (possibly improper) linked list of tokens with a type'.
+
+Strings are a list of Integers. They are only treated differently from normal quotations during output. (As well as there existing a parser shorthand to create a string by delimiting it with `"..."`)
+
+Depending on the `type` label a structure has, values might be treated differently. This mostly is important when supplying custom implementations for certain kinds of structures. If, for instance, you would like to use native strings

@@ -64,12 +64,12 @@ defmodule Jux.Primitive do
   end
   def add(_, _), do: raise "Called `add` with non-numeric parameters."
 
-  def sub([{b, _t}, {a, t} | xs], _) do
-    #IO.inspect(a)
-    #IO.inspect(b)
-    [{a - b, t} | xs]
-  end
-  def sub(_, _), do: raise "Called `sub` with non-numeric parameters."
+  # def sub([{b, _t}, {a, t} | xs], _) do
+  #   #IO.inspect(a)
+  #   #IO.inspect(b)
+  #   [{a - b, t} | xs]
+  # end
+  # def sub(_, _), do: raise "Called `sub` with non-numeric parameters."
 
   # def mul([b, a | xs], _) do
   #   [a * b | xs]

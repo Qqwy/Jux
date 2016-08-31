@@ -52,9 +52,14 @@ def
   [ __PRIMITIVE__ ]
 def
 
-/sub
+/bnot
   "TODO"
   [ __PRIMITIVE__ ]
+def
+
+/sub
+  "TODO"
+  [ bnot 1 add ]
 def
 
 /cons
