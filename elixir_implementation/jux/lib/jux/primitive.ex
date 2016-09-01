@@ -106,9 +106,11 @@ defmodule Jux.Primitive do
 
   # Bitwise
 
-  def bnot([{x, t} | xs], _), do: [{Bitwise.bnot(x), t} | xs]
-  def bor([{b, t}, {a, t} | xs], _), do: [{Bitwise.bor(a, b), t} | xs]
-  def band([{b, t}, {a, t} | xs], _), do: [Bitwise.band(a, b) | xs]
+  # def bnot([{x, t} | xs], _), do: [{Bitwise.bnot(x), t} | xs]
+  # def bor([{b, t}, {a, t} | xs], _), do: [{Bitwise.bor(a, b), t} | xs]
+  # def band([{b, t}, {a, t} | xs], _), do: [Bitwise.band(a, b) | xs]
+
+  def bnand([{b, t}, {a, t} | xs], _), do: [{Bitwise.bnot(Bitwise.band(a, b)), t} | xs]
 
   # Comparisons
 

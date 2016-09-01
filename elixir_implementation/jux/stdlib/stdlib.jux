@@ -52,10 +52,31 @@ def
   [ __PRIMITIVE__ ]
 def
 
-/bnot
+/bnand
   "TODO"
   [ __PRIMITIVE__ ]
 def
+
+/bnot
+  "TODO"
+  [ dup bnand ]
+def
+
+/band
+  "TODO"
+  [ bnand bnot ]
+def
+
+/bor
+  "TODO"
+  [ [bnot] dip bnot bnand ]
+def
+
+/bnor
+  "TODO"
+  [ bor bnot ]
+def
+
 
 /complement
   ""
@@ -270,6 +291,11 @@ def
   This implementation might be suboptimal as-is.
   "
   [ dup2 nand dup swapd nand swap2 nand nand ]
+def
+
+/bxor
+  "TODO"
+  [ dup2 bnand dup swapd bnand swap2 bnand bnand ]
 def
 
 # Combinators
@@ -822,10 +848,7 @@ def
 
 
 # Bitwise
-/bxor
-  ""
-  [ [dup] dip dup [swap] dip bor [band bnot] dip band ]
-def
+
 
 
 # Recursion
