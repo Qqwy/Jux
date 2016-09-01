@@ -37,6 +37,7 @@ defmodule Jux.Primitive do
   end
   def dip([_], _), do: raise "Called `dip` without enough elements on the stack"
 
+  # Why does Joy call this thing infra?
   def infra([{quot, _t}, {list, _lt} | xs], known_definitions) when Kernel.and(is_list(quot), is_list(list)) do
     {result_stack, _} = Jux.Evaluator.evaluate_on(quot, list, known_definitions)
     [{result_stack, "Quotation"} | xs]
@@ -63,6 +64,8 @@ defmodule Jux.Primitive do
     [{a + b, t} | xs]
   end
   def add(_, _), do: raise "Called `add` with non-numeric parameters."
+  # `sub` is only necessary if we are _not_ using two's complement. 
+  # Otherwise, we can emulate it using y + (bnot(x)+1)
 
   # def sub([{b, _t}, {a, t} | xs], _) do
   #   #IO.inspect(a)
