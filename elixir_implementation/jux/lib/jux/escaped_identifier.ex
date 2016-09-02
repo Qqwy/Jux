@@ -17,4 +17,10 @@ defmodule Jux.EscapedIdentifier do
     end
   end
 
+  defimpl List.Chars do
+    def to_charlist(identifier) do
+      '/#{identifier.name}'
+    end
+  end
+
 end

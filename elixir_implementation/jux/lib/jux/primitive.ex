@@ -32,7 +32,7 @@ defmodule Jux.Primitive do
     [x | new_stack]
   end
   def dip( xs = [_, _ | _], _) do
-    IO.puts(Jux.stack_to_string(xs))
+    #IO.puts(Jux.stack_to_string(xs))
     raise "Called `dip` without a quotation"
   end
   def dip([_], _), do: raise "Called `dip` without enough elements on the stack"
@@ -120,8 +120,8 @@ defmodule Jux.Primitive do
   # Comparisons
 
   def compare([{b, bt}, {a, at} | xs], _) do
-    IO.inspect(b)
-    IO.inspect(a)
+    #IO.inspect(b)
+    #IO.inspect(a)
     [{do_compare(b, a), "Integer"}, {b, bt}, {a, at} | xs]
   end
 
@@ -209,35 +209,43 @@ defmodule Jux.Primitive do
  # end
   # String operations
 
-  def to_string([x | xs], _) do
-    [{do_to_string(x) |> Jux.elixir_charlist_to_jux_string, "String"} | xs]
+  # def to_string([x | xs], _) do
+  #   [{do_to_string(x) |> Jux.elixir_charlist_to_jux_string, "String"} | xs]
+  # end
+
+  # def do_to_string({elem, "String"}) do
+  #   elem
+  # end
+
+  # def do_to_string({list, _type}) when is_list(list) do
+  #   content_str = 
+  #     list
+  #     |> Enum.map(fn elem -> 
+  #       elem_str = do_to_string(elem)
+  #       elem_str 
+  #     end)
+  #     |> Enum.reverse
+  #     |> Enum.join(" ")
+  #   "[#{content_str}]"
+  #   |> String.to_charlist
+  # end
+
+  # def do_to_string({elem, _type}) do
+  #   elem
+  #   |> Kernel.to_charlist
+  #   #|> Jux.elixir_charlist_to_jux_string
+  # end
+
+  def identifier_to_string([{elem = %_identifier{name: _name}, t} | xs]) do
+    identifier_str = 
+      elem
+      |> Kernel.to_charlist
+      |> Jux.elixir_charlist_to_jux_string
+    [{identifier_str, "String"}, xs]
   end
 
-  def do_to_string({elem, "String"}) do
-    elem
-  end
-
-  def do_to_string({list, _type}) when is_list(list) do
-    content_str = 
-      list
-      |> Enum.map(fn elem -> 
-        elem_str = do_to_string(elem)
-        elem_str 
-      end)
-      |> Enum.reverse
-      |> Enum.join(" ")
-    "[#{content_str}]"
-    |> String.to_charlist
-  end
-
-  def do_to_string({elem, _type}) do
-    elem
-    |> Kernel.to_charlist
-    #|> Jux.elixir_charlist_to_jux_string
-  end
-
-  def to_identifier([{x, "String"} | xs], _) when is_list(x) do
-    x_str = Jux.jux_string_to_elixir_charlist
+  def string_to_identifier([{x, "String"} | xs], _) when is_list(x) do
+    x_str = Jux.jux_string_to_elixir_charlist(x) |> Kernel.to_string
     if Jux.Parser.valid_identifier?(x_str) do
       [Jux.Identifier.new(x_str) | xs]
     else
@@ -271,8 +279,8 @@ defmodule Jux.Primitive do
     raise "The Jux Program crashed with: " <> x
   end
 
-  def type([{x, type} | xs], _) do
-    [{Jux.Identifier.new(type), "Type"} | xs]
+  def type(stack = [{x, type} | xs], _) do
+    [{Jux.Identifier.new(type), "Type"} | stack]
   end
 
   def cast_to([{%Jux.Identifier{name: name}, _}, {x, _} | xs], _) do

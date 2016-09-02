@@ -68,6 +68,7 @@ defmodule Jux do
     |> Enum.map(fn int -> 
       {int, "Integer"}
     end)
+    |> :lists.reverse
   end
 
   def jux_string_to_elixir_charlist(string) do
@@ -75,5 +76,6 @@ defmodule Jux do
     |> Enum.map(fn {int, "Integer"} ->
       int
     end)
+    |> :lists.reverse
   end
 end

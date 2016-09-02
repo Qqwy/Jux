@@ -201,14 +201,14 @@ def
   [ __PRIMITIVE__ ]
 def
 
-/to_string
+/identifier_to_string
   "
   Turns a value of any type into a string.
   "
   [ __PRIMITIVE__ ]
 def
 
-/to_identifier
+/string_to_identifier
   "
   Turns a string into an identifier, as long as this string is a valid identifier.
 
@@ -526,7 +526,7 @@ def
   Returns [] of same type as element below it.
   "
   [
-  dup type [] swap cast_to
+  type [] swap cast_to
   ]
 def
 
@@ -592,7 +592,6 @@ def
       [[reverse_uncons] dip] reverse_cons # Change clauce `[q]` to `[[reverse_uncons] dip [q]]
     [dip2] ucons [dup] ucons [i] ucons # Change `[[tail] dip [q]]` to [[[reverse_uncons] dip [q] dup i] ifte]
     cons [ifte] ucons # combine first and second parts of the ifte.
-    inspect_stack
     dup i # Start execution
   ]
 def
@@ -1193,7 +1192,7 @@ def
       [complement mul complement] 
       [
         # If the top number is zero, we can return a short-circuit answer; namely the zero already on top.
-        [zero? inspect_stack] 
+        [zero?] 
           [popd] 
           [
             # The actual experimental integer multiplication algorithm.
@@ -1238,7 +1237,7 @@ def
                 # Subtracts divisor from dividend
                 # and increments counter
                 # unless the divisor is smaller than the dividend.
-                0 [[get4 get4 lt? inspect_stack popd popd inspect_stack] [pop popd] [[dupd [sub] inspect_stack dip2 inc] dip dup i] ifte] dup inspect_stack i
+                0 [[get4 get4 lt? popd popd] [pop popd] [[dupd [sub] dip2 inc] dip dup i] ifte] dup i
               ]
             ifte
           ]
@@ -1290,7 +1289,7 @@ def
       dup
       ""
       swap # order is now "foo" "" "foo"
-      to_identifier call # "foo" "" output_of_foo
+      string_to_identifier call # "foo" "" output_of_foo
     ] dip
     i # Run quotation on top on the output of foo.
     lift # Wrap the result (which should be a single-value) in a quotation, so we can use `redef`.
@@ -1299,7 +1298,68 @@ def
 def
 
 
+/digits
+  "
+  Transforms an integer into a quotation of its digits
+
+  There is a special case for `0`, other numbers are recursed over.
+  Note that the digits are returned with the lowest digit being the tail-most one,
+  so when read left-to-right, the digits are in reverse order.
+  "
+  [
+    [zero?]
+      [[0]]
+      [ [] swap [[get2 zero? popd] [pop2] [[10 mod_div [cons] dip] dip dup i] ifte] dup i ]
+    ifte
+  ]
+def
+
 /digit_to_string
   "Changes a single digit 0-9 to its corresponding string form."
   [ 48 add lift /String cast_to ]
+def
+
+/integer_to_string
+  "Changes a (positive) integer number to a string"
+  [
+    [negative?]
+    [complement integer_to_string "-" reverse_append]
+    [ digits "" [digit_to_string append] foldl ]
+  ifte
+  ]
+def
+
+/quotation_to_string
+  "Changes a quotation to a string"
+  [ "[" [to_string append " " append] foldr tail "]" append ]
+def
+
+/to_string
+  "
+  Turns any standard Jux data structure to a string.
+  For identifiers, `identifier_to_string` is used.
+  For integers and quotations, a fallback algorithm exists that is built from the ground up.
+  "
+  [
+    type
+    [/String eq? popd]
+      [pop]
+      [
+        [/Identifier eq? popd]
+          [pop identifier_to_string]
+          [
+            [/Integer eq? popd]
+              [pop integer_to_string]
+              [
+              [/Quotation eq? popd]
+                [pop quotation_to_string]
+                [ "???" ]
+              ifte
+              ]
+            ifte
+          ]
+        ifte
+      ]
+    ifte
+  ]
 def

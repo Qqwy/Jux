@@ -87,4 +87,10 @@ defmodule Jux.Identifier do
       identifier.name
     end
   end
+
+  defimpl List.Chars do
+    def to_charlist(identifier) do
+      identifier.name |> Kernel.to_charlist
+    end
+  end
 end
