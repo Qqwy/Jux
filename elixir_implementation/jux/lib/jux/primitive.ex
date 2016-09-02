@@ -46,16 +46,18 @@ defmodule Jux.Primitive do
   # Conditionals
 
   # TODO: Tail-recursive
-  def ifte([{else_quot, _}, {then_quot, _}, {condition_quot, _} | xs], known_definitions) when Kernel.and(is_list(else_quot), Kernel.and(is_list(then_quot), is_list(condition_quot))) do
-    {condition_check_stack, _} = Jux.Evaluator.evaluate_on(condition_quot, xs, known_definitions)
+  def ifte([{else_quot, _}, {then_quot, _}, {condition_quot, _} | stack], known_definitions) when Kernel.and(is_list(else_quot), Kernel.and(is_list(then_quot), is_list(condition_quot))) do
+    {stack2, kd2} = Jux.Evaluator.evaluate_on(condition_quot, stack, known_definitions)
     #IO.inspect(condition_check_stack)
     #IO.inspect(match?([false | _], condition_check_stack))
-    if match?([{false, "Boolean"} | _], condition_check_stack) do
-      {new_stack, _} = Jux.Evaluator.evaluate_on(else_quot, xs, known_definitions)
-    else
-      {new_stack, _} = Jux.Evaluator.evaluate_on(then_quot, xs, known_definitions)
+    case stack2 do
+      [{false, "Boolean"} | stack2_rest] ->
+        {new_stack, _} = Jux.Evaluator.evaluate_on(else_quot, stack2_rest, kd2)
+        new_stack
+      [_ | stack2_rest] ->
+        {new_stack, _} = Jux.Evaluator.evaluate_on(then_quot, stack2_rest, kd2)
+        new_stack
     end
-    new_stack
   end
 
   # Arithmetic
@@ -117,10 +119,10 @@ defmodule Jux.Primitive do
 
   # Comparisons
 
-  def compare([{b, _}, {a, _} | xs], _) do
+  def compare([{b, bt}, {a, at} | xs], _) do
     IO.inspect(b)
     IO.inspect(a)
-    [{do_compare(b, a), "Integer"} | xs]
+    [{do_compare(b, a), "Integer"}, {b, bt}, {a, at} | xs]
   end
 
   # element always eq to itself
@@ -173,8 +175,8 @@ defmodule Jux.Primitive do
     end
   end
 
-  def eq?([{b, _}, {a, _} | xs], _) do
-    [{do_compare(b, a) == 0, "Boolean"} | xs]
+  def eq?([{b, bt}, {a, at} | xs], _) do
+    [{do_compare(b, a) == 0, "Boolean"} , {b, bt}, {a, at} | xs]
   end
 
   # Quotation operations
@@ -255,7 +257,12 @@ defmodule Jux.Primitive do
   # Basic Output
 
   def print([{x, "String"} | xs], _) do
-    IO.write(x)
+    x
+    |> Jux.jux_string_to_elixir_charlist
+    |> List.to_string
+    |> Macro.unescape_string
+    |> IO.write
+
     xs
   end
 

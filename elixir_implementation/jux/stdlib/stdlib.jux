@@ -175,10 +175,18 @@ def
 
 /eq?
   "
-  a b eq? result
+  a b eq? a b boolean
   Returns `true` if a and b are the same.
   "
   [ __PRIMITIVE__ ]
+def
+
+/eqp?
+  "
+  Returns the same result as `eq?` but removes `a` and `b` themselves from the stack:
+  a b eqp? boolean
+  "
+  [ eq? popd popd ]
 def
 
 /nand
@@ -566,7 +574,7 @@ def
 /backwards_append
   "a backwards append that does not use the y-combinator!"
   [
-    [[pop2 empty?] [pop popd] [[unconsd reverse_cons] dip dup i] ifte] dup i
+    [[get3 emptyp?] [pop popd] [[unconsd reverse_cons] dip dup i] ifte] dup i
   ]
 def
 
@@ -579,7 +587,7 @@ def
   "
   [ 
     swapd # Swaps [1 2 3] with 0, so list is second element after quotation to be done at each step.
-    [[pop empty?] [pop2]] # The first two clauses of the `ifte`.
+    [[get2 emptyp?] [pop2]] # The first two clauses of the `ifte`.
       swap # Now bring the new clause on top
       [[reverse_uncons] dip] reverse_cons # Change clauce `[q]` to `[[reverse_uncons] dip [q]]
     [dip2] ucons [dup] ucons [i] ucons # Change `[[tail] dip [q]]` to [[[reverse_uncons] dip [q] dup i] ifte]
@@ -798,40 +806,62 @@ def
   [ eq? not ]
 def
 
+/neqp?
+  ""
+  [ eqp? not ]
+def
+
 /zero?
   ""
-  [ 0 eq? ]
+  [ 0 eq? popd ]
+def
+
+/zerop?
+  ""
+  [ zero? popd]
 def
 
 /one?
   ""
-  [ 1 eq? ]
+  [ 1 eq? popd ]
 def
+
+/onep?
+  ""
+  [ one? popd ]
+def
+
 
 /lt?
   ""
-  [ compare -1 eq? ]
+  [ compare -1 eqp? ]
 def
 
 /gt?
   ""
-  [ compare 1 eq? ]
+  [ compare 1 eqp? ]
 def
 
 /gte?
   ""
-  [ compare -1 neq? ]
+  [ compare -1 neqp? ]
 def
 
 /lte?
   ""
-  [ compare  1 neq? ]
+  [ compare  1 neqp? ]
 def
 
 /empty?
   ""
-  [ [] compare zero? ]
+  [ [] compare zero? popd popd]
 def
+
+/emptyp?
+  ""
+  [ empty? popd]
+def
+
 
 /max
   ""
@@ -887,12 +917,12 @@ def
 
 
 /ifeqte
-  ""
+  "TODO: Possibly broken."
   [ [lift [eq?] append] dip2 ifte ]
 def
 
 /ifneqte
-  ""
+  "TODO: Possibly broken."
   [ [lift [neq?] append] dip2 ifte ]
 def
 
@@ -1047,12 +1077,12 @@ def
   "
   [
     [
-    [pop zero?] # As the y-combinator puts the evaluated function on top, check against the second value. 
+    [get2 zerop?] # As the y-combinator puts the evaluated function on top, check against the second value. 
       [pop2 1] # Base case: Remove the function and the `0` that is on top, and return `1`.
       [ 
-      [dup dec] dip # Duplicate the current number and decrease it by one.
-      i             # Then call recusively on that number.
-      mul           # After the recursive result is known, multiply the obtained result by our current number.
+        [dup dec] dip # Duplicate the current number and decrease it by one.
+        i             # Then call recusively on that number.
+        mul           # After the recursive result is known, multiply the obtained result by our current number.
       ] 
     ifte] 
   y
@@ -1107,13 +1137,13 @@ def
 
 /negative?
   "true if the number is smaller than 0"
-  [ 0 lt?]
+  [ 0 lt? popd]
 def
 
-/negate
-  "negates a number to its opposite sign"
-  [ 0 swap sub ]
-def
+# /negate
+#   "negates a number to its opposite sign"
+#   [ 0 swap sub ]
+# def
 
 /abs
   "changes a number to a positive number, regardless of original sign"
@@ -1160,10 +1190,10 @@ def
     # In the case that both inputs are negative, this new call will swap the number order once more.
     # No more than two recursive calls get made ever. 
     [negative?] 
-      [negate emul3 negate] 
+      [complement mul complement] 
       [
         # If the top number is zero, we can return a short-circuit answer; namely the zero already on top.
-        [zero?] 
+        [zero? inspect_stack] 
           [popd] 
           [
             # The actual experimental integer multiplication algorithm.
@@ -1171,7 +1201,7 @@ def
             dupd 
             # And then iterates until the topmost value is equal to one,
             [
-              [pop one?] 
+              [get2 onep?] 
                 [pop2 popd] 
                 # 1. adding a duplicate of the third value from top to the second value from top
                 # 2. decrementing the topmost value
@@ -1198,17 +1228,17 @@ def
       [
         # If dividend is negative, negate result.
         [negative?]
-          [negate mod_div negate [negate] dip]
+          [complement mod_div complement [complement] dip]
           [
             # If divisor is negative, negate result.
-            [pop negative?]
-              [[negate] dip mod_div negate]
+            [get2 negative? popd]
+              [[complement] dip mod_div complement]
               [
                 # Recursive implementation.
                 # Subtracts divisor from dividend
                 # and increments counter
                 # unless the divisor is smaller than the dividend.
-                0 [[pop2 lt?] [pop popd] [[dupd [sub] dip2 inc] dip dup i] ifte] dup i
+                0 [[get3 lt? popd popd] [pop popd] [[dupd [sub] dip2 inc] dip dup i] ifte] dup i
               ]
             ifte
           ]
