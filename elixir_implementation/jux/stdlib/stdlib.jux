@@ -1220,7 +1220,7 @@ def
   "
   Experimental integer division.
   
-  Very slow. Ansewr still incorrect for negative numbers.
+  Very slow. Answer still incorrect for negative numbers.
   "
   [ 
     [zero?]
@@ -1238,7 +1238,8 @@ def
                 # Subtracts divisor from dividend
                 # and increments counter
                 # unless the divisor is smaller than the dividend.
-                0 [[get3 lt? popd popd] [pop popd] [[dupd [sub] dip2 inc] dip dup i] ifte] dup i
+              # 0 [[pop2 lt?] [pop popd] [[dupd [sub] dip2 inc] dip dup i] ifte] dup i
+                0 [[get3 get3 lt? inspect_stack popd popd inspect_stack] [pop popd] [[dupd [sub] inspect_stack dip2 inc] dip dup i] ifte] dup inspect_stack i
               ]
             ifte
           ]
@@ -1296,4 +1297,10 @@ def
     lift # Wrap the result (which should be a single-value) in a quotation, so we can use `redef`.
     redef
   ]
+def
+
+
+/digit_to_string
+  "Changes a single digit 0-9 to its corresponding string form."
+  [ 48 add lift /String cast_to ]
 def

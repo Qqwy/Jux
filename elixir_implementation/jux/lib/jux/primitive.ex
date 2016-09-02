@@ -281,7 +281,7 @@ defmodule Jux.Primitive do
 
   # Not a required function, but a nice-to-have during development.
   def inspect_stack(xs, _) do
-    IO.puts("inspected stack: " <> Jux.stack_to_string(xs, true))
+    IO.puts("inspected stack: " <> Jux.stack_to_string(xs, false))
     xs
   end
 
