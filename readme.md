@@ -85,8 +85,8 @@ Currently **18** primitive operations: (These are very trivial to implement)
 - `compare` Comparisons of ordering.
 - `nand` Boolean operations.
 - `bnand` Bitwise operations.
-- `to_string` Change primitive to string form. TODO: Maybe only required for identifiers? Other values can be emulated inside Jux.
-- `to_identifier` Change string to identifier.
+- `identifier_to_string` Convert an identifier to string form.
+- `string_to_identifier` Convert a string to identifier form.
 - `callable?`
 - `def`, `redef`: Define a new identifier-implementation. TODO: Maybe a way to emulate one of them?
 - `print` Output to STDOUT. TODO: Maybe combine with other STDIO-stuff?
@@ -110,13 +110,16 @@ Here is in greater detail what certain functions are used for:
 - comparisons done by primitive functions `compare` and `eq?`, which are enough for `eq?, neq? lt?, lte?, gt?, gte?, zero?, one?, empty?`. Together with math used for `even?, odd?`.
 - `ifte` to allow conditionals.
   - together with above enough for many recursive definitions, as seen below.
-- fallback (slow) integer multiplication/division/modulo built on recursion with `add`/`sub`.
-  - TODO: `pow, isqrt, gcd, lcm`.
 - boolean operations: based on [NAND-logic](https://en.wikipedia.org/wiki/NAND_logic), so with only `nand` we can define `nand, not, and, or, nor, xor`.
   - because of the truthiness nature of these operations, defining `true` and `false` is not necessary, as they are trivially `[] not not` and `[] not`, respectively.
+- bitwise operations: In a similar sense, with only `bnand` we can define `bnand, bnot, band, bor, bnor, bxor`.
+- `sub` can be implemented using two's complement (built on `bnot`) with `add`.
+- O(n) integer multiplication/division/modulo built on  `add`/`sub` with recursion.
+  - TODO: `pow, isqrt, gcd, lcm`.
   - maybe something similar can be done with bitwise operators?
 - `cons` and `uncons`, together with comparisons, `ifte` and `dip` is enough for recursion through lists, which allows: `foldl, foldr, append, reverse_append, backwards_append, map, length, any?, all?, filter, reject, sum, product`
 - recursion also allows nice definitions for functions like `factorial`, `triangular`, etc.
+- Because the default strings are linked lists of integers, we can easily create a `to_string` for integers, lists and strings. `identifier_to_string` is used to mix and match identifiers in there as well.
 
 # Future Goals
 
@@ -137,9 +140,9 @@ A bare-bones (also called a **level-0**) implementation has to contain at least:
 
 - The literals:
   - `Integer` (`[+-]?\d+`), an integer of at least 32-bits precision. If you can use Bignums, that is a plus, as Jux does not check for overflow. If your target platform cannot use at least 32-bits precision, it will be a reduced level -1 implementation.
-  - **TODO** `Float` (`[+-]?\d+.\d+`), a float of at least 24-bits precision, preferably following the IEEE 754 standard. If your target does not support floating-point arithmetic, it will be a reduced level -1 implementation.
-  - `String` (`".*"`, escaping is possible with `\"`.). Contains all characters between the quotes as string. The choice has been made to _not_ make this equal to a list of character codepoints, because those charlists have much worse performance for many common problems and algorithms.
-  - `Function` (`[a-z][\w]*[?!]?`). These are the names of operations we want to perform. A function name either refers to one of the built-in primitive functions, or a custom function that was defined earlier in the program (or possibly in the standard library). As you will see below, it is necessary to keep a reference to these names before applying the functions, because of the way how quotations work.
+  - **TODO** (Possibly going to be removed) `Float` (`[+-]?\d+.\d+`), a float of at least 24-bits precision, preferably following the IEEE 754 standard. If your target does not support floating-point arithmetic, it will be a reduced level -1 implementation.
+  - `String` (`".*"`, escaping is possible with `\"`.). Contains all characters between the quotes as string. Is converted to a Quotation.
+  - `Identifier` (`[a-z][\w]*[?!]?`). These are the names of operations we want to perform. An identifier either refers to one of the built-in primitive functions, or a custom function implementation that was defined earlier in the program or in the standard library. There are many cases in which we pass the _identifiers_ around, rather than calling them as functions right away.
 
 In actuality, Integers and Strings can also be considered functions, that take zero parameters as input and push their inner value as output. In most implementations, it makes most sense to just take the literal and copy it to the stack when applicable, though.
 
@@ -236,11 +239,12 @@ The standard library extends on this with:
 
 
 ### Bitwise operations
+- `bnand`
+
+The standard library extends on this with:
 - `bnot`: Pops top of the stack. Pushes the bitwise complement of that Integer.
 - `bor`: Pops the top two elements `a` and `b` (`a` being the item originally on top). Pushes the bitwise or of these two Integers. 
 - `band`: Pops the top two elements `a` and `b` (`a` being the item originally on top). Pushes the bitwise and of these two Integers.
-
-The standard library extends on this with:
 - `bxor`: Pops the top two elements `a` and `b` (`a` being the item originally on top). Pushes the bitwise xor of these two Integers.
 
 
@@ -248,13 +252,6 @@ The standard library extends on this with:
 
 - `cons`: Pops the top of the stack `a` and the quotation `q` just below it, and returns a new quotation `q2` where `a` is the final item in `q`.
 - `uncons`: Pops the top of the stack `q2`, and extracts the final item `a`. Pushes `q` which is `q2` without this item. Then pushes `a`.
-- `foldl`: Given a quotation `q`, a starting accumulator `acc`, and a quotation-list `l` to perform on:
-  - Pushes `acc`.
-  - Pushes the first (leftmost) value in `l`
-  - Evaluates `q`
-  - Pushes the next value in `l`.
-  - Evaluates `q`
-  - etc, until the list is empty.
 
 The standard library extends on this with:
 - `reverse`: Reverses a list
@@ -264,15 +261,21 @@ The standard library extends on this with:
 - `map`: Maps a quotation `q` over each of the elements in the list `l`, returning a new list.
 - `sum`: Calculates the arithmetic sum of a list of integers.
 - TODO `product`: Calculates the arithmetic product of a list of integers.
+- `foldl`: Given a quotation `q`, a starting accumulator `acc`, and a quotation-list `l` to perform on:
+  - Pushes `acc`.
+  - Pushes the first (leftmost) value in `l`
+  - Evaluates `q`
+  - Pushes the next value in `l`.
+  - Evaluates `q`
+  - etc, until the list is empty.
 
 ### String operations
-- `to_string`: Returns a string representation of the literal on top:
-  - for Strings, this is themselves, encapsulated in `""`.
-  - for Integers/Floats, this is their digit representation.
-  - for unapplied Functions (which might occur in quotations), this is their name.
-  - for quotations, this is `[` followed by the space-delimited `to_string` results of its contents, followed by `]`.
+- `identifier_to_string`
 
-- `string_concat`: Concatenates two strings into one.
+The standard library extends on this with:
+- `integer_to_string`
+- `quotation_to_string`
+- the more generic `to_string` that dispatches to one of the above.
 
 ### Basic Output
 - `print`: Prints the string on top of the stack to STDOUT.
