@@ -23,22 +23,29 @@ Jux is a _functional, minimalistic, concatenative, homoiconic, nominally-typed_ 
 
 ## Inspiration
 
-Jux is inspired by the concatenative languages [**Joy**](https://web.archive.org/web/20111007025556/http://www.latrobe.edu.au/phimvt/joy/j02maf.html)(WebArchive link; original website is down) and [**Cat**](https://web.archive.org/web/20140720143526/http://www.cat-language.com/index.html)(WebArchive link; original website is down).
+Jux is inspired by the concatenative languages:
+- [**Joy**](https://web.archive.org/web/20111007025556/http://www.latrobe.edu.au/phimvt/joy/j02maf.html)(WebArchive link; original website is down)
+- [**Cat**](https://web.archive.org/web/20140720143526/http://www.cat-language.com/index.html)(WebArchive link; original website is down).
+- [**PostScript**](http://www.tailrecursive.org/postscript/postscript.html)
 
+Furthermore, Jux is influenced by:
+- LISPs like [**Common LISP**](https://common-lisp.net/), [**Scheme**](http://www.schemers.org/) and [**Clojure**](http://clojure.org/).
+- [**Elixir**](http://elixir-lang.org/).
+- The minimalistic [**Nock**](http://urbit.org/docs/nock/definition/) language that is part of Urbit.
 
 # Roadmap
 
 - Old Ruby implementation prototype: 100%; _(not in this repository)_
-- Flesh out this Readme: 65%;
-- Elixir implementation version: 0.2;
-- New Ruby implementation: 0%;
+- Flesh out this Readme: 85%;
+- Elixir implementation version: 0.5.85;
+- New Ruby implementation: 65%;
 
 - [x] Think about custom function definitions: Syntax: `"name" "documentation" [implementation] def`
 - [x] Think about fallback rewrite function implementations: 
-  - > A Fallback rewrite _can_ contain its own name, as long as this happens inside a quotation, so we can expand a rewrite rule all at once without creating an infinite loop. These kinds of recursive rewrites with the same name used inside a quotation are however very useful sometimes.
+  - -> A Fallback rewrite _can_ contain its own name, as long as this happens inside a quotation, so we can expand a rewrite rule all at once without creating an infinite loop. These kinds of recursive rewrites with the same name used inside a quotation are however very useful sometimes.
   - [x] All of these functions need documentation just like normal functions.
-    - Have definitions of all functions, including primitive ones.
-    - primitive function definitions contain a quotation with `__PRIMITIVE__` inside, which itself is a defined no-op, but handled by the evaluator to raise an error when encountered during execution.
+    - [x] Have definitions of all functions, including primitive ones.
+    - [x] primitive function definitions contain a quotation with `__PRIMITIVE__` inside, which itself is a defined no-op, but handled by the evaluator to raise an error when encountered during execution.
   
 
 - Think about efficiency:
@@ -53,21 +60,36 @@ Jux is inspired by the concatenative languages [**Joy**](https://web.archive.org
       - `0 + ==> `
       - _see the [Mathematical foundations of Joy](https://web.archive.org/web/20111007025556/http://www.latrobe.edu.au/phimvt/joy/j02maf.html) for more examples of rewrite rules in concatenative languages_
 
+- Think about core syntax:
+  - Allow improper lists or not?
+  - Allow anything (not starting with `/`, not containing `[` or `]` or whitespace) as an identifier. Allow escaped string-identifiers with custom characters in there as `/"something with spaces"`
+    - good idea or not?
+  - How does a nominal type system work in practice? What are its problems?
+
 Minimize core language:
 
-Current required operations:
+Literals:
 
-- the integer, string and quotation literals.
+- Integers (both positive and negative (?))
+- Quotations
+- Strings (Default implementation maps the string format to a quotation with the String type filled with integers )
+
+Currently **18** primitive operations: (These are very trivial to implement)
+
 - `dup, pop, swap` Stack manipulation.
 - `dip` Combinators.
 - `cons, uncons` Quotation manipulation.
-- `add, sub` Integer arithmetic.
+- `add` Integer arithmetic.
 - `ifte` Conditionals.
 - `eq?` Equality.
 - `compare` Comparisons of ordering.
-- `string_concat` Combine two strings. TODO: Strings as integer quotations would mean that this is not needed.
-- `print` Output to STDOUT.
-- `bnot, band, bor` Bitwise operations. TODO: Can these be emulated? How necessary are they?
+- `nand` Boolean operations.
+- `bnand` Bitwise operations.
+- `to_string` Change primitive to string form. TODO: Maybe only required for identifiers? Other values can be emulated inside Jux.
+- `to_identifier` Change string to identifier.
+- `callable?`
+- `def`, `redef`: Define a new identifier-implementation. TODO: Maybe a way to emulate one of them?
+- `print` Output to STDOUT. TODO: Maybe combine with other STDIO-stuff?
 
 Probably going to add:
 
