@@ -11,6 +11,16 @@ To be able to live up to both of these goals, Jux defines a very small set of li
 
 The same holds true for data types: The literal data types a target *has* to implement are `int`, `string`, `quotation`(linked lists), `symbol`(a name with a constant integer value). The other supported data types (`tuple`(pairs, triples, etc; fixed-size arrays of values), `dict`(an associative key->value store ) and `tree` are by default implemented on top of lists.)
 
+# Definition
+
+Jux is a _functional, minimalistic, concatenative, homoiconic, nominally-typed_ programming language:
+
+- functional: Everything in Jux is a function, taking the current environment as input, and returning a changed environment as output.
+- minimalistic: Jux designed to be as simple as possible to implement. There are only +- 18 primitive instructions(most of which are trivial to implement), two literal types(integers and linked lists called 'quotations') and the rest of the interpreter/compiler is completely straightforward. Jux works without needing any behind-the-scenes data manipulation (i.e. no garbage collection necessary).
+- concatenative: To combine multiple functions, the result is passed left-to-right.
+- homoiconic: Jux's source maps neatly unto what happens on the stack. There also is no difference between a snippet of souce code and a linked list containing some other type of data.
+- nominally typed: All values in Jux have a type, which basically is a 'label' which can be queried and certain low-level operations might alter. The advantage is that a certain implementation might decide to alter one of Jux's types from a quotation-based implementation to a lower-language literal (which is more efficient) without breaking anything.
+
 ## Inspiration
 
 Jux is inspired by the concatenative languages [**Joy**](https://web.archive.org/web/20111007025556/http://www.latrobe.edu.au/phimvt/joy/j02maf.html)(WebArchive link; original website is down) and [**Cat**](https://web.archive.org/web/20140720143526/http://www.cat-language.com/index.html)(WebArchive link; original website is down).

@@ -245,7 +245,7 @@ defmodule Jux.Primitive do
 
   def callable?([{x = %Jux.Identifier{name: name}, t} | xs], known_definitions) do
     result = known_definitions[name] != nil
-    [result | xs]
+    [{result, "Boolean"} | xs]
   end
 
   # def string_concat([{b, "String"}, {a, "String"} | xs], _) do

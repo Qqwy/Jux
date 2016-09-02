@@ -1234,6 +1234,20 @@ def
   [lift i]
 def
 
+/call_if_callable
+  "
+  Only calls the given identifier if it exists.
+
+  Otherwise returns nothing.
+  "
+  [ lift dup lift [ unlift callable?] append swap [] ifte ]
+def
+
+/lambda
+  "A single lambda substitution"
+  []
+def
+
 /one
   "temp to test."
   [1]
