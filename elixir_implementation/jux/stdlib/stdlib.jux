@@ -1238,8 +1238,7 @@ def
                 # Subtracts divisor from dividend
                 # and increments counter
                 # unless the divisor is smaller than the dividend.
-              # 0 [[pop2 lt?] [pop popd] [[dupd [sub] dip2 inc] dip dup i] ifte] dup i
-                0 [[get3 get3 lt? inspect_stack popd popd inspect_stack] [pop popd] [[dupd [sub] inspect_stack dip2 inc] dip dup i] ifte] dup inspect_stack i
+                0 [[get4 get4 lt? inspect_stack popd popd inspect_stack] [pop popd] [[dupd [sub] inspect_stack dip2 inc] dip dup i] ifte] dup inspect_stack i
               ]
             ifte
           ]
