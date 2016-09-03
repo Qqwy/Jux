@@ -365,7 +365,7 @@ As can be seen, no special syntax is necessary to parse this.
 
 Idea: Data Types built on Records:
 
-- New syntax: `:foo` === `[foo] uncons popd`. Puts a single identifier on the stack without evaluating it. Not _required_, but a lot nicer for below explanations. Could also be used for function names in normal `def` statements.
+- New syntax: `/foo` === `[foo] uncons popd`. Puts a single identifier on the stack without evaluating it. Not _required_, but a lot nicer for below explanations. Could also be used for function names in normal `def` statements.
 - Namespaces are used to keep the language explicit and to prevent name clashes. To keep the language simple, _only conventions_ enforce the use of namespaces. `redef`ining a function in a namespace you're not working on is possible (and required for some inner workings of below things), but greatly frowned upon.
   - If there is a way to enforce this on language-level, or have certain implementations enforce this once they are mature enough, I would love to know.
 
@@ -473,3 +473,7 @@ Many definitions abstract the second definition, to make it more fast, saying 'a
 Strings are a list of Integers. They are only treated differently from normal quotations during output. (As well as there existing a parser shorthand to create a string by delimiting it with `"..."`)
 
 Depending on the `type` label a structure has, values might be treated differently. This mostly is important when supplying custom implementations for certain kinds of structures. If, for instance, you would like to use native strings
+
+A Jux Token is either an Atom, or a list of Jux Tokens.
+
+A Jux Atom is either an Integer (positive or negative whole number), a String (any characters delimited with `"`), an Identifier (a name that might or might not have an implemetation) or an Escaped Identifier (starts with a `/`, is an identifier that is to be unescaped on copying over from function queue to stack.)
