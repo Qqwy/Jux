@@ -8,6 +8,7 @@ module Jux
 
       def evaluate_on(function_queue, stack, known_definitions)
         # TODO: Deep copy
+        function_queue = Jux::Helper.deep_dup(function_queue)
 
         until function_queue.empty?
           token = function_queue.shift

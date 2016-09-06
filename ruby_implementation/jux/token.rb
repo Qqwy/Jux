@@ -154,7 +154,7 @@ module Jux
         else
           raise "Cannot compare #{av.inspect} <=> #{bv.inspect}"
         end
-      Jux::Token.new(result, 'Integer')
+      result
     end
 
     def method_missing(m, *args, &block)

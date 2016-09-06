@@ -22,9 +22,10 @@ module Jux
       end
 
       def dip(stack, known_definitions)
-        quot = stack.pop.val
+        quot = stack.pop
         top = stack.pop
-        stack, _kd = Jux::Evaluator.evaluate_on(quot, stack, known_definitions)
+        puts "Dip: `#{quot.val.inspect}` on `#{stack.inspect}`"
+        stack, _kd = Jux::Evaluator.evaluate_on(quot.val, stack, known_definitions)
         stack.push(top)
         stack
       end
@@ -93,25 +94,29 @@ module Jux
         else_quot = stack.pop
         then_quot = stack.pop
         condition_quot = stack.pop
-        condition_stack = Jux::Helper.deep_dup(stack)
-        result_condition_stack, kd2 = Jux::Evaluator.evaluate_on(condition_quot.val, condition_stack, known_definitions)
-        if result_condition_stack.pop != Jux::Token.new(false, 'Boolean')
-          Jux::Evaluator.evaluate_on(then_quot.val, stack, kd2)
+        #condition_stack = Jux::Helper.deep_dup(stack)
+        stack, kd2 = Jux::Evaluator.evaluate_on(condition_quot.val, stack, known_definitions)
+        
+        # TODO: Definitions inside ifte
+        if stack.pop != Jux::Token.new(false, 'Boolean')
+          stack, kd3 = Jux::Evaluator.evaluate_on(then_quot.val, stack, kd2)
         else
-          Jux::Evaluator.evaluate_on(else_quot.val, stack, kd2)
+          stack, kd3 = Jux::Evaluator.evaluate_on(else_quot.val, stack, kd2)
         end
+        stack
       end
 
       def eq?(stack, _known_definitions)
-        b = stack.pop
-        a = stack.pop
-        stack.push a.val == b.val
+        b = stack[-1]
+        a = stack[-2]
+        puts "Comparing: #{a.inspect} with #{b.inspect}"
+        stack.push Jux::Token.new(a.val == b.val, 'Boolean')
       end
 
       def compare(stack, _known_definitions)
-        b = stack.pop
-        a = stack.pop
-        stack.push(a <=> b)
+        b = stack[-1]
+        a = stack[-2]
+        stack.push(Jux::Token.new(a <=> b, "Integer"))
       end
 
       def bnot(stack, _known_definitions)
@@ -151,7 +156,7 @@ module Jux
       end
 
       def type(stack, _known_definitions)
-        top = stack.pop
+        top = stack[-1]
         puts top.inspect
         stack.push Jux::Token.new(Jux::Identifier.new(top.type),"Identifier")
         stack
@@ -161,6 +166,11 @@ module Jux
         type_identifier = stack.pop
         elem = stack.last
         elem.type = type_identifier.val.name
+        stack
+      end
+
+      def inspect_stack(stack, _known_definitions)
+        puts 'stack: ' + Jux::Helper.stack_to_str(stack)
         stack
       end
     end

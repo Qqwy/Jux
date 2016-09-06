@@ -43,43 +43,150 @@ def
 def
 
 /ifte
-  "TODO"
+  "Takes as input three quotations:
+  bottom-to-top: [condition] [then-part] [else-part]
+  First evaluates condition on the current stack. 
+  If the topmost value of the result is non-false,
+  the then-part is then evaluated.
+  
+  If the topmost value of the result ís false,
+  the else-part is then evaluated.
+
+  Before evaluating either the then-part or the else-part,
+  the stack is 'rewound' to its state before the condition result.
+  This might change in the future, because it means copying the whole stack.
+  "
   [ __PRIMITIVE__ ]
 def
 
 /add
-  "TODO"
+  "
+  Takes two integer numbers from the top of the stack, 
+  adds them together 
+  and pushes the result back to the top of the stack.
+  "
+  [ __PRIMITIVE__ ]
+def
+
+/bnand
+  "
+  Takes the bitwise nand of two numbers.
+  This instruction can be used to build all other bitwise operations.
+  "
   [ __PRIMITIVE__ ]
 def
 
 /bnot
-  "TODO"
-  [ __PRIMITIVE__ ]
+  "
+  Returns the bitwise inverse or 'ones complement' of a number.
+  "
+  [ dup bnand ]
 def
 
-/sub
-  "TODO"
+/band
+  "
+  Returns the bitwise and of two numbers.
+  "
+  [ bnand bnot ]
+def
+
+/bor
+  "
+  Returns the bitwise or of two numbers.
+  "
+  [ [bnot] dip bnot bnand ]
+def
+
+/bnor
+  "
+  Returns the bitwise nor of two numbers.
+  "
+  [ bor bnot ]
+def
+
+
+/complement
+  "
+  Inverts the sign of a number: a positive number becomes negative,
+  a negative number becomes positive.
+
+  The default (fallback) implementation assumes that on the language that Jux
+  is implemented on, **two's complement** is used for negative numbers.
+
+  If this is not the case, `/complement` needs to be written as a native function. 
+  "
   [ bnot 1 add ]
 def
 
+/sub
+  "
+  Takes two integer numbers from the top of the stack, 
+  subtracts the topmost one from the bottommost one 
+  and pushes the result back to the top of the stack.
+
+  a b sub c
+  where c == a-b  
+  "
+  [ complement add ]
+def
+
 /cons
-  "TODO"
+  "
+  Combines the top two elements in a pair.
+  (_cons_ truct a pair) 
+
+  Usually used to add an element to the front of a linked list, i.e. quotation.
+  
+  [...c] a cons [...c a]
+  "
   [ __PRIMITIVE__ ]
 def
 
 /uncons
-  "TODO"
+  "
+  Reverse the operation of `cons`: Take the topmost element of a linked list i.e. quotation,
+  and put it on top of the stack with below it the resulting list without this element.
+  [...c, a] uncons [...c] a
+  "
   [ __PRIMITIVE__ ]
 def
 
 /compare
-  "TODO"
+  "
+  Compares the top two elements.
+  a b compare c
+  c is:
+  - `0` if a and b are equal,
+  - `1` if a is larger than b,
+  - `-1` if a is smaller than b.
+
+  All built-in values can be compared in Jux. There is a default ordering:
+  Integer < Boolean < Identifier < Quotation.
+
+  For booleans:  false < true
+  For identifiers: alphabetic order (ANSI/Unicode).
+  For quotations: element-wise comparison. shorter < longer.
+
+  In the future, maybe the topmost elements are not popped, because usually we want to compare them to see
+  how to manipulate them afterwards. (i.e. use them after the comparison.)
+  "
   [ __PRIMITIVE__ ]
 def
 
 /eq?
-  "TODO"
+  "
+  a b eq? a b boolean
+  Returns `true` if a and b are the same.
+  "
   [ __PRIMITIVE__ ]
+def
+
+/eqp?
+  "
+  Returns the same result as `eq?` but removes `a` and `b` themselves from the stack:
+  a b eqp? boolean
+  "
+  [ eq? popd popd ]
 def
 
 /nand
@@ -94,14 +201,14 @@ def
   [ __PRIMITIVE__ ]
 def
 
-/to_string
+/identifier_to_string
   "
   Turns a value of any type into a string.
   "
   [ __PRIMITIVE__ ]
 def
 
-/to_identifier
+/string_to_identifier
   "
   Turns a string into an identifier, as long as this string is a valid identifier.
 
@@ -119,7 +226,11 @@ def
 def
 
 /print
-  "TODO"
+  "
+  Prints a string to `stdout`.
+  Behaviour is undefined for non-strings. (Should probably crash).
+  Pops the printed string from the top of the stack.
+  "
   [ __PRIMITIVE__ ]
 def
 
@@ -127,14 +238,17 @@ def
 # Basic
   
 /noop
-  ""
+  "A no-operation. Does absolutely nothing."
   [  ]
 def
 
  #does nothing.
   
 /id
-  ""
+  "
+  Just like `noop`, but ensures that there is at least a single element on the stack.
+  (Otherwise crashes).
+  "
   [ [] dip ]
 def
 
@@ -142,94 +256,161 @@ def
 
 # Stack manipulation
 /swapd
-  ""
+  "
+  Swaps the second and third elements:
+
+  a b c swapd b a c
+  "
   [ [swap] dip ]
 def
 
 /swap2
-  ""
+  "
+  swaps the top element with the third element on the stack:
+
+  a b c swap2 c a b
+  "
   [ swap swapd ]
 def
 
 /popd
-  ""
+  "
+  Pops the second element on the stack:
+
+  a b c popd a c
+  "
   [ [pop] dip ]
 def
 
 /pop2
-  ""
+  "
+  Pops the top two elements from the stack
+
+  a b c pop2 a
+  "
   [ pop pop ]
 def
 
 /pop3
-  ""
+  "
+  Pops the top thee elements from the stack
+
+  a b c d pop2 a
+  "
   [ pop pop pop pop ]
 def
 
 /pop4
-  ""
+  "
+  Pops the top two elements from the stack
+
+  a b c d e pop2 a
+  "
   [ pop pop pop pop ]
 def
 
 /dupd
-  ""
+  "
+  Duplicates the second element on the stack:
+
+  a b c dupd a b b c
+  "
   [ [dup] dip ]
 def
 
 /dupdd
-  ""
+  "
+  Duplicates the third element on the stack:
+
+  a b c d dupd a b b c d
+  
+  "
   [ [dupd] dip ]
 def
 
 /get2
-  ""
+  "
+  puts a duplicate of the second element on top of the stack:
+
+  a b c get2 a b c b
+  "
   [ dupd swap ]
 def
 
 /get3
-  ""
+  "
+  puts a duplicate of the third element on top of the stack:
+
+  a b c d get2 a b c d b
+  "
   [ [get2] dip swap ]
 def
 
 /get4
-  ""
+  "
+  puts a duplicate of the fourth element on top of the stack:
+
+  a b c d e get2 a b c d e b
+  "
   [ [get3] dip swap ]
 def
 
 /dup2
-  ""
+  "
+  Duplicates the top two elements and puts them on top of the stack in the same order:
+
+  a b c dup2 a b c b c
+  "
   [ get2 get2 ]
 def
 
 /dup3
-  ""
+  "
+  Duplicates the top three elements and puts them on top of the stack in the same order:
+
+  a b c d dup2 a b c d b c d
+  "
   [ get3 get3 get3 ]
 def
 
 /dup4
-  ""
+  "
+  Duplicates the top four elements and puts them on top of the stack in the same order:
+
+  a b c d e dup2 a b c d e b c d e
+  "
   [ get4 get4 get4 get4 ]
 def
 
 /flip
-  ""
+  "
+  Flips the order of the top three elements:
+
+  a b c d flip a d c b
+  "
   [ swapd swap swapd ]
 def
- # 1 2 3 -> 3 2 1
+
 /flip4
-  ""
+  "
+  Flips the order of the top four elements:
+
+  a b c d e flip a e d c b
+  "
   [ swap [flip] dip swap ]
 def
 
- # 1 2 3 4 -> 4 3 2 1
 /flip5
-  ""
+  "
+  Flips the order of the top five elements:
+
+  a b c d e f flip a f e d c b
+  "
   [ swap [flip4] dip swap ]
 def
- # 1 2 3 4 5 -> 5 4 3 2 1
 
 /not
-  "boolean NOT, made from nand-logic"
+  "boolean (truthy) NOT."
   [ dup nand]
 def
 
@@ -244,39 +425,53 @@ def
 def
 
 /and
-  "boolean AND, made from nand-logic"
+  "boolean (truthy) AND."
   [nand not]
 def
 
 /or
-  "boolean OR, made from nand-logic"
+  "boolean (truthy) OR."
   [ not swap not nand ]
 def
 
 /nor
-  "boolean NOR, made from nand-logic"
+  "boolean (truthy) NOR."
   [ or not ]
 def
 
 /xor
   "
-  boolean XOR, made from nand-logic
+  boolean (truthy) XOR.
   
-  This implementation might be suboptimal as-is.
+  The current default fallback implementation might be suboptimal as-is.
   "
   [ dup2 nand dup swapd nand swap2 nand nand ]
 def
 
+/bxor
+  "
+  bitwise XOR.
+
+  The current default fallback implementation might be suboptimal as-is.
+  "
+  [ dup2 bnand dup swapd bnand swap2 bnand bnand ]
+def
+
 # Combinators
+/i
+  "
+  Evaluates(or Interprets) the quotation on top of the stack.
+  "
+  [ dup dip pop ]
+def
+
 /dip2
-  ""
+  "
+  Works just like `dip`, but temporarily removes the top _two_ elements of the stack.
+  "
   [ swap [dip] dip ]
 def
 
-/i
-  ""
-  [ dup dip pop ]
-def
 
 # "reverse"
 #   ""
@@ -331,7 +526,7 @@ def
   Returns [] of same type as element below it.
   "
   [
-  dup type [] swap cast_to
+  type [] swap cast_to
   ]
 def
 
@@ -379,7 +574,7 @@ def
 /backwards_append
   "a backwards append that does not use the y-combinator!"
   [
-    [[pop2 empty?] [pop popd] [[unconsd reverse_cons] dip dup i] ifte] dup i
+    [[get3 emptyp?] [pop popd] [[unconsd reverse_cons] dip dup i] ifte] dup i
   ]
 def
 
@@ -392,12 +587,11 @@ def
   "
   [ 
     swapd # Swaps [1 2 3] with 0, so list is second element after quotation to be done at each step.
-    [[pop empty?] [pop2]] # The first two clauses of the `ifte`.
+    [[get2 emptyp?] [pop2]] # The first two clauses of the `ifte`.
       swap # Now bring the new clause on top
       [[reverse_uncons] dip] reverse_cons # Change clauce `[q]` to `[[reverse_uncons] dip [q]]
     [dip2] ucons [dup] ucons [i] ucons # Change `[[tail] dip [q]]` to [[[reverse_uncons] dip [q] dup i] ifte]
     cons [ifte] ucons # combine first and second parts of the ifte.
-    #inspect_stack
     dup i # Start execution
   ]
 def
@@ -611,40 +805,67 @@ def
   [ eq? not ]
 def
 
+/neqp?
+  ""
+  [ eqp? not ]
+def
+
 /zero?
   ""
-  [ 0 eq? ]
+  [ 0 eq? popd ]
+def
+
+/zerop?
+  ""
+  [ zero? popd]
 def
 
 /one?
   ""
-  [ 1 eq? ]
+  [ 1 eq? popd ]
 def
+
+/onep?
+  ""
+  [ one? popd ]
+def
+
 
 /lt?
   ""
-  [ compare -1 eq? ]
+  [ compare -1 eqp? ]
 def
 
 /gt?
   ""
-  [ compare 1 eq? ]
+  [ compare 1 eqp? ]
 def
 
 /gte?
   ""
-  [ compare -1 neq? ]
+  [ compare -1 neqp? ]
 def
 
 /lte?
   ""
-  [ compare  1 neq? ]
+  [ compare  1 neqp? ]
 def
 
 /empty?
   ""
-  [ [] compare zero? ]
+  [ [] compare zero? popd popd]
 def
+
+/emptyp?
+  ""
+  [ empty? popd]
+def
+
+/has_type?
+  ""
+  [[type] dip eq? popd popd]
+def
+
 
 /max
   ""
@@ -700,12 +921,12 @@ def
 
 
 /ifeqte
-  ""
+  "TODO: Possibly broken."
   [ [lift [eq?] append] dip2 ifte ]
 def
 
 /ifneqte
-  ""
+  "TODO: Possibly broken."
   [ [lift [neq?] append] dip2 ifte ]
 def
 
@@ -817,10 +1038,7 @@ def
 
 
 # Bitwise
-/bxor
-  ""
-  [ [dup] dip dup [swap] dip bor [band bnot] dip band ]
-def
+
 
 
 # Recursion
@@ -863,12 +1081,12 @@ def
   "
   [
     [
-    [pop zero?] # As the y-combinator puts the evaluated function on top, check against the second value. 
+    [get2 zerop?] # As the y-combinator puts the evaluated function on top, check against the second value. 
       [pop2 1] # Base case: Remove the function and the `0` that is on top, and return `1`.
       [ 
-      [dup dec] dip # Duplicate the current number and decrease it by one.
-      i             # Then call recusively on that number.
-      mul           # After the recursive result is known, multiply the obtained result by our current number.
+        [dup dec] dip # Duplicate the current number and decrease it by one.
+        i             # Then call recusively on that number.
+        mul           # After the recursive result is known, multiply the obtained result by our current number.
       ] 
     ifte] 
   y
@@ -923,13 +1141,13 @@ def
 
 /negative?
   "true if the number is smaller than 0"
-  [ 0 lt?]
+  [ 0 lt? popd]
 def
 
-/negate
-  "negates a number to its opposite sign"
-  [ 0 swap sub ]
-def
+# /negate
+#   "negates a number to its opposite sign"
+#   [ 0 swap sub ]
+# def
 
 /abs
   "changes a number to a positive number, regardless of original sign"
@@ -976,7 +1194,7 @@ def
     # In the case that both inputs are negative, this new call will swap the number order once more.
     # No more than two recursive calls get made ever. 
     [negative?] 
-      [negate emul3 negate] 
+      [complement mul complement] 
       [
         # If the top number is zero, we can return a short-circuit answer; namely the zero already on top.
         [zero?] 
@@ -987,7 +1205,7 @@ def
             dupd 
             # And then iterates until the topmost value is equal to one,
             [
-              [pop one?] 
+              [get2 onep?] 
                 [pop2 popd] 
                 # 1. adding a duplicate of the third value from top to the second value from top
                 # 2. decrementing the topmost value
@@ -1006,7 +1224,7 @@ def
   "
   Experimental integer division.
   
-  Very slow. Ansewr still incorrect for negative numbers.
+  Very slow. Answer still incorrect for negative numbers.
   "
   [ 
     [zero?]
@@ -1014,17 +1232,17 @@ def
       [
         # If dividend is negative, negate result.
         [negative?]
-          [negate mod_div negate [negate] dip]
+          [complement mod_div complement [complement] dip]
           [
             # If divisor is negative, negate result.
-            [pop negative?]
-              [[negate] dip mod_div negate]
+            [get2 negative? popd]
+              [[complement] dip mod_div complement]
               [
                 # Recursive implementation.
                 # Subtracts divisor from dividend
                 # and increments counter
                 # unless the divisor is smaller than the dividend.
-                0 [[pop2 lt?] [pop popd] [[dupd [sub] dip2 inc] dip dup i] ifte] dup i
+                0 [[get4 get4 lt? popd popd] [pop popd] [[dupd [sub] dip2 inc] dip dup i] ifte] dup i
               ]
             ifte
           ]
@@ -1050,6 +1268,20 @@ def
   [lift i]
 def
 
+/call_if_callable
+  "
+  Only calls the given identifier if it exists.
+
+  Otherwise returns nothing.
+  "
+  [ lift dup lift [ unlift callable?] append swap [] ifte ]
+def
+
+/lambda
+  "A single lambda substitution"
+  []
+def
+
 /one
   "temp to test."
   [1]
@@ -1062,10 +1294,142 @@ def
       dup
       ""
       swap # order is now "foo" "" "foo"
-      to_identifier call # "foo" "" output_of_foo
+      string_to_identifier call # "foo" "" output_of_foo
     ] dip
     i # Run quotation on top on the output of foo.
     lift # Wrap the result (which should be a single-value) in a quotation, so we can use `redef`.
     redef
   ]
+def
+
+/replace
+  "
+  `x replacement quotation replace quotation_with_x_replaced`
+  
+  `/x 10 [1 x 2 3 x x] replace ==> [1 10 2 3 10 10]`
+
+  Only works for a single depth.
+
+  TODO: Multi-depth variant that can be done to do full lambda-replacements.
+  "
+  [ 
+    # Builds the following:     [1 /x 3] [[lift [/x] eq? popd] [pop /foobar] if unlift] map
+
+    flip # /x 1 [a b c] -> [a b c] 1 /x
+    lift lift [lift] reverse_append [eq? popd] append # [a b c] 1 [lift [/x] eq? popd]
+    swap lift [pop] reverse_cons # [a b c] [lift [/x] eq? popd] [pop [1]]
+    lift2 [if unlift] append # [a b c] [[lift [/x] eq? popd] [pop [1]] if unlift]
+    map
+  ]
+def
+
+
+/digits
+  "
+  Transforms an integer into a quotation of its digits
+
+  There is a special case for `0`, other numbers are recursed over.
+  Note that the digits are returned with the lowest digit being the tail-most one,
+  so when read left-to-right, the digits are in reverse order.
+  "
+  [
+    [zero?]
+      [[0]]
+      [ [] swap [[get2 zero? popd] [pop2] [[10 mod_div [cons] dip] dip dup i] ifte] dup i ]
+    ifte
+  ]
+def
+
+/digit_to_string
+  "Changes a single digit 0-9 to its corresponding string form."
+  [ 48 add lift /String cast_to ]
+def
+
+/integer_to_string
+  "Changes a (positive) integer number to a string"
+  [
+    [negative?]
+    [complement integer_to_string "-" reverse_append]
+    [ digits "" [digit_to_string append] foldl ]
+  ifte
+  ]
+def
+
+/quotation_to_string
+  "Changes a quotation to a string"
+  [ "[" [to_string append " " append] foldr tail "]" append ]
+def
+
+/to_string
+  "
+  Turns any standard Jux data structure to a string.
+  For identifiers, `identifier_to_string` is used.
+  For integers and quotations, a fallback algorithm exists that is built from the ground up.
+  "
+  [
+    type
+    [/String eq? popd]
+      [pop]
+      [
+        [/Identifier eq? popd]
+          [pop identifier_to_string]
+          [
+            [/Integer eq? popd]
+              [pop integer_to_string]
+              [
+              [/Quotation eq? popd]
+                [pop quotation_to_string]
+                [ "???" ]
+              ifte
+              ]
+            ifte
+          ]
+        ifte
+      ]
+    ifte
+  ]
+def
+
+
+/pushdef
+  "
+  Defines a new implementation for a certain symbol, that can later be reversed by using `popdef`
+
+  `identifier implementation pushdef`
+
+  TODO: This does not work when stack is empty...
+  "
+  [ 
+    get2
+    
+    # Ensure that if not previously defined, it will be now.
+    [dup callable?]
+      [dup "" [[]] def]
+    unless
+
+    inspect_stack
+        
+    #The following code builds this snippet:
+    #[
+    #  [/popdef_call has_type? swap empty? and]
+    #    [old_implementation]
+    #    [new_implementation]
+    #  ifte
+    #]
+    call lift # [old_implementation]
+    inspect_stack
+    swap lift2 # [[old_implementation] [new_implementation]]
+    [[dup /popdef_call has_type? popd]] reverse_append [ifte] append
+
+    inspect_stack
+    # Add placeholder documentation str.
+    "" swap
+    inspect_stack
+    redef
+  ]
+def
+
+/popdef
+  "Reverts an implementation earlier made by `pushdef` "
+  [ ]
 def
