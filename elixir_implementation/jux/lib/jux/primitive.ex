@@ -10,26 +10,26 @@ defmodule Jux.Primitive do
 
   # Primitive Stack Manipulation
 
-  def dup([x | xs], _) do
-    [x, x | xs]
+  def dup([x | xs], kd) do
+    {[x, x | xs], kd}
   end
   def dup(_, _), do: raise "Called `dup` without a value to duplicate on the stack."
 
-  def swap([x, y | xs], _) do
-    [y, x | xs]
+  def swap([x, y | xs], kd) do
+    {[y, x | xs], kd}
   end
   def swap(_, _), do: raise "Called `swap` without two values to swap on the stack."
 
-  def pop([_x | xs], _) do
-    xs
+  def pop([_x | xs], kd) do
+    {xs, kd}
   end
   def pop(_, _), do: raise "Called `pop` while the stack is empty."
 
   # Combinators
 
   def dip([{quot, _t}, x | xs], known_definitions) when is_list(quot) do
-    {new_stack, _} = Jux.Evaluator.evaluate_on(quot, xs, known_definitions)
-    [x | new_stack]
+    {new_stack, kd2} = Jux.Evaluator.evaluate_on(quot, xs, known_definitions)
+    {[x | new_stack], kd2}
   end
   def dip( xs = [_, _ | _], _) do
     #IO.puts(Jux.stack_to_string(xs))
@@ -40,7 +40,7 @@ defmodule Jux.Primitive do
   # Why does Joy call this thing infra?
   def infra([{quot, _t}, {list, _lt} | xs], known_definitions) when Kernel.and(is_list(quot), is_list(list)) do
     {result_stack, _} = Jux.Evaluator.evaluate_on(quot, list, known_definitions)
-    [{result_stack, "Quotation"} | xs]
+    {[{result_stack, "Quotation"} | xs], known_definitions}
   end
 
   # Conditionals
@@ -52,18 +52,16 @@ defmodule Jux.Primitive do
     #IO.inspect(match?([false | _], condition_check_stack))
     case stack2 do
       [{false, "Boolean"} | stack2_rest] ->
-        {new_stack, _} = Jux.Evaluator.evaluate_on(else_quot, stack2_rest, kd2)
-        new_stack
+        Jux.Evaluator.evaluate_on(else_quot, stack2_rest, kd2)
       [_ | stack2_rest] ->
-        {new_stack, _} = Jux.Evaluator.evaluate_on(then_quot, stack2_rest, kd2)
-        new_stack
+        Jux.Evaluator.evaluate_on(then_quot, stack2_rest, kd2)
     end
   end
 
   # Arithmetic
 
-  def add([{b, _t}, {a, t} | xs], _) do
-    [{a + b, t} | xs]
+  def add([{b, _t}, {a, t} | xs], kd) do
+    {[{a + b, t} | xs], kd}
   end
   def add(_, _), do: raise "Called `add` with non-numeric parameters."
   # `sub` is only necessary if we are _not_ using two's complement. 
@@ -104,10 +102,10 @@ defmodule Jux.Primitive do
   # def unquote(:and)([_    , _     | xs], _), do: [true | xs]
   # def unquote(:and)(_, _), do: raise "Called `and` without two values to compare."
 
-  def nand([{false, "Boolean"}, _     | xs], _), do: [{true, "Boolean"}  | xs]
-  def nand([_    , {false, "Boolean"} | xs], _), do: [{true, "Boolean"}  | xs]
-  def nand([_    , _     | xs], _), do: [{false, "Boolean"} | xs]
-  def nand(_, _), do: raise "Called `nand` without two values to compare."
+  def nand([{false, "Boolean"}, _     | xs], kd), do: {[{true, "Boolean"}  | xs], kd}
+  def nand([_    , {false, "Boolean"} | xs], kd), do: {[{true, "Boolean"}  | xs], kd}
+  def nand([_    , _     | xs], kd), do: {[{false, "Boolean"} | xs], kd}
+  def nand(_, kd), do: raise "Called `nand` without two values to compare."
 
   # Bitwise
 
@@ -115,14 +113,17 @@ defmodule Jux.Primitive do
   # def bor([{b, t}, {a, t} | xs], _), do: [{Bitwise.bor(a, b), t} | xs]
   # def band([{b, t}, {a, t} | xs], _), do: [Bitwise.band(a, b) | xs]
 
-  def bnand([{b, t}, {a, t} | xs], _), do: [{Bitwise.bnot(Bitwise.band(a, b)), t} | xs]
+  def bnand([{b, t}, {a, t} | xs], kd), do: {[{Bitwise.bnot(Bitwise.band(a, b)), t} | xs], kd}
 
   # Comparisons
 
-  def compare([{b, bt}, {a, at} | xs], _) do
+  def compare([{b, bt}, {a, at} | xs], kd) do
     #IO.inspect(b)
     #IO.inspect(a)
-    [{do_compare(b, a), "Integer"}, {b, bt}, {a, at} | xs]
+    {
+      [{do_compare(b, a), "Integer"}, {b, bt}, {a, at} | xs],
+      kd
+    }
   end
 
   # element always eq to itself
@@ -175,19 +176,22 @@ defmodule Jux.Primitive do
     end
   end
 
-  def eq?([{b, bt}, {a, at} | xs], _) do
-    [{do_compare(b, a) == 0, "Boolean"} , {b, bt}, {a, at} | xs]
+  def eq?([{b, bt}, {a, at} | xs], kd) do
+    {
+      [{do_compare(b, a) == 0, "Boolean"} , {b, bt}, {a, at} | xs],
+      kd
+    }
   end
 
   # Quotation operations
 
-  def cons([x, {quot, t} | xs], _) when is_list(quot) do
-    [{[x | quot], t} | xs]
+  def cons([x, {quot, t} | xs], kd) when is_list(quot) do
+    {[{[x | quot], t} | xs], kd}
   end
   def cons(_, _), do: raise "Called `cons` without a quotation to construct with."
 
-  def uncons([{[x | quot], t} | xs], _) when is_list(quot) do
-    [x, {quot, t} | xs]
+  def uncons([{[x | quot], t} | xs], kd) when is_list(quot) do
+    {[x, {quot, t} | xs], kd}
   end
 
   def uncons([{[], _} | _xs], _) do
@@ -236,18 +240,18 @@ defmodule Jux.Primitive do
   #   #|> Jux.elixir_charlist_to_jux_string
   # end
 
-  def identifier_to_string([{elem = %_identifier{name: _name}, t} | xs]) do
+  def identifier_to_string([{elem = %_identifier{name: _name}, t} | xs], kd) do
     identifier_str = 
       elem
       |> Kernel.to_charlist
       |> Jux.elixir_charlist_to_jux_string
-    [{identifier_str, "String"}, xs]
+    {[{identifier_str, "String"}, xs], kd}
   end
 
-  def string_to_identifier([{x, "String"} | xs], _) when is_list(x) do
+  def string_to_identifier([{x, "String"} | xs], kd) when is_list(x) do
     x_str = Jux.jux_string_to_elixir_charlist(x) |> Kernel.to_string
     if Jux.Parser.valid_identifier?(x_str) do
-      [Jux.Identifier.new(x_str) | xs]
+      {[Jux.Identifier.new(x_str) | xs], kd}
     else
       raise "`#{x}` is not a valid Jux identifier!"
     end
@@ -255,7 +259,7 @@ defmodule Jux.Primitive do
 
   def callable?([{x = %Jux.Identifier{name: name}, t} | xs], known_definitions) do
     result = known_definitions[name] != nil
-    [{result, "Boolean"} | xs]
+    {[{result, "Boolean"} | xs], known_definitions}
   end
 
   # def string_concat([{b, "String"}, {a, "String"} | xs], _) do
@@ -264,14 +268,14 @@ defmodule Jux.Primitive do
 
   # Basic Output
 
-  def print([{x, "String"} | xs], _) do
+  def print([{x, "String"} | xs], kd) do
     x
     |> Jux.jux_string_to_elixir_charlist
     |> List.to_string
     |> Macro.unescape_string
     |> IO.write
 
-    xs
+    {xs, kd}
   end
 
   # Prevention of malformedness
@@ -279,18 +283,23 @@ defmodule Jux.Primitive do
     raise "The Jux Program crashed with: " <> x
   end
 
-  def type(stack = [{x, type} | xs], _) do
-    [{Jux.Identifier.new(type), "Type"} | stack]
+  def type(stack = [{x, type} | xs], kd) do
+    {
+      [{Jux.Identifier.new(type), "Type"} | stack],
+      kd
+    }
   end
 
-  def cast_to([{%Jux.Identifier{name: name}, _}, {x, _} | xs], _) do
-    [{x, name} | xs]
+  def cast_to([{%Jux.Identifier{name: name}, _}, {x, _} | xs], kd) do
+    {
+      [{x, name} | xs], 
+      kd
+    }
   end
 
   # Not a required function, but a nice-to-have during development.
-  def inspect_stack(xs, _) do
+  def inspect_stack(xs, kd) do
     IO.puts("inspected stack: " <> Jux.stack_to_string(xs, false))
-    xs
+    {xs, kd}
   end
-
 end

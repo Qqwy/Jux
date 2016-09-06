@@ -33,11 +33,12 @@ defmodule Jux.Identifier do
     identifier_atom = identifier.name |> Jux.Helper.safe_to_existing_atom
     cond do
       identifier_atom != 0 && Jux.Primitive.__info__(:functions)[identifier_atom] == 2 ->
-        {apply(Jux.Primitive, identifier_atom, [stack, known_definitions]), fun_queue}
+        {new_stack, kd2} = apply(Jux.Primitive, identifier_atom, [stack, known_definitions])
+        {new_stack, kd2, fun_queue}
       # identifier_atom != 0 && Jux.Fallback.__info__(:functions)[identifier_atom] == 1 ->
       #   {stack, apply(Jux.Fallback, identifier_atom, [fun_queue])}
       known_definitions[identifier.name] != nil ->
-        {stack, known_definitions[identifier.name] ++ fun_queue}
+        {stack, known_definitions, known_definitions[identifier.name] ++ fun_queue}
       :otherwise ->
         raise "Undefined identifier `#{identifier.name}`."
     end

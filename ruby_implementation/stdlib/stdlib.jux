@@ -397,7 +397,7 @@ def
       [[reverse_uncons] dip] reverse_cons # Change clauce `[q]` to `[[reverse_uncons] dip [q]]
     [dip2] ucons [dup] ucons [i] ucons # Change `[[tail] dip [q]]` to [[[reverse_uncons] dip [q] dup i] ifte]
     cons [ifte] ucons # combine first and second parts of the ifte.
-    inspect_stack
+    #inspect_stack
     dup i # Start execution
   ]
 def

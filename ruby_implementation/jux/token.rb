@@ -10,6 +10,10 @@ module Jux
       self.val == b.val && self.type == b.type
     end
 
+    def <=>(b)
+      self.val <=> b.val
+    end
+
     def to_s
       if self.val.is_a?(Array)
         if self.type == "String"
@@ -30,6 +34,10 @@ module Jux
      	else
 	      "#{self.val.inspect}(#{self.type})"
   		end
+    end
+
+    def to_ary
+      [self]
     end
 
     # Used by methods like +, -, etc.

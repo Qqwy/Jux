@@ -57,7 +57,8 @@ defmodule Jux.Evaluator do
   end
 
   defp define(fun_name, fun_documentation, fun_implementation_quot, known_definitions) do
-    #IO.inspect(fun_implementation_quot)
+    IO.inspect(fun_name)
+    IO.inspect(fun_implementation_quot)
     if !is_list(fun_implementation_quot) do
       raise "Function definition for #{fun_name} (#{inspect(fun_implementation_quot)}) is not a quotation!"
     end
@@ -66,8 +67,8 @@ defmodule Jux.Evaluator do
   end
 
   defp do_evaluate_on([{identifier = %Jux.Identifier{}, "Identifier"} | rest], stack, known_definitions) do
-    {updated_stack, updated_fun_queue} = Jux.Identifier.evaluate(identifier, stack, rest, known_definitions)
-    do_evaluate_on(updated_fun_queue, updated_stack, known_definitions)
+    {updated_stack, kd2, updated_fun_queue} = Jux.Identifier.evaluate(identifier, stack, rest, known_definitions)
+    do_evaluate_on(updated_fun_queue, updated_stack, kd2)
   end
 
 end

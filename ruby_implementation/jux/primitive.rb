@@ -2,8 +2,9 @@ module Jux
   class Primitive
     class << self
       def dup(stack, _known_definitions)
-        top = stack[-1]
-        stack.push(top)
+        top = stack.pop
+        stack.push(Jux::Helper.deep_dup(top))
+        stack.push(Jux::Helper.deep_dup(top))
         stack
       end
 
@@ -64,7 +65,7 @@ module Jux
       def uncons(stack, _known_definitions)
         quot = stack.pop
         head = quot.val.pop
-        stack.push(quot)
+        stack.push(Jux::Helper.deep_dup(quot))
         stack.push(head)
         stack
       end
@@ -88,16 +89,16 @@ module Jux
       end
 
       # TODO: Tail-recursive
-      def ifte(stack, _known_definitions)
+      def ifte(stack, known_definitions)
         else_quot = stack.pop
         then_quot = stack.pop
         condition_quot = stack.pop
-        condition_stack = stack.deep_dup
-        result_condition_stack = Jux::Evaluator.evaluate_on(condition_quot.val, condition_stack)
-        if result_condition_stack.pop != Jux::Token.new(false, "Boolean")
-          Jux::Evaluator.evaluate_on(then_quot.val, stack)
+        condition_stack = Jux::Helper.deep_dup(stack)
+        result_condition_stack, kd2 = Jux::Evaluator.evaluate_on(condition_quot.val, condition_stack, known_definitions)
+        if result_condition_stack.pop != Jux::Token.new(false, 'Boolean')
+          Jux::Evaluator.evaluate_on(then_quot.val, stack, kd2)
         else
-          Jux::Evaluator.evaluate_on(else_quot.val, stack)
+          Jux::Evaluator.evaluate_on(else_quot.val, stack, kd2)
         end
       end
 
@@ -147,6 +148,20 @@ module Jux
       	str = Jux::Helper.jux_str_to_ruby_str(top)
       	raise "Invalid identifier `#{str}`" unless Jux::Parser.valid_identifier?(str)
       	stack.push Jux::Identifier.new(str)
+      end
+
+      def type(stack, _known_definitions)
+        top = stack.pop
+        puts top.inspect
+        stack.push Jux::Token.new(Jux::Identifier.new(top.type),"Identifier")
+        stack
+      end
+
+      def cast_to(stack, _known_definitions)
+        type_identifier = stack.pop
+        elem = stack.last
+        elem.type = type_identifier.val.name
+        stack
       end
     end
   end

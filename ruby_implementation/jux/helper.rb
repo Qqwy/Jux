@@ -22,6 +22,10 @@ module Jux
           stack.map(&:to_s).join(' ')
         end
       end
+
+      def deep_dup(r)
+        Marshal::load(Marshal::dump(r))
+      end
     end
   end
 end

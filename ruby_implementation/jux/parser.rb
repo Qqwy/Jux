@@ -35,19 +35,19 @@ module Jux
             token_str = token_str[whitespace_str.length..-1]
           when comment_str = token_str.match(comment_regexp)
             token_str = token_str[comment_str.to_s.length..-1]
-          when token_str.match(/^\[/)
+          when token_str.match(/\A\[/)
             quotation, token_str = parse_quotation(token_str)
             function_queue << Jux::Token.new(quotation, "Quotation")
-          when token_str.match(/^"/)
+          when token_str.match(/\A"/)
             str, token_str = parse_string(token_str)
             function_queue << str
           when escaped_identifier_str = token_str.match(escaped_identifier_regexp)
             function_queue << Jux::Token.new(Jux::EscapedIdentifier.new(escaped_identifier_str.to_s[1..-1]), "Identifier")
-          	puts "EscapedIdentifier #{escaped_identifier_str}; Left token str: #{token_str.inspect}"
+          	#puts "EscapedIdentifier #{escaped_identifier_str}; Left token str: #{token_str.inspect}"
             token_str = token_str[escaped_identifier_str.to_s.length..-1]
           when identifier_str = token_str.match(identifier_regexp)
             function_queue << Jux::Token.new(Jux::Identifier.new(identifier_str.to_s), "Identifier")
-          	puts "Identifier #{identifier_str}; Left token str: #{token_str.inspect}"
+          	#puts "Identifier #{identifier_str}; Left token str: #{token_str.inspect}"
             token_str = token_str[identifier_str.to_s.length..-1]
           when integer_str = token_str.match(integer_regexp)
             integer = integer_str[0].to_i
@@ -59,7 +59,7 @@ module Jux
             raise "Improper Jux syntax: `#{token_str}`"
           end
         end
-        puts Jux::Helper.stack_to_str(function_queue)  
+        #puts Jux::Helper.stack_to_str(function_queue)  
         function_queue
       end
 
@@ -67,10 +67,11 @@ module Jux
         i = 1
         loop do
           raise "unmatched \"" if token_str[i].nil?
+          i+= 2 if token_str[i..(i+1)] == '\"'
           break if token_str[i] == '"'
-          i+= 1 if token_str[i..(i+1)] == '\"'
           i+= 1
         end
+        puts "Found String: \"#{token_str[1...i]}\"\n\n\n"
         new_str = Jux::Helper.ruby_str_to_jux_str(token_str[1...i])
         token_str = token_str[(i+1)..-1]
         [new_str, token_str]

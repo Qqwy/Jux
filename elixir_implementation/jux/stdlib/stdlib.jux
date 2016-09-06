@@ -861,6 +861,11 @@ def
   [ empty? popd]
 def
 
+/has_type?
+  ""
+  [[type] dip eq? popd popd]
+def
+
 
 /max
   ""
@@ -1297,6 +1302,27 @@ def
   ]
 def
 
+/replace
+  "
+  `x replacement quotation replace quotation_with_x_replaced`
+  
+  `/x 10 [1 x 2 3 x x] replace ==> [1 10 2 3 10 10]`
+
+  Only works for a single depth.
+
+  TODO: Multi-depth variant that can be done to do full lambda-replacements.
+  "
+  [ 
+    # Builds the following:     [1 /x 3] [[lift [/x] eq? popd] [pop /foobar] if unlift] map
+
+    flip # /x 1 [a b c] -> [a b c] 1 /x
+    lift lift [lift] reverse_append [eq? popd] append # [a b c] 1 [lift [/x] eq? popd]
+    swap lift [pop] reverse_cons # [a b c] [lift [/x] eq? popd] [pop [1]]
+    lift2 [if unlift] append # [a b c] [[lift [/x] eq? popd] [pop [1]] if unlift]
+    map
+  ]
+def
+
 
 /digits
   "
@@ -1362,4 +1388,48 @@ def
       ]
     ifte
   ]
+def
+
+
+/pushdef
+  "
+  Defines a new implementation for a certain symbol, that can later be reversed by using `popdef`
+
+  `identifier implementation pushdef`
+
+  TODO: This does not work when stack is empty...
+  "
+  [ 
+    get2
+    
+    # Ensure that if not previously defined, it will be now.
+    [dup callable?]
+      [dup "" [[]] def]
+    unless
+
+    inspect_stack
+        
+    #The following code builds this snippet:
+    #[
+    #  [/popdef_call has_type? swap empty? and]
+    #    [old_implementation]
+    #    [new_implementation]
+    #  ifte
+    #]
+    call lift # [old_implementation]
+    inspect_stack
+    swap lift2 # [[old_implementation] [new_implementation]]
+    [[dup /popdef_call has_type? popd]] reverse_append [ifte] append
+
+    inspect_stack
+    # Add placeholder documentation str.
+    "" swap
+    inspect_stack
+    redef
+  ]
+def
+
+/popdef
+  "Reverts an implementation earlier made by `pushdef` "
+  [ ]
 def

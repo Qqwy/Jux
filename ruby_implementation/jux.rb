@@ -1,4 +1,4 @@
-require 'deep_dup'
+#require 'deep_dup'
 
 require_relative 'jux/helper'
 require_relative 'jux/token'
