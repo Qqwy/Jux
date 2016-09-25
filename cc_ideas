@@ -1,0 +1,10 @@
+function queue: FIFO queue of pointers to lambdas (taking fq + stack as input, returning new fq+stack as output).
+data stack: LIFO stack of Jux tokens.
+
+where:
+
+- A Jux token == (shared_ptr to structure, type tag)
+- symbol table === function table. Implemented as hashmap where key = symbol name (string), value = (function implementation | 'uninitialized'). (If a key in the table cannot be looked up when having a direct reference to the value, also keep the key in the value)
+- Symbols that are only declared as of yet simply have a 'uninitialized' value in the table.
+- type tag === a symbol === a pointer to the symbol table.
+
