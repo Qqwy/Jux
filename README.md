@@ -477,3 +477,9 @@ Depending on the `type` label a structure has, values might be treated different
 A Jux Token is either an Atom, or a list of Jux Tokens.
 
 A Jux Atom is either an Integer (positive or negative whole number), a String (any characters delimited with `"`), an Identifier (a name that might or might not have an implemetation) or an Escaped Identifier (starts with a `/`, is an identifier that is to be unescaped on copying over from function queue to stack.)
+
+
+
+
+
+
