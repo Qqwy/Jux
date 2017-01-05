@@ -44,6 +44,16 @@ defmodule Jux.Builtin do
   end
 
 
+  def create_word(state) do
+    [word, unparsed_program_rest] = Jux.Parser.extract_token(state.unparsed_program)
+    state
+    |> Map.put(:dictionary, Jux.Dictionary.create_new_word(state.dictionary, word))
+    |> Map.put(:unparsed_program, unparsed_program_rest)
+    |> IO.inspect
+  end
+
+
+  # DEBUG. will be removed at some point (?)
   def dump_state(state) do
     state
     |> IO.inspect

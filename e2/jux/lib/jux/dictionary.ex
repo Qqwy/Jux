@@ -18,6 +18,7 @@ defmodule Jux.Dictionary do
     |> add_primitive("[", &Builtin.start_quotation/1)
     |> add_primitive("dump_stack", &Builtin.dump_stack/1)
     |> add_primitive("dump_state", &Builtin.dump_state/1)
+    |> add_primitive("create", &Builtin.create_word/1)
     |> add_complex("test", ["puts", "swap", "dup"])
   end
 
