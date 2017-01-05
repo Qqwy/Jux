@@ -10,14 +10,14 @@ defmodule Jux.Dictionary do
 
   def new() do
     %__MODULE__{}
-    |> add_word("puts", &Builtin.puts/1)
-    |> add_word("dup", &Builtin.dup/1)
-    |> add_word("pop", &Builtin.pop/1)
-    |> add_word("swap", &Builtin.swap/1)
-    |> add_word("lit_int", &Builtin.lit_int/1)
-    |> add_word("dump_stack", &Builtin.dump_stack/1)
-    |> add_word("dump_state", &Builtin.dump_state/1)
-    |> add_word("test", ["puts", "swap", "dup"])
+    |> add_primitive("puts", &Builtin.puts/1)
+    |> add_primitive("dup", &Builtin.dup/1)
+    |> add_primitive("pop", &Builtin.pop/1)
+    |> add_primitive("swap", &Builtin.swap/1)
+    |> add_primitive("lit_int", &Builtin.lit_int/1)
+    |> add_primitive("dump_stack", &Builtin.dump_stack/1)
+    |> add_primitive("dump_state", &Builtin.dump_state/1)
+    |> add_complex("test", ["puts", "swap", "dup"])
   end
 
   # TODO: Compile implementation.
@@ -28,6 +28,17 @@ defmodule Jux.Dictionary do
     # conflicting_refs = dictionary.names[name_atom] || []
     new_names = [{name, reference} | dictionary.names]
     %__MODULE__{dictionary | definition_count: reference + 1, definitions: new_definitions, names: new_names}
+  end
+
+  def add_primitive(dictionary, name, implementation) when is_function(implementation) do
+    add_word(dictionary, name, implementation)
+  end
+
+  def add_complex(dictionary, name, implementation) when is_list(implementation) do
+    compiled_implementation =
+      implementation
+      |> Enum.map(fn name -> get_reference!(dictionary, name) end)
+    add_word(dictionary, name, compiled_implementation)
   end
 
   # @doc """

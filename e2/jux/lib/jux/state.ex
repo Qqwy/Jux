@@ -37,8 +37,10 @@ defmodule Jux.State do
 
   def add_impl_to_instruction_queue(state, impl) do
     # TODO: Implementation expansion.
-    IO.inspect(impl ++ state.instruction_queue)
-    %__MODULE__{state | instruction_queue: impl ++ state.instruction_queue}
+    # IO.inspect(impl ++ state.instruction_queue)
+    new_queue = EQueue.join(EQueue.from_list(impl), state.instruction_queue)
+    IO.inspect new_queue
+    %__MODULE__{state | instruction_queue: new_queue}
   end
 
   @doc """
