@@ -17,8 +17,9 @@ defmodule Jux.State do
     case next_word(state) do
       :done ->
         IO.puts "Execution finished"
+        IO.inspect(state.stack)
       {word, state} ->
-        IO.inspect({word, state})
+        # IO.inspect({word, state})
         impl = Jux.Dictionary.get_implementation(state.dictionary, word)
         # state = %__MODULE__{state | instruction_queue: words}
         state =
@@ -53,8 +54,7 @@ defmodule Jux.State do
   end
 
   def next_word(state = %__MODULE__{instruction_queue: %EQueue{data: {[],[]}}, unparsed_program: ""}) do
-    IO.puts "Execution finished!"
-    IO.inspect(state.stack)
+    # IO.puts "Execution finished!"
     :done
   end
 
@@ -79,7 +79,7 @@ defmodule Jux.State do
     new_instruction_queue =
       state.instruction_queue
       |> EQueue.push(word)
-    IO.inspect(new_instruction_queue)
+    # IO.inspect(new_instruction_queue)
 
     state
     |> Map.put(:instruction_queue, new_instruction_queue)
@@ -90,6 +90,6 @@ defmodule Jux.State do
       unparsed_program
       |> String.trim_leading
       |> String.split(~r{\b},parts: 2)
-      |> IO.inspect
+      # |> IO.inspect
   end
 end
