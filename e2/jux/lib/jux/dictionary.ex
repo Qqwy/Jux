@@ -21,14 +21,16 @@ defmodule Jux.Dictionary do
     |> add_complex("test", ["puts", "swap", "dup"])
   end
 
-  # TODO: Compile implementation.
   def add_word(dictionary, name, implementation) do
     # name_atom = name |> String.to_atom
-    reference = dictionary.definition_count
-    new_definitions = Map.put(dictionary.definitions, reference, implementation)
+    # reference = dictionary.definition_count
+    # new_definitions = Map.put(dictionary.definitions, reference, implementation)
     # conflicting_refs = dictionary.names[name_atom] || []
-    new_names = [{name, reference} | dictionary.names]
-    %__MODULE__{dictionary | definition_count: reference + 1, definitions: new_definitions, names: new_names}
+    # new_names = [{name, reference} | dictionary.names]
+    # %__MODULE__{dictionary | definition_count: reference + 1, definitions: new_definitions, names: new_names}
+    dictionary
+    |> create_new_word(name)
+    |> alter_implementation_of_newest_word(implementation)
   end
 
   def add_primitive(dictionary, name, implementation) when is_function(implementation) do
@@ -40,6 +42,22 @@ defmodule Jux.Dictionary do
       implementation
       |> Enum.map(fn name -> get_reference!(dictionary, name) end)
     add_word(dictionary, name, compiled_implementation)
+  end
+
+  def create_new_word(dictionary, word_name) do
+    reference = dictionary.definition_count
+
+    %__MODULE__{dictionary |
+                definitions: Map.put(dictionary.definitions, reference, []),
+                definition_count: reference + 1,
+                names: [{word_name, reference} | dictionary.names]
+    }
+  end
+
+  def alter_implementation_of_newest_word(dictionary, implementation) do
+    %__MODULE__{dictionary |
+                definitions: Map.put(dictionary.definitions, dictionary.definition_count - 1, implementation)
+    }
   end
 
   # @doc """
