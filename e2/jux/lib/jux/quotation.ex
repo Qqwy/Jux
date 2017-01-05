@@ -11,6 +11,13 @@ defmodule Jux.Quotation do
     %__MODULE__{implementation: :queue.snoc(quotation.implementation, instruction)}
   end
 
+  def append(quotation, list) do
+    Enum.reduce(list, quotation, fn elem, quotation ->
+      quotation
+      |> push(elem)
+    end)
+  end
+
   def implementation(quotation) do
     quotation.implementation
     |> :queue.to_list

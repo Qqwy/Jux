@@ -36,7 +36,7 @@ defmodule Jux.Builtin do
   def start_quotation(state) do
     {quotation, unparsed_program_rest} =
       state.unparsed_program
-      |> Jux.Parser.build_quotation
+      |> Jux.Parser.build_quotation(state.dictionary)
 
     state
     |> Map.put(:stack, [quotation | state.stack])

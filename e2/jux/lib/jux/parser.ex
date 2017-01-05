@@ -12,18 +12,8 @@ defmodule Jux.Parser do
 
 
     new_instruction_queue =
-      case Jux.Dictionary.get_reference(state.dictionary, word) do
-        {:ok, ref} ->
-          state.instruction_queue
-          |> EQueue.push(ref)
-        _ ->
-          case Integer.parse(word) do
-            {int, ""} ->
-              push_lit_int(state, int)
-            _ ->
-              raise "Error: Unknown word found: #{word}"
-          end
-      end
+      state.instruction_queue
+      |> EQueue.join(EQueue.from_list(token_implementation(state.dictionary, word)))
 
     # new_instruction_queue =
     #   state.instruction_queue
@@ -35,6 +25,26 @@ defmodule Jux.Parser do
     |> Map.put(:unparsed_program, unparsed_program_rest)
   end
 
+  # Returns a list containin the implementation of the given word.
+  # This is a single element, except for literals, which might contain multiple.
+  defp token_implementation(dictionary, word) do
+    case Jux.Dictionary.get_reference(dictionary, word) do
+      {:ok, ref} ->
+        [ref]
+      _ ->
+        case Integer.parse(word) do
+          {int, ""} ->
+            [
+              Jux.Dictionary.get_reference!(dictionary, "lit_int"),
+              int
+            ]
+          _ ->
+            raise "Error: Unknown word found: #{word}"
+        end
+    end
+  end
+
+  # TODO superfluous?
   defp push_lit_int(state, int) do
     state.instruction_queue
     |> EQueue.push(Jux.Dictionary.get_reference!(state.dictionary, "lit_int"))
@@ -44,35 +54,33 @@ defmodule Jux.Parser do
 
   # Should be called after matching the starting `[` as word,
   # so `unparsed_program` should be a binary like "1 2 3 ]".
-  def build_quotation(unparsed_program) do
+  def build_quotation(unparsed_program, dictionary) do
     unparsed_program
     |> extract_token
-    |> build_quotation(Jux.Quotation.new)
+    |> build_quotation(dictionary, Jux.Quotation.new)
   end
 
   # End of quotation reached
-  defp build_quotation(["]", unparsed_program], acc = %Jux.Quotation{}) do
-    {acc, unparsed_program_rest}
+  defp build_quotation(["]", unparsed_program], _dictionary, acc = %Jux.Quotation{}) do
+    {acc, unparsed_program}
   end
 
   # Start of nested quotation reached;
   # parse this quotation recursively
   # then continue on with outer quotation.
-  defp build_quotation(["[", unparsed_program], acc = %Jux.Quotation{}) do
-    {inner_quot, unparsed_program_rest} = build_quotation(unparsed_program)
+  defp build_quotation(["[", unparsed_program], dictionary, acc = %Jux.Quotation{}) do
+    {inner_quot, unparsed_program_rest} = build_quotation(unparsed_program, dictionary)
 
     unparsed_program_rest
     |> extract_token
-    |> build_quotation(acc |> Jux.Quotation.push(inner_quot))
+    |> build_quotation(dictionary, acc |> Jux.Quotation.push(inner_quot))
   end
 
   # recursive case; append compiled word, continue on.
-  defp build_quotation([word, unparsed_program], acc = %Jux.Quotation{}) do
-    word_ref = Jux.Dictionary.get_reference!(word_ref)
-
-    unparsed_program_rest
+  defp build_quotation([word, unparsed_program], dictionary, acc = %Jux.Quotation{}) do
+    unparsed_program
     |> extract_token
-    |> build_quotation(acc |> Jux.Quotation.push(word_ref))
+    |> build_quotation(dictionary, acc |> Jux.Quotation.append(token_implementation(dictionary, word)))
   end
 
 
