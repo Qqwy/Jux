@@ -19,9 +19,7 @@ defmodule Jux.Parser do
         _ ->
           case Integer.parse(word) do
             {int, ""} ->
-              state.instruction_queue
-              |> EQueue.push(Jux.Dictionary.get_reference!(state.dictionary, "lit_int"))
-              |> EQueue.push(int)
+              push_lit_int(state, int)
             _ ->
               raise "Error: Unknown word found: #{word}"
           end
@@ -37,6 +35,45 @@ defmodule Jux.Parser do
     |> Map.put(:unparsed_program, unparsed_program_rest)
   end
 
+  defp push_lit_int(state, int) do
+    state.instruction_queue
+    |> EQueue.push(Jux.Dictionary.get_reference!(state.dictionary, "lit_int"))
+    |> EQueue.push(int)
+  end
+
+
+  # Should be called after matching the starting `[` as word,
+  # so `unparsed_program` should be a binary like "1 2 3 ]".
+  def build_quotation(unparsed_program) do
+    unparsed_program
+    |> extract_token
+    |> build_quotation(Jux.Quotation.new)
+  end
+
+  # End of quotation reached
+  defp build_quotation(["]", unparsed_program], acc = %Jux.Quotation{}) do
+    {acc, unparsed_program_rest}
+  end
+
+  # Start of nested quotation reached;
+  # parse this quotation recursively
+  # then continue on with outer quotation.
+  defp build_quotation(["[", unparsed_program], acc = %Jux.Quotation{}) do
+    {inner_quot, unparsed_program_rest} = build_quotation(unparsed_program)
+
+    unparsed_program_rest
+    |> extract_token
+    |> build_quotation(acc |> Jux.Quotation.push(inner_quot))
+  end
+
+  # recursive case; append compiled word, continue on.
+  defp build_quotation([word, unparsed_program], acc = %Jux.Quotation{}) do
+    word_ref = Jux.Dictionary.get_reference!(word_ref)
+
+    unparsed_program_rest
+    |> extract_token
+    |> build_quotation(acc |> Jux.Quotation.push(word_ref))
+  end
 
 
   @doc """

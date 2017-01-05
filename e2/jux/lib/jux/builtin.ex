@@ -33,6 +33,16 @@ defmodule Jux.Builtin do
     |> Map.put(:instruction_queue, new_instruction_queue)
   end
 
+  def start_quotation(state) do
+    {quotation, unparsed_program_rest} =
+      state.unparsed_program
+      |> Jux.Parser.build_quotation
+
+    state
+    |> Map.put(:stack, [quotation | state.stack])
+    |> Map.put(:unparsed_program, unparsed_program_rest)
+  end
+
 
   def dump_state(state) do
     state

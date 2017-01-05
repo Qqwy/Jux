@@ -15,6 +15,7 @@ defmodule Jux.Dictionary do
     |> add_primitive("pop", &Builtin.pop/1)
     |> add_primitive("swap", &Builtin.swap/1)
     |> add_primitive("lit_int", &Builtin.lit_int/1)
+    |> add_primitive("[", &Builtin.start_quotation/1)
     |> add_primitive("dump_stack", &Builtin.dump_stack/1)
     |> add_primitive("dump_state", &Builtin.dump_state/1)
     |> add_complex("test", ["puts", "swap", "dup"])
@@ -85,6 +86,16 @@ defmodule Jux.Dictionary do
   def get_reference!(dictionary, name) do
     {:ok, ref} = get_reference(dictionary, name)
     ref
+  end
+
+  @doc """
+  Only used for debugging/pretty printing.
+  Returns the names of the given references
+  by a reverse lookup.
+  """
+  def get_reference_name(dictionary, reference) do
+    ref_to_name_map = for {k, v} <- dictionary.names , into: %{}, do: {v, k}
+    ref_to_name_map[reference]
   end
 
 end
