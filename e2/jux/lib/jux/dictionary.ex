@@ -15,16 +15,18 @@ defmodule Jux.Dictionary do
     |> add_word("pop", &Builtin.pop/1)
     |> add_word("swap", &Builtin.swap/1)
     |> add_word("lit_int", &Builtin.lit_int/1)
+    |> add_word("dump_stack", &Builtin.dump_stack/1)
+    |> add_word("dump_state", &Builtin.dump_state/1)
     |> add_word("test", ["puts", "swap", "dup"])
   end
 
   # TODO: Compile implementation.
   def add_word(dictionary, name, implementation) do
-    name_atom = name |> String.to_atom
+    # name_atom = name |> String.to_atom
     reference = dictionary.definition_count
     new_definitions = Map.put(dictionary.definitions, reference, implementation)
-    current_refs = dictionary.names[name_atom] || []
-    new_names = Keyword.put(dictionary.names, name_atom, [reference | current_refs])
+    # conflicting_refs = dictionary.names[name_atom] || []
+    new_names = [{name, reference} | dictionary.names]
     %__MODULE__{dictionary | definition_count: reference + 1, definitions: new_definitions, names: new_names}
   end
 
@@ -62,10 +64,10 @@ defmodule Jux.Dictionary do
   Returns the reference that belongs to the given name.
   """
   def get_reference(dictionary, name) do
-    try do
-      {:ok, dictionary.names[name |> String.to_existing_atom] |> List.first }
-    catch
-      _, _ ->
+    case :lists.keyfind(name, 1, dictionary.names ) do
+      {_name, ref} ->
+        {:ok, ref}
+      _ ->
         :error
     end
   end

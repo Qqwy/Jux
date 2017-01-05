@@ -32,4 +32,14 @@ defmodule Jux.Builtin do
     |> Map.put(:stack, [int | state.stack])
     |> Map.put(:instruction_queue, new_instruction_queue)
   end
+
+
+  def dump_state(state) do
+    state
+    |> IO.inspect
+  end
+  def dump_stack(state) do
+    IO.inspect state.stack
+    state
+  end
 end
