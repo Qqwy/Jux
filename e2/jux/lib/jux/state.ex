@@ -20,7 +20,7 @@ defmodule Jux.State do
         IO.inspect(state.stack)
       {word, state} ->
         # IO.inspect({word, state})
-        impl = Jux.Dictionary.get_implementation(state.dictionary, word)
+        {:ok, impl} = Jux.Dictionary.get_implementation(state.dictionary, word)
         # state = %__MODULE__{state | instruction_queue: words}
         state =
           case impl do
@@ -49,18 +49,24 @@ defmodule Jux.State do
 
   def run(program) do
     new(program)
-    |> parse_word
+    |> parse_token
     |> call
   end
 
-  def next_word(state = %__MODULE__{instruction_queue: %EQueue{data: {[],[]}}, unparsed_program: ""}) do
+  @doc """
+  Fetches the next word, by taking it from the instruction queue,
+  or, if the instruction queue is empty, from the unparsed program directly.
+  """
+  def next_word(state)
+
+  def next_word(_state = %__MODULE__{instruction_queue: %EQueue{data: {[],[]}}, unparsed_program: ""}) do
     # IO.puts "Execution finished!"
     :done
   end
 
   def next_word(state = %__MODULE__{instruction_queue: %EQueue{data: {[],[]}}}) do
     state
-    |> parse_word
+    |> parse_token
     |> do_next_word
   end
 
@@ -72,13 +78,35 @@ defmodule Jux.State do
     {word, Map.put(state, :instruction_queue, new_instruction_queue)}
   end
 
+  @doc """
+  Parses the next word in the unparsed program and adds it to the state's instruction_queue:
+  - either it is found in the dictionary, in which case its dictionary pointer is pushed.
+  - or it is a literal integer, which is appended as the combined ["lit_int", integer_value] to the instruction queue.
+  TODO handle quotations.
+  """
+  def parse_token(state = %__MODULE__{}) do
+    [word, unparsed_program_rest] = extract_token(state.unparsed_program)
 
 
-  def parse_word(state = %__MODULE__{}) do
-    [word, unparsed_program_rest] = extract_word(state.unparsed_program)
     new_instruction_queue =
-      state.instruction_queue
-      |> EQueue.push(word)
+      case Jux.Dictionary.get_reference(state.dictionary, word) do
+        {:ok, ref} ->
+          state.instruction_queue
+          |> EQueue.push(ref)
+        _ ->
+          case Integer.parse(word) do
+            {int, ""} ->
+              state.instruction_queue
+              |> EQueue.push(Jux.Dictionary.get_reference!(state.dictionary, "lit_int"))
+              |> EQueue.push(int)
+            _ ->
+              raise "Error: Unknown word found: #{word}"
+          end
+      end
+
+    # new_instruction_queue =
+    #   state.instruction_queue
+    #   |> EQueue.push(word)
     # IO.inspect(new_instruction_queue)
 
     state
@@ -86,7 +114,10 @@ defmodule Jux.State do
     |> Map.put(:unparsed_program, unparsed_program_rest)
   end
 
-  def extract_word(unparsed_program) do
+  @doc """
+  Extracts the next token from the given unparsed program.
+  """
+  def extract_token(unparsed_program) do
       unparsed_program
       |> String.trim_leading
       |> String.split(~r{\b},parts: 2)

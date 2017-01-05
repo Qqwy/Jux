@@ -2,43 +2,11 @@ defmodule Jux.Dictionary do
   defstruct [
     definition_count: 0,
     definitions: %{}, # definition reference -> implementation of function definitions.
-    names: %{}        # name -> list of definition references.
+    names: []        # name -> list of definition references.
   ]
 
 
-  defmodule Builtin do
-
-    def dup(state) do
-      [n | stack] = state.stack
-      Map.put(state, :stack, [n, n | stack])
-    end
-
-    def pop(state) do
-      [_ | stack] = state.stack
-      Map.put(state, :stack, stack)
-    end
-
-    def swap(state) do
-      [a, b | rest] = state.stack
-      Map.put(state, :stack, [b, a | rest])
-    end
-
-    def puts(state) do
-      [n | stack ] = state.stack
-      IO.puts(n)
-      Map.put(state, :stack, stack)
-    end
-
-    def lit_int(state) do
-      [word, new_unparsed_program] = Jux.State.extract_word(state.unparsed_program)
-      word_int = word |> String.to_integer
-      # IO.inspect({:unparsed_program, new_unparsed_program})
-
-      state
-      |> Map.put(:unparsed_program, new_unparsed_program)
-      |> Map.put(:stack, [word_int | state.stack])
-    end
-  end
+  alias Jux.Builtin
 
   def new() do
     %__MODULE__{}
@@ -52,35 +20,58 @@ defmodule Jux.Dictionary do
 
   # TODO: Compile implementation.
   def add_word(dictionary, name, implementation) do
+    name_atom = name |> String.to_atom
     reference = dictionary.definition_count
     new_definitions = Map.put(dictionary.definitions, reference, implementation)
-    current_refs = dictionary.names[name] || []
-    new_names = Map.put(dictionary.names, name, [reference | current_refs])
+    current_refs = dictionary.names[name_atom] || []
+    new_names = Keyword.put(dictionary.names, name_atom, [reference | current_refs])
     %__MODULE__{dictionary | definition_count: reference + 1, definitions: new_definitions, names: new_names}
   end
 
-  @doc """
-  NOTE: Inherently unsafe.
+  # @doc """
+  # NOTE: Inherently unsafe.
 
-  Better would be a method that forgets _everything_ up to and including
-  this word.
-  """
-  def remove_word(dictionary, name) do
-    [reference | prev_refs] = dictionary.names[name]
-    definitions = Map.delete(dictionary.definitions, reference)
-    names = Map.put(dictionary.names, name, prev_refs)
-    %__MODULE__{dictionary | definitions: definitions, names: names}
-  end
+  # Better would be a method that forgets _everything_ up to and including
+  # this word.
+  # """
+  # def remove_word(dictionary, name) do
+  #   [reference | prev_refs] = dictionary.names[name]
+  #   definitions = Map.delete(dictionary.definitions, reference)
+  #   names = Keyword.put(dictionary.names, name, prev_refs)
+  #   %__MODULE__{dictionary | definitions: definitions, names: names}
+  # end
 
-  def get_implementation(dictionary, name) do
+  def get_implementation_by_name(dictionary, name) do
     ref =
       dictionary
       |> get_reference(name)
-    dictionary.definitions[ref]
+    get_implementation(dictionary, ref)
   end
 
+  @doc """
+  Returns a function implementation when given a reference to it.
+  """
+  def get_implementation(dictionary, reference) do
+    case dictionary.definitions[reference] do
+      nil -> :error
+      ref -> {:ok, ref}
+    end
+  end
+
+  @doc """
+  Returns the reference that belongs to the given name.
+  """
   def get_reference(dictionary, name) do
-    dictionary.names[name] |> List.first
+    try do
+      {:ok, dictionary.names[name |> String.to_existing_atom] |> List.first }
+    catch
+      _, _ ->
+        :error
+    end
+  end
+  def get_reference!(dictionary, name) do
+    {:ok, ref} = get_reference(dictionary, name)
+    ref
   end
 
 end
