@@ -22,7 +22,7 @@ defmodule Jux.Builtin do
   end
 
   def lit_int(state) do
-    # [word, new_unparsed_program] = Jux.State.extract_token(state.unparsed_program)
+    # {word, new_unparsed_program} = Jux.State.extract_token(state.unparsed_program)
     {:value, int, new_instruction_queue} = state.instruction_queue |> EQueue.pop
     # word_int = word |> String.to_integer
     # IO.inspect({:unparsed_program, new_unparsed_program})
@@ -45,13 +45,26 @@ defmodule Jux.Builtin do
 
 
   def create_word(state) do
-    [word, unparsed_program_rest] = Jux.Parser.extract_token(state.unparsed_program)
+    {word, unparsed_program_rest} = Jux.Parser.extract_token(state.unparsed_program)
     state
     |> Map.put(:dictionary, Jux.Dictionary.create_new_word(state.dictionary, word))
     |> Map.put(:unparsed_program, unparsed_program_rest)
     |> IO.inspect
   end
 
+  def alter_implementation_of_newest_word(state) do
+    # [quotation | stack] = state.stack
+    {"[", unparsed_program_rest} = Jux.Parser.extract_token(state.unparsed_program)
+    {quotation, unparsed_program_rest} = Jux.Parser.build_quotation(unparsed_program_rest, state.dictionary)
+
+    dictionary = Jux.Dictionary.alter_implementation_of_newest_word(state.dictionary, quotation |> Jux.Quotation.implementation)
+
+    state
+    |> Map.put(:dictionary, dictionary)
+    # |> Map.put(:stack, stack)
+    |> Map.put(:unparsed_program, unparsed_program_rest)
+    |> IO.inspect
+  end
 
   # DEBUG. will be removed at some point (?)
   def dump_state(state) do

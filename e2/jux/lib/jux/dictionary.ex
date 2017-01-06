@@ -19,7 +19,9 @@ defmodule Jux.Dictionary do
     |> add_primitive("dump_stack", &Builtin.dump_stack/1)
     |> add_primitive("dump_state", &Builtin.dump_state/1)
     |> add_primitive("create", &Builtin.create_word/1)
+    |> add_primitive("does", &Builtin.alter_implementation_of_newest_word/1)
     |> add_complex("test", ["puts", "swap", "dup"])
+    |> add_complex("def", ["create", "does"])
   end
 
   def add_word(dictionary, name, implementation) do

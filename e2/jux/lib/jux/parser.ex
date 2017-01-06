@@ -8,7 +8,7 @@ defmodule Jux.Parser do
   TODO handle quotations.
   """
   def parse_token(state = %Jux.State{}) do
-    [word, unparsed_program_rest] = extract_token(state.unparsed_program)
+    {word, unparsed_program_rest} = extract_token(state.unparsed_program)
 
 
     new_instruction_queue =
@@ -88,9 +88,17 @@ defmodule Jux.Parser do
   Extracts the next token from the given unparsed program.
   """
   def extract_token(unparsed_program) do
+    case do_extract_token(unparsed_program) do
+      [word] -> {word, ""}
+      [word, rest] -> {word, rest}
+    end
+  end
+
+  defp do_extract_token(unparsed_program) do
     unparsed_program
-    |> String.trim_leading
+    # |> String.trim_leading
     |> String.split(~r{\s},parts: 2)
+    |> Enum.map(&String.trim_leading/1)
     # |> IO.inspect
   end
 
