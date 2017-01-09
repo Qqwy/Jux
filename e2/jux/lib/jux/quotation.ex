@@ -35,4 +35,8 @@ defmodule Jux.Quotation do
       <>" ]"
     end
   end
+
+  defimpl String.Chars do
+    def to_string(quotation), do: inspect(quotation)
+  end
 end

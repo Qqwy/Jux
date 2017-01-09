@@ -9,9 +9,12 @@ defmodule Jux do
     # |> Jux.State.new
     # |> Jux.Parser.parse_token
     # |> Jux.State.call
-    program
-    |> Jux.Parser2.parse_quotation
-    |> Jux.State.new
+    quotation = 
+      program
+      |> Jux.Parser2.parse_source
+ 
+    Jux.State.new([quotation])
     |> Jux.Builtin.execute_quotation
+    |> Jux.State.call
   end
 end

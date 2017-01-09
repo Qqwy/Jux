@@ -63,12 +63,17 @@ defmodule Jux.Builtin do
     |> Map.put(:dictionary, dictionary)
     # |> Map.put(:stack, stack)
     |> Map.put(:unparsed_program, unparsed_program_rest)
-    |> IO.inspect
+    # |> IO.inspect
   end
 
   def execute_quotation(state) do
-    [quotation, stack] = state.stack
-    new_instruction_queue = EQueue.join(quotation |> Jux.Quotation.implementation, state.instruction_queue)
+    [quotation | stack] = state.stack
+    implementation =
+      quotation
+      |> Jux.Quotation.implementation
+      |> Enum.flat_map(fn token -> Jux.Compiler.compile_token(token, state.dictionary) end)
+
+    new_instruction_queue = EQueue.join(implementation |> EQueue.from_list, state.instruction_queue)
 
     state
     |> Map.put(:instruction_queue, new_instruction_queue)
@@ -81,7 +86,7 @@ defmodule Jux.Builtin do
     |> IO.inspect
   end
   def dump_stack(state) do
-    IO.inspect state.stack
+    IO.puts "top >>> [ " <> (state.stack |> Enum.map(&inspect/1) |> Enum.join(" ")) <> " ] <<< bottom"
     state
   end
 end

@@ -12,20 +12,29 @@ defmodule Jux.State do
   # def new(program, stack \\ []) when is_binary(program) do
   #   %__MODULE__{unparsed_program: program, stack: stack}
   # end
-  def new(queue, stack \\ []) do
-    %__MODULE__{instruction_queue: queue, stack: stack}
+  # def new(queue, stack \\ []) do
+  #   %__MODULE__{instruction_queue: queue, stack: stack}
+  # end
+  def new(stack \\ []) do
+    %__MODULE__{stack: stack}
   end
 
   def call(state = %__MODULE__{}) do
+    # IO.inspect(state)
     case next_word(state) do
       :done ->
         IO.puts "Execution finished"
         # IO.inspect(state.stack)
       {word, state} ->
-        {:ok, impl} = Jux.Dictionary.get_implementation(state.dictionary, word)
-        call_impl(state, impl)
-        # |> IO.inspect
-        |> call # Tail recurse
+        if is_function(word) do
+          word.(state)
+          |> call
+        else
+          {:ok, impl} = Jux.Dictionary.get_implementation(state.dictionary, word)
+          call_impl(state, impl)
+          # |> IO.inspect
+          |> call # Tail recurse
+        end
     end
   end
 
@@ -42,7 +51,7 @@ defmodule Jux.State do
     # TODO: Implementation expansion.
     # IO.inspect(impl ++ state.instruction_queue)
     new_queue = EQueue.join(EQueue.from_list(impl), state.instruction_queue)
-    IO.inspect new_queue
+    # IO.inspect new_queue
     %__MODULE__{state | instruction_queue: new_queue}
   end
 
