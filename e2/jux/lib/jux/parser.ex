@@ -61,14 +61,14 @@ defmodule Jux.Parser do
   end
 
   # End of quotation reached
-  defp build_quotation(["]", unparsed_program], _dictionary, acc = %Jux.Quotation{}) do
+  defp build_quotation({"]", unparsed_program}, _dictionary, acc = %Jux.Quotation{}) do
     {acc, unparsed_program}
   end
 
   # Start of nested quotation reached;
   # parse this quotation recursively
   # then continue on with outer quotation.
-  defp build_quotation(["[", unparsed_program], dictionary, acc = %Jux.Quotation{}) do
+  defp build_quotation({"[", unparsed_program}, dictionary, acc = %Jux.Quotation{}) do
     {inner_quot, unparsed_program_rest} = build_quotation(unparsed_program, dictionary)
 
     unparsed_program_rest
@@ -77,7 +77,7 @@ defmodule Jux.Parser do
   end
 
   # recursive case; append compiled word, continue on.
-  defp build_quotation([word, unparsed_program], dictionary, acc = %Jux.Quotation{}) do
+  defp build_quotation({word, unparsed_program}, dictionary, acc = %Jux.Quotation{}) do
     unparsed_program
     |> extract_token
     |> build_quotation(dictionary, acc |> Jux.Quotation.append(token_implementation(dictionary, word)))

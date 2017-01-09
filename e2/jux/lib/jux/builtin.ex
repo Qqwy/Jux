@@ -66,6 +66,15 @@ defmodule Jux.Builtin do
     |> IO.inspect
   end
 
+  def execute_quotation(state) do
+    [quotation, stack] = state.stack
+    new_instruction_queue = EQueue.join(quotation |> Jux.Quotation.implementation, state.instruction_queue)
+
+    state
+    |> Map.put(:instruction_queue, new_instruction_queue)
+    |> Map.put(:stack, stack)
+  end
+
   # DEBUG. will be removed at some point (?)
   def dump_state(state) do
     state

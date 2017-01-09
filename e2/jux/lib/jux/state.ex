@@ -9,8 +9,11 @@ defmodule Jux.State do
   """
   defstruct dictionary: Jux.Dictionary.new, stack: [], instruction_queue: EQueue.new, unparsed_program: ""
 
-  def new(program, stack \\ []) when is_binary(program) do
-    %__MODULE__{unparsed_program: program, stack: stack}
+  # def new(program, stack \\ []) when is_binary(program) do
+  #   %__MODULE__{unparsed_program: program, stack: stack}
+  # end
+  def new(queue, stack \\ []) do
+    %__MODULE__{instruction_queue: queue, stack: stack}
   end
 
   def call(state = %__MODULE__{}) do
