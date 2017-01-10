@@ -66,11 +66,11 @@ defmodule Jux.State do
     :done
   end
 
-  def next_word(state = %__MODULE__{instruction_queue: %EQueue{data: {[],[]}}}) do
-    state
-    |> Jux.Parser.parse_token
-    |> do_next_word
-  end
+  # def next_word(state = %__MODULE__{instruction_queue: %EQueue{data: {[],[]}}}) do
+  #   state
+  #   |> Jux.Parser.parse_token
+  #   |> do_next_word
+  # end
 
 
   def next_word(state = %__MODULE__{}), do: do_next_word(state)

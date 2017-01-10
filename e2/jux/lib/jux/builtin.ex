@@ -33,15 +33,15 @@ defmodule Jux.Builtin do
     |> Map.put(:instruction_queue, new_instruction_queue)
   end
 
-  def start_quotation(state) do
-    {quotation, unparsed_program_rest} =
-      state.unparsed_program
-      |> Jux.Parser.build_quotation(state.dictionary)
+  # def start_quotation(state) do
+  #   {quotation, unparsed_program_rest} =
+  #     state.unparsed_program
+  #     |> Jux.Parser.build_quotation(state.dictionary)
 
-    state
-    |> Map.put(:stack, [quotation | state.stack])
-    |> Map.put(:unparsed_program, unparsed_program_rest)
-  end
+  #   state
+  #   |> Map.put(:stack, [quotation | state.stack])
+  #   |> Map.put(:unparsed_program, unparsed_program_rest)
+  # end
 
 
   def create_word(state) do
@@ -54,15 +54,17 @@ defmodule Jux.Builtin do
 
   def alter_implementation_of_newest_word(state) do
     # [quotation | stack] = state.stack
-    {"[", unparsed_program_rest} = Jux.Parser.extract_token(state.unparsed_program)
-    {quotation, unparsed_program_rest} = Jux.Parser.build_quotation(unparsed_program_rest, state.dictionary)
+    # {"[", unparsed_program_rest} = Jux.Parser.extract_token(state.unparsed_program)
+    # {quotation, unparsed_program_rest} = Jux.Parser.build_quotation(unparsed_program_rest, state.dictionary)
+    {quotation, queue} = state.instruction_queue
 
     dictionary = Jux.Dictionary.alter_implementation_of_newest_word(state.dictionary, quotation |> Jux.Quotation.implementation)
 
     state
     |> Map.put(:dictionary, dictionary)
+    |> Map.put(:instruction_queue, queue)
     # |> Map.put(:stack, stack)
-    |> Map.put(:unparsed_program, unparsed_program_rest)
+    # |> Map.put(:unparsed_program, unparsed_program_rest)
     # |> IO.inspect
   end
 
@@ -86,7 +88,7 @@ defmodule Jux.Builtin do
     |> IO.inspect
   end
   def dump_stack(state) do
-    IO.puts "top >>> [ " <> (state.stack |> Enum.map(&inspect/1) |> Enum.join(" ")) <> " ] <<< bottom"
+    IO.puts "bottom >>> [ " <> (state.stack |> Enum.reverse |> Enum.map(&inspect/1) |> Enum.join(" ")) <> " ] <<< top"
     state
   end
 end

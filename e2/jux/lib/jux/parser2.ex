@@ -1,4 +1,4 @@
-defmodule Jux.Parser2 do
+defmodule Jux.Parser do
 
   def parse_source(source_code) do
     {quotation, ""} = 

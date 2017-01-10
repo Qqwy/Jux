@@ -11,7 +11,7 @@ defmodule Jux do
     # |> Jux.State.call
     quotation = 
       program
-      |> Jux.Parser2.parse_source
+      |> Jux.Parser.parse_source
  
     Jux.State.new([quotation])
     |> Jux.Builtin.execute_quotation

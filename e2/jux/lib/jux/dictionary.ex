@@ -15,7 +15,7 @@ defmodule Jux.Dictionary do
     |> add_primitive("pop", &Builtin.pop/1)
     |> add_primitive("swap", &Builtin.swap/1)
     |> add_primitive("lit_int", &Builtin.lit_int/1)
-    |> add_primitive("[", &Builtin.start_quotation/1)
+    # |> add_primitive("[", &Builtin.start_quotation/1)
     |> add_primitive("dump_stack", &Builtin.dump_stack/1)
     |> add_primitive("dump_state", &Builtin.dump_state/1)
     |> add_primitive("create", &Builtin.create_word/1)
