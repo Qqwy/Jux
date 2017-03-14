@@ -1,0 +1,57 @@
+* TODOS
+** TODO Parsing words: adding documentation?
+** TODO When are quotations compiled?
+*** Ensure that things like e.g. 'length' keep working properly after compiling?
+** TODO How to allow recursive definitions?
+*** y combinator probably rather slow.
+*** direct recursive calls to function of same name requires e.g. hard coded RECURSE keyword.
+*** And then what about mutual recursion?
+** TODO Module system? Multi-dict?
+* Jux words
+** Parsing-Related
+*** heave_quotation (primitive)
+**** Reads from the head of the input stream. Expects a quotation.
+**** Allowed to crash violently (but a nice error message is preferred) if this is not found.
+**** Takes this quotation, and, (without compiling it!) puts it on the top of the stack.
+*** create_function (primitive)
+**** Takes the quotation from the top of the stack and compiles it.
+**** Then creates a new entry at the head of the word dictionary
+**** The name of this new entry shall be "" (empty string).
+**** The code of this new entry shall be the compiled version of the quotation.
+*** rename_last_function (primitive)
+**** Takes a string from the top of the stack.
+**** Alters the name of the most recent dictionary entry to this string.
+*** heave_char (primitive)
+**** Reads a single character (byte!) from the head of the input stream, and puts its ASCII codepoint as integer on top of the stack. Does _not_ handle Unicode in a special fashion.
+**** Can be used to implement custom input stream read functions (such as parsing double-quote-delimited strings."").
+*** heave_token_as_string (primitive)
+**** Reads a single token from the head of the input stream, converts it to a string, and puts this on top of the stack.
+**** TODO Maybe this can be constructed from heave_char?
+
+** Stack Manipulation
+*** swap (a b -> b a) (primitive)
+*** dup (a -> a a) (primitive)
+*** pop (a -> ) (primitive)
+*** dip ( a [b] -> a) (primitive)
+**** Takes the quotation from the top, temporarily stores the value below it elsewhere, executes the quotation on the rest of the stack, and finally restores the value on top.
+
+** Math
+*** add (Int Int -> Int) (primitive)
+**** Takes two integers from the stack, adds them.
+*** bnand (Int Int -> Int) (primitive)
+**** Takes the bitwise AND of two Ints.
+*** nand (a -> Bool) (primitive)
+**** Uses Truthy logic: Anything except 'false' = false.
+
+** Conditionals
+*** ifte ([condition] [then] [else] -> )
+**** expects three quotations on the stack:
+**** If the result of executing the bottommost quotation [condition] is truthy:
+***** Executes [then]
+**** else
+***** Executes [else]
+**** TODO Does `condition` really need to be a quotation or not?
+** Output
+*** print_char (primitive)
+**** Reads the integer (truncated to byte?) from the top of the stack and outputs it as a character to the output stream.
+*** can the rest be built from this?

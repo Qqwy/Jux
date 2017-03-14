@@ -43,13 +43,29 @@ defmodule Jux.Builtin do
   #   |> Map.put(:unparsed_program, unparsed_program_rest)
   # end
 
-
+  # Deprecated
   def create_word(state) do
     {word, unparsed_program_rest} = Jux.Parser.extract_token(state.unparsed_program)
     state
     |> Map.put(:dictionary, Jux.Dictionary.create_new_word(state.dictionary, word))
     |> Map.put(:unparsed_program, unparsed_program_rest)
     |> IO.inspect
+  end
+
+  def define_new_word(state) do
+    [quotation | stack] = state.stack
+    dictionary = Jux.Dictionary.define_new_word(state.dictionary, quotation |> Jux.Quotation.implementation)
+    state
+    |> Map.put(:dictionary, dictionary)
+    |> Map.put(:stack, stack)
+  end
+
+  def rename_last_word(state) do
+    [name | stack] = state.stack
+    dictionary = Jux.Dictionary.rename_last_word(state.dictionary, name)
+    state
+    |> Map.put(:dictionary, dictionary)
+    |> Map.put(:stack, stack)
   end
 
   def alter_implementation_of_newest_word(state) do

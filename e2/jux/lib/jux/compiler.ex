@@ -29,8 +29,8 @@ defmodule Jux.Compiler do
         end
     end
   end
-  
-  
+
+
   defp push_lit(lit) do
     [fn state ->
       state

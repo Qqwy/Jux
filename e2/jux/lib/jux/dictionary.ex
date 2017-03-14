@@ -15,13 +15,15 @@ defmodule Jux.Dictionary do
     |> add_primitive("pop", &Builtin.pop/1)
     |> add_primitive("swap", &Builtin.swap/1)
     |> add_primitive("lit_int", &Builtin.lit_int/1)
+    |> add_primitive("run", &Builtin.execute_quotation/1)
     # |> add_primitive("[", &Builtin.start_quotation/1)
     |> add_primitive("dump_stack", &Builtin.dump_stack/1)
     |> add_primitive("dump_state", &Builtin.dump_state/1)
-    |> add_primitive("create", &Builtin.create_word/1)
+    |> add_primitive("create_function", &Builtin.define_new_word/1)
+    |> add_primitive("rename_function", &Builtin.rename_last_word/1)
     |> add_primitive("does", &Builtin.alter_implementation_of_newest_word/1)
     |> add_complex("test", ["puts", "swap", "dup"])
-    |> add_complex("def", ["create", "does"])
+    # |> add_complex("def", ["create", "does"])
   end
 
   def add_word(dictionary, name, implementation) do
@@ -47,6 +49,23 @@ defmodule Jux.Dictionary do
     add_word(dictionary, name, compiled_implementation)
   end
 
+  def define_new_word(dictionary, implementation) do
+    reference = dictionary.definition_count
+
+    %__MODULE__{dictionary |
+                definitions: Map.put(dictionary.definitions, reference, implementation),
+                definition_count: reference + 1,
+                names: [{"", reference} | dictionary.names]
+    }
+  end
+
+  def rename_last_word(dictionary, name) do
+    [{_, reference} | rest] = dictionary.names
+    dictionary
+    |> Map.put(:names, [{name, reference} | rest])
+  end
+
+  # Deprecated
   def create_new_word(dictionary, word_name) do
     reference = dictionary.definition_count
 
