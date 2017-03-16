@@ -8,10 +8,10 @@ defmodule Jux.State do
   - return stack (calculated results)
   - mode
   """
-  defstruct dictionary: setup_dictionary, stack: [], instruction_queue: EQueue.new, unparsed_program: ""
+  defstruct dictionary: nil, stack: [], instruction_queue: EQueue.new, unparsed_program: ""
 
   def new(source, stack \\ []) do
-    %__MODULE__{unparsed_program: source, stack: stack}
+    %__MODULE__{unparsed_program: source, stack: stack, dictionary: setup_dictionary}
   end
 
 
@@ -79,14 +79,24 @@ defmodule Jux.State do
   """
   def next_word(state)
 
-  def next_word(_state = %__MODULE__{instruction_queue: %EQueue{data: {[],[]}}, unparsed_program: ""}) do
+  def next_word(state = %__MODULE__{instruction_queue: %EQueue{data: {[],[]}}, unparsed_program: ""}) do
+    IO.inspect(state)
     :done
   end
 
-  def next_word(state = %__MODULE__{instruction_queue: %EQueue{data: {[],[]}}}) do
-    state
-    |> Jux.Parser.parse_token
-    |> do_next_word
+  def next_word(state = %__MODULE__{instruction_queue: %EQueue{data: {[],[]}}, unparsed_program: unparsed_program}) do
+    {token, rest} = Jux.Parser.extract_token(unparsed_program)
+    IO.inspect({token, rest, state.dictionary})
+    compiled_token = Jux.Compiler.compile_token(token, state.dictionary)
+
+    new_state =
+      state
+      |> Map.put(:unparsed_program, rest)
+    {compiled_token, new_state}
+    # |> Map.put(:instruction_queue, EQueue.from_list([compiled_token]))
+    # state
+    # |> Jux.Parser.extract_token
+    # |> do_next_word
   end
 
   def next_word(state = %__MODULE__{}), do: do_next_word(state)

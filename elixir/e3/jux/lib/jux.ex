@@ -3,8 +3,8 @@ defmodule Jux do
   Documentation for Jux.
   """
 
-  def run(string)
-  Jux.State.new()
-  |> Jux.State.call
+  def run(string) do
+    Jux.State.new(string)
+    |> Jux.State.call
   end
 end

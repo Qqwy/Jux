@@ -7,11 +7,11 @@ defmodule Jux.Compiler do
   def compile_token(word, dictionary) do
     case word do
       quotation = %Jux.Quotation{} ->
-        push_lit(quotation)
+        push_literal(quotation)
       _ ->
         case Integer.parse(word) do
           {int, ""} ->
-            push_lit(int)
+            push_literal(int)
           _ ->
             case Jux.Dictionary.get_reference(dictionary, word) do
               {:ok, ref} ->
@@ -26,6 +26,7 @@ defmodule Jux.Compiler do
   # Returns a closure that puts the given literal on the Jux.State's :stack field when executed.
   defp push_literal(lit) do
     fn state ->
+      IO.inspect({"Going to push: ", lit})
       Map.put(state, :stack, [lit | state.stack])
     end
   end
