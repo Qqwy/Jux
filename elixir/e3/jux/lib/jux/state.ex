@@ -26,8 +26,9 @@ defmodule Jux.State do
     |> add_primitive("dnw", &Primitive.define_new_word/1)
     |> add_primitive("rlw", &Primitive.rename_last_word/1)
     |> add_primitive("token2str", &Primitive.heave_token_to_string/1)
-
+    |> add_primitive("heave_quotation", &Primitive.heave_quotation/1)
   end
+
 
   defp add_primitive(dictionary, name, function) do
     dictionary
@@ -49,6 +50,7 @@ defmodule Jux.State do
     case next_word(state) do
       :done ->
         IO.puts "Execution finished"
+        state
       {word, state} ->
         if is_function(word) do
           word.(state)

@@ -28,6 +28,18 @@ defmodule Jux.Primitive do
     |> Map.put(:stack, [quotation | state.stack])
   end
 
+  def heave_quotation(state) do
+    case Jux.Parser.extract_token(state.unparsed_program) do
+      {"[", unparsed_rest} ->
+        {quotation, unparsed_rest} = Jux.Parser.parse_quotation(unparsed_rest)
+        state
+        |> Map.put(:unparsed_program, unparsed_rest)
+        |> Map.put(:stack, [quotation | state.stack])
+      {_, unparsed_rest} ->
+        raise ArgumentError, "heave_quotation called without quotation as next element in the unparsed program"
+    end
+  end
+
   def define_new_word(state) do
     case state.stack do
       [quotation | stack] ->
