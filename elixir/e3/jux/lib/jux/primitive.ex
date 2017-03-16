@@ -72,4 +72,36 @@ defmodule Jux.Primitive do
     |> Map.put(:stack, stack)
   end
 
+  def add(state) do
+    case state.stack do
+      [lhs, rhs | rest] when is_integer(lhs) and is_integer(rhs) ->
+        stack = [lhs + rhs | rest]
+        Map.put(state, :stack, stack)
+      _ ->
+        raise ArgumentError, "Less than two arguments on the stack, or one or both are not integers"
+    end
+  end
+
+  def nand(state) do
+    case state.stack do
+      [lhs, rhs | rest] ->
+        nand_result = !(lhs && rhs)
+        stack = [nand_result | rest]
+        Map.put(state, :stack, stack)
+      _ ->
+        raise ArgumentError, "Less than two arguments on the stack"
+    end
+  end
+
+  # DEBUGGING ONLY. Not part of the official protocol.
+  def dump_state(state) do
+    state
+    |> IO.inspect
+  end
+
+  def dump_stack(state) do
+    IO.puts "bottom >>> [ " <> (state.stack |> Enum.reverse |> Enum.map(&inspect/1) |> Enum.join(" ")) <> " ] <<< top"
+    state
+  end
+
 end

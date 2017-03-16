@@ -22,13 +22,20 @@ defmodule Jux.State do
     |> add_primitive("dup", &Primitive.dup/1)
     |> add_primitive("pop", &Primitive.pop/1)
     |> add_primitive("swap", &Primitive.swap/1)
-    |> add_primitive("[", &Primitive.build_quotation/1)
-    |> add_primitive("dnw", &Primitive.define_new_word/1)
-    |> add_primitive("rlw", &Primitive.rename_last_word/1)
-    |> add_primitive("token2str", &Primitive.heave_token_to_string/1)
-    |> add_primitive("heave_quotation", &Primitive.heave_quotation/1)
-  end
 
+    |> add_primitive("[", &Primitive.build_quotation/1)
+
+    |> add_primitive("define_new_word", &Primitive.define_new_word/1)
+    |> add_primitive("rename_last_word", &Primitive.rename_last_word/1)
+    |> add_primitive("heave_token", &Primitive.heave_token_to_string/1)
+    |> add_primitive("heave_quotation", &Primitive.heave_quotation/1)
+
+    |> add_primitive("add", &Primitive.add/1)
+    |> add_primitive("nand", &Primitive.nand/1)
+
+    |> add_primitive("dump_state", &Primitive.dump_state/1)
+    |> add_primitive("dump_stack", &Primitive.dump_stack/1)
+  end
 
   defp add_primitive(dictionary, name, function) do
     dictionary
@@ -85,13 +92,11 @@ defmodule Jux.State do
   def next_word(state)
 
   def next_word(state = %__MODULE__{instruction_queue: %EQueue{data: {[],[]}}, unparsed_program: ""}) do
-    IO.inspect(state)
     :done
   end
 
   def next_word(state = %__MODULE__{instruction_queue: %EQueue{data: {[],[]}}, unparsed_program: unparsed_program}) do
     {token, rest} = Jux.Parser.extract_token(unparsed_program)
-    IO.inspect({token, rest, state.dictionary})
     compiled_token = Jux.Compiler.compile_token(token, state.dictionary)
 
     new_state =
@@ -110,7 +115,5 @@ defmodule Jux.State do
     {:value, word, new_instruction_queue} = state.instruction_queue |> EQueue.pop
     {word, Map.put(state, :instruction_queue, new_instruction_queue)}
   end
-
-
 
 end

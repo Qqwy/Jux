@@ -26,7 +26,6 @@ defmodule Jux.Compiler do
   # Returns a closure that puts the given literal on the Jux.State's :stack field when executed.
   defp push_literal(lit) do
     fn state ->
-      IO.inspect({"Going to push: ", lit})
       Map.put(state, :stack, [lit | state.stack])
     end
   end
