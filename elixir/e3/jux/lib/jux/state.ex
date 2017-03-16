@@ -14,6 +14,7 @@ defmodule Jux.State do
     %__MODULE__{unparsed_program: source, stack: stack, dictionary: setup_dictionary}
   end
 
+  alias Jux.Primitive
 
   def setup_dictionary do
     %Jux.Dictionary{}
@@ -21,8 +22,10 @@ defmodule Jux.State do
     |> add_primitive("dup", &Primitive.dup/1)
     |> add_primitive("pop", &Primitive.pop/1)
     |> add_primitive("swap", &Primitive.swap/1)
+    |> add_primitive("[", &Primitive.build_quotation/1)
     |> add_primitive("dnw", &Primitive.define_new_word/1)
     |> add_primitive("rlw", &Primitive.rename_last_word/1)
+    |> add_primitive("token2str", &Primitive.heave_token_to_string/1)
 
   end
 
