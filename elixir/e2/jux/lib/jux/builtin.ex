@@ -61,8 +61,9 @@ defmodule Jux.Builtin do
   end
 
   def rename_last_word(state) do
-    [name | stack] = state.stack
-    dictionary = Jux.Dictionary.rename_last_word(state.dictionary, name)
+    # [name | stack] = state.stack
+    stack = state.stack
+    dictionary = Jux.Dictionary.rename_last_word(state.dictionary, "foo")
     state
     |> Map.put(:dictionary, dictionary)
     |> Map.put(:stack, stack)
