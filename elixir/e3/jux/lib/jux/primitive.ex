@@ -106,7 +106,7 @@ defmodule Jux.Primitive do
   end
 
   def noop_compilation(word, state) do
-    Jux.Compiler.compile_token(word, state.dictionary)
+    Jux.Compiler.compile_token(word, state.dictionary, :runtime)
   end
 
   # DEBUGGING ONLY. Not part of the official protocol.

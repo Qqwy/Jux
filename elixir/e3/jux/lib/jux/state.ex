@@ -118,7 +118,7 @@ defmodule Jux.State do
 
   def next_word(state = %__MODULE__{instruction_queue: %EQueue{data: {[],[]}}, unparsed_program: unparsed_program}) do
     {token, rest} = Jux.Parser.extract_token(unparsed_program)
-    compiled_token = Jux.Compiler.compile_token(token, state.dictionary)
+    compiled_token = Jux.Compiler.compile_token(token, state.dictionary, state.mode)
 
     new_state =
       state
