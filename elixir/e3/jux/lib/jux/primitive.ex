@@ -80,8 +80,8 @@ defmodule Jux.Primitive do
         # state
         # |> Map.put(:unparsed_program, unparsed_rest)
         # |> Map.put(:stack, [quotation | state.stack])
-      {_, unparsed_rest} ->
-        raise ArgumentError, "heave_quotation called without quotation as next element in the unparsed program"
+      {elem, unparsed_rest} ->
+        raise ArgumentError, "heave_quotation called without quotation as next element in the unparsed program: `#{elem}` `#{unparsed_rest}`"
     end
   end
 

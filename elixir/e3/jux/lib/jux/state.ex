@@ -24,8 +24,9 @@ defmodule Jux.State do
     |> add_primitive("swap", &Primitive.swap/1)
     |> add_primitive("dip", &Primitive.dip/1)
 
-    |> add_primitive("[", &Primitive.build_quotation/1, fn state -> compile(state, Jux.Quotation.new) end)
+    |> add_primitive("[", &Primitive.build_quotation/1, fn state -> {state, res} = compile(state, Jux.Quotation.new); res end)
     |> add_primitive("]", &Primitive.noop/1, &Primitive.end_compilation/1)
+    |> add_primitive("simply_compileme", &Primitive.noop_compilation/1, &Primitive.noop/1)
 
     |> add_primitive("define_new_word", &Primitive.define_new_word/1)
     |> add_primitive("rename_last_word", &Primitive.rename_last_word/1)
