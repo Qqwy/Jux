@@ -24,11 +24,10 @@ defmodule Jux.Quotation do
     |> :lists.reverse
   end
 
-  def compiled_implementation(quotation, dictionary) do
+  def compiled_implementation(quotation) do
     quotation
     |> implementation
     |> Enum.map(&elem(&1, 1))
-    # |> Enum.map(&Jux.Compiler.compile_token(&1, dictionary))
   end
 
   defimpl Inspect do

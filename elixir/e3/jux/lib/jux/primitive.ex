@@ -22,6 +22,31 @@ defmodule Jux.Primitive do
     Map.put(state, :stack, stack)
   end
 
+  @doc """
+
+  Runs the quotation on top, hiding the penultimate value for the time being.
+  After this puts this value below that back on top of the stack.
+
+  This is done by adding the quotation's implementation, followed by a 'push_lit' function
+  to the instruction queue.
+  """
+  def dip(state) do
+    [quotation , n | stack] = state.stack
+    push_lit = fn state ->
+      state
+      |> Map.put(:stack, [n | state.stack])
+    end
+    quot_impl =
+      quotation
+      |> Jux.Quotation.compiled_implementation
+      |> EQueue.from_list
+    impl = EQueue.join(quot_impl, EQueue.from_list([push_lit]))
+
+    state
+    |> Map.put(:stack, stack)
+    |> Map.put(:instruction_queue, EQueue.join(impl, state.instruction_queue))
+  end
+
   def build_quotation(state) do
     # {quotation, unparsed_rest} = Jux.Parser.parse_quotation(state.unparsed_program)
 
@@ -30,13 +55,11 @@ defmodule Jux.Primitive do
     # |> Map.put(:stack, [quotation | state.stack])
     state = put_in(state.mode, :compiletime)
     {state, quotation} = Jux.State.compile(state, Jux.Quotation.new)
-    IO.inspect(quotation)
     state
     |> Map.put(:stack, [quotation | state.stack])
   end
 
   def end_compilation(state) do
-    IO.inspect("Compilation Finished!")
     :done
   end
 

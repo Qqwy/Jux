@@ -22,6 +22,7 @@ defmodule Jux.State do
     |> add_primitive("dup", &Primitive.dup/1)
     |> add_primitive("pop", &Primitive.pop/1)
     |> add_primitive("swap", &Primitive.swap/1)
+    |> add_primitive("dip", &Primitive.dip/1)
 
     |> add_primitive("[", &Primitive.build_quotation/1, fn state -> compile(state, Jux.Quotation.new) end)
     |> add_primitive("]", &Primitive.noop/1, &Primitive.end_compilation/1)
@@ -93,12 +94,10 @@ defmodule Jux.State do
             :done ->
               {put_in(state.mode, :runtime), accum}
             result ->
-              IO.inspect(word: word, result: result)
               compile(state, Jux.Quotation.push(accum, result))
           end
         else
           {:ok, impl} = Jux.Dictionary.get_implementation(state.dictionary, word, :compiletime)
-          IO.inspect(impl)
           state
           |> add_impl_to_instruction_queue(impl)
           |> compile(accum)

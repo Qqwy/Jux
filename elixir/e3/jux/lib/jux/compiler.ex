@@ -32,7 +32,7 @@ defmodule Jux.Compiler do
 
   defp push_literal(lit, :compiletime) do
     fn state ->
-      {"#{lit}", lit}
+      {"#{lit}", push_literal(lit, :runtime)}
     end
   end
 
