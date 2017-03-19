@@ -1,4 +1,6 @@
 defmodule Jux.Primitive do
+  def noop(state), do: state
+
   def dup(state) do
     [n | stack] = state.stack
     Map.put(state, :stack, [n, n | stack])
@@ -26,9 +28,16 @@ defmodule Jux.Primitive do
     # state
     # |> Map.put(:unparsed_program, unparsed_rest)
     # |> Map.put(:stack, [quotation | state.stack])
-    {quotation, state} = Jux.State.compile(state)
+    state = put_in(state.mode, :compiletime)
+    {state, quotation} = Jux.State.compile(state, Jux.Quotation.new)
+    IO.inspect(quotation)
     state
     |> Map.put(:stack, [quotation | state.stack])
+  end
+
+  def end_compilation(state) do
+    IO.inspect("Compilation Finished!")
+    :done
   end
 
   def heave_quotation(state) do
@@ -97,7 +106,7 @@ defmodule Jux.Primitive do
   end
 
   def noop_compilation(word, state) do
-    Jux.Compiler.compile_token(word, state.dictionary, :runtime)
+    Jux.Compiler.compile_token(word, state.dictionary)
   end
 
   # DEBUGGING ONLY. Not part of the official protocol.

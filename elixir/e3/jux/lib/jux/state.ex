@@ -8,7 +8,7 @@ defmodule Jux.State do
   - return stack (calculated results)
   - mode
   """
-  defstruct dictionary: nil, stack: [], instruction_queue: EQueue.new, unparsed_program: ""
+  defstruct dictionary: nil, stack: [], instruction_queue: EQueue.new, unparsed_program: "", mode: :runtime
 
   def new(source, stack \\ []) do
     %__MODULE__{unparsed_program: source, stack: stack, dictionary: setup_dictionary}
@@ -24,6 +24,7 @@ defmodule Jux.State do
     |> add_primitive("swap", &Primitive.swap/1)
 
     |> add_primitive("[", &Primitive.build_quotation/1, fn state -> compile(state, Jux.Quotation.new) end)
+    |> add_primitive("]", &Primitive.noop/1, &Primitive.end_compilation/1)
 
     |> add_primitive("define_new_word", &Primitive.define_new_word/1)
     |> add_primitive("rename_last_word", &Primitive.rename_last_word/1)
@@ -70,7 +71,8 @@ defmodule Jux.State do
           |> call
         else
           {:ok, impl} = Jux.Dictionary.get_implementation(state.dictionary, word)
-          add_impl_to_instruction_queue(state, impl)
+          state
+          |> add_impl_to_instruction_queue(impl)
           |> call # Tail recurse
         end
     end
@@ -82,15 +84,24 @@ defmodule Jux.State do
   end
 
   def compile(state = %__MODULE__{}, accum) do
-    case next_compiletime_word(state) do
+    case next_word(state) do
       :done ->
-        IO.puts "Error: End of program reached during compilation mode. Missing `]`?"
+        raise ArgumentError, "Error: End of program reached during compilation mode. Missing `]`?"
       {word, state} ->
-        case word.(state) do
-          :done ->
-            {accum, state}
-          result ->
-            compile(state, Jux.Quotation.push(accum, result))
+        if is_function(word) do
+          case word.(state) do
+            :done ->
+              {put_in(state.mode, :runtime), accum}
+            result ->
+              IO.inspect(word: word, result: result)
+              compile(state, Jux.Quotation.push(accum, result))
+          end
+        else
+          {:ok, impl} = Jux.Dictionary.get_implementation(state.dictionary, word, :compiletime)
+          IO.inspect(impl)
+          state
+          |> add_impl_to_instruction_queue(impl)
+          |> compile(accum)
         end
     end
   end
@@ -107,7 +118,7 @@ defmodule Jux.State do
 
   def next_word(state = %__MODULE__{instruction_queue: %EQueue{data: {[],[]}}, unparsed_program: unparsed_program}) do
     {token, rest} = Jux.Parser.extract_token(unparsed_program)
-    compiled_token = Jux.Compiler.compile_token(token, state.dictionary, :runtime)
+    compiled_token = Jux.Compiler.compile_token(token, state.dictionary)
 
     new_state =
       state
@@ -126,13 +137,13 @@ defmodule Jux.State do
     {word, Map.put(state, :instruction_queue, new_instruction_queue)}
   end
 
-  def next_compiletime_word(state = %__MODULE__{}) do
-    {token, rest} = Jux.Parser.extract_token(state.unparsed_program)
-    compiled_token = Jux.Compiler.compile_token(token, state.dictionary)
-    new_state =
-      state
-      |> Map.put(:unparsed_program, rest)
-    {compiled_token, new_state}
-  end
+  # def next_compiletime_word(state = %__MODULE__{}) do
+  #   {token, rest} = Jux.Parser.extract_token(state.unparsed_program)
+  #   compiled_token = Jux.Compiler.compile_token(token, state.dictionary)
+  #   new_state =
+  #     state
+  #     |> Map.put(:unparsed_program, rest)
+  #   {compiled_token, new_state}
+  # end
 
 end

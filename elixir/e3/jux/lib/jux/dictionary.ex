@@ -42,12 +42,20 @@ defmodule Jux.Dictionary do
   @doc """
   Returns a function implementation when given a reference to it.
   """
-  def get_implementation(dictionary, reference) do
+  def get_implementation(dictionary, reference, mode \\ :runtime)
+  def get_implementation(dictionary, reference, :runtime) do
     case dictionary.runtime_definitions[reference] do
       nil -> :error
       ref -> {:ok, ref}
     end
   end
+  def get_implementation(dictionary, reference, :compiletime) do
+    case dictionary.compiletime_definitions[reference] do
+      nil -> :error
+      ref -> {:ok, ref}
+    end
+  end
+
 
   @doc """
   Returns the reference that belongs to the given name.
