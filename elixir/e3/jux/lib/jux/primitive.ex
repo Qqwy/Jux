@@ -53,9 +53,10 @@ defmodule Jux.Primitive do
     # state
     # |> Map.put(:unparsed_program, unparsed_rest)
     # |> Map.put(:stack, [quotation | state.stack])
-    state = put_in(state.mode, :compiletime)
+    state = Map.put(state, :mode, :compiletime)
     {state, quotation} = Jux.State.compile(state, Jux.Quotation.new)
     state
+    |> Map.put(:mode, :runtime)
     |> Map.put(:stack, [quotation | state.stack])
   end
 
@@ -66,10 +67,19 @@ defmodule Jux.Primitive do
   def heave_quotation(state) do
     case Jux.Parser.extract_token(state.unparsed_program) do
       {"[", unparsed_rest} ->
-        {quotation, unparsed_rest} = Jux.Parser.parse_quotation(unparsed_rest)
-        state
-        |> Map.put(:unparsed_program, unparsed_rest)
-        |> Map.put(:stack, [quotation | state.stack])
+        unexecuted_stuff = state.instruction_queue
+        new_state =
+          state
+          |> Map.put(:instruction_queue, EQueue.new)
+          |> Map.put(:unparsed_program, unparsed_rest)
+          |> build_quotation
+
+        Map.put(new_state, :instruction_queue, EQueue.join(new_state.instruction_queue, unexecuted_stuff))
+
+        # {quotation, unparsed_rest} = Jux.Parser.parse_quotation(unparsed_rest)
+        # state
+        # |> Map.put(:unparsed_program, unparsed_rest)
+        # |> Map.put(:stack, [quotation | state.stack])
       {_, unparsed_rest} ->
         raise ArgumentError, "heave_quotation called without quotation as next element in the unparsed program"
     end
@@ -77,8 +87,8 @@ defmodule Jux.Primitive do
 
   def define_new_word(state) do
     case state.stack do
-      [quotation | stack] ->
-        dictionary = Jux.Dictionary.define_new_word(state.dictionary, quotation |> Jux.Quotation.compiled_implementation(state.dictionary))
+      [quotation , compiletime_quotation | stack] ->
+        dictionary = Jux.Dictionary.define_new_word(state.dictionary, Jux.Quotation.compiled_implementation(quotation), Jux.Quotation.compiled_implementation(compiletime_quotation))
         state
         |> Map.put(:dictionary, dictionary)
         |> Map.put(:stack, stack)

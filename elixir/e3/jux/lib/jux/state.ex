@@ -92,7 +92,7 @@ defmodule Jux.State do
         if is_function(word) do
           case word.(state) do
             :done ->
-              {put_in(state.mode, :runtime), accum}
+              {state, accum}
             result ->
               compile(state, Jux.Quotation.push(accum, result))
           end

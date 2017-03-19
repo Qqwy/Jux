@@ -48,7 +48,7 @@ defmodule Jux.Parser do
 
   defp do_extract_token(source) do
     source
-    |> String.split(~r{\s*\b},parts: 2)
+    |> String.split(~r{\s*\b|\s+},parts: 2)
     |> Enum.map(&String.trim_leading/1)
   end
 end
