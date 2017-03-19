@@ -17,7 +17,7 @@ defmodule Jux.Compiler do
               {:ok, ref} ->
                 ref
               _ ->
-                raise "Error: Unknown word found: #{word}"
+                raise "Error: Unknown word found: `#{word}`"
             end
         end
     end

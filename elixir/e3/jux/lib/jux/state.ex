@@ -8,7 +8,7 @@ defmodule Jux.State do
   - return stack (calculated results)
   - mode
   """
-  defstruct dictionary: nil, stack: [], instruction_queue: EQueue.new, unparsed_program: ""
+  defstruct dictionary: nil, stack: [], instruction_queue: EQueue.new, unparsed_program: "", mode: :runtime
 
   def new(source, stack \\ []) do
     %__MODULE__{unparsed_program: source, stack: stack, dictionary: setup_dictionary}
