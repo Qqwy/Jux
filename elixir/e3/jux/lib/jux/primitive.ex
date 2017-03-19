@@ -21,10 +21,13 @@ defmodule Jux.Primitive do
   end
 
   def build_quotation(state) do
-    {quotation, unparsed_rest} = Jux.Parser.parse_quotation(state.unparsed_program)
+    # {quotation, unparsed_rest} = Jux.Parser.parse_quotation(state.unparsed_program)
 
+    # state
+    # |> Map.put(:unparsed_program, unparsed_rest)
+    # |> Map.put(:stack, [quotation | state.stack])
+    {quotation, state} = Jux.State.compile(state)
     state
-    |> Map.put(:unparsed_program, unparsed_rest)
     |> Map.put(:stack, [quotation | state.stack])
   end
 
@@ -91,6 +94,10 @@ defmodule Jux.Primitive do
       _ ->
         raise ArgumentError, "Less than two arguments on the stack"
     end
+  end
+
+  def noop_compilation(word, state) do
+    Jux.Compiler.compile_token(word, state.dictionary, :runtime)
   end
 
   # DEBUGGING ONLY. Not part of the official protocol.

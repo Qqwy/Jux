@@ -1,7 +1,8 @@
 defmodule Jux.Dictionary do
   defstruct [
     definition_count: 0,
-    definitions: %{}, # definition reference -> implementation of function definition (as list).
+    runtime_definitions: %{}, # runtime definition reference -> implementation of function definition (as list).
+    compiletime_definitions: %{}, # compile-time definition reference -> implementation of function definition (as list).
   names: []        # name -> definition reference (integer).
   ]
 
@@ -9,11 +10,12 @@ defmodule Jux.Dictionary do
   Defines a new word with the given implementation,
   but stores it as 'nil' until renamed.
   """
-  def define_new_word(dictionary, implementation) do
+  def define_new_word(dictionary, implementation, compiletime_implementation) do
     reference = dictionary.definition_count
 
     %__MODULE__{dictionary |
-                definitions: Map.put(dictionary.definitions, reference, implementation),
+                runtime_definitions: Map.put(dictionary.runtime_definitions, reference, implementation),
+                compiletime_definitions: Map.put(dictionary.compiletime_definitions, reference, compiletime_implementation),
                 definition_count: reference + 1,
                 names: [{nil, reference} | dictionary.names]
     }
@@ -41,7 +43,7 @@ defmodule Jux.Dictionary do
   Returns a function implementation when given a reference to it.
   """
   def get_implementation(dictionary, reference) do
-    case dictionary.definitions[reference] do
+    case dictionary.runtime_definitions[reference] do
       nil -> :error
       ref -> {:ok, ref}
     end

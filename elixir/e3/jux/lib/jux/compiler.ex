@@ -6,8 +6,8 @@ defmodule Jux.Compiler do
   # TODO Rewrite using `with`?
   def compile_token(word, dictionary) do
     case word do
-      quotation = %Jux.Quotation{} ->
-        push_literal(quotation)
+      # quotation = %Jux.Quotation{} ->
+      #   push_literal(quotation)
       _ ->
         case Integer.parse(word) do
           {int, ""} ->
