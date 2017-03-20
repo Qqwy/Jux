@@ -1,4 +1,7 @@
 defmodule Jux.Primitive do
+  alias Jux.State
+
+
   def noop(state), do: state
 
   def push(state, value) do
@@ -72,7 +75,7 @@ defmodule Jux.Primitive do
   # end
   def start_compilation(state) do
     state
-    |> push_mode(:compiletime)
+    |> State.push_mode(:compiletime)
     |> State.create_new_stack
   end
 
@@ -80,7 +83,7 @@ defmodule Jux.Primitive do
     # :done
     state
     |> State.newest_stack_to_quotation
-    |> pop_mode(:compiletime)
+    |> State.pop_mode(:compiletime)
   end
 
   def heave_quotation(state) do
@@ -91,7 +94,7 @@ defmodule Jux.Primitive do
           state
           |> Map.put(:instruction_queue, EQueue.new)
           |> Map.put(:unparsed_program, unparsed_rest)
-          |> build_quotation
+          |> start_compilation
 
         Map.put(new_state, :instruction_queue, EQueue.join(new_state.instruction_queue, unexecuted_stuff))
 
@@ -169,7 +172,8 @@ defmodule Jux.Primitive do
   end
 
   def dump_stack(state) do
-    IO.puts "bottom >>> [ " <> (state.stack |> Enum.reverse |> Enum.map(&inspect/1) |> Enum.join(" ")) <> " ] <<< top"
+    stack = State.get_stack(state)
+    IO.puts "bottom >>> [ " <> (stack |> Enum.reverse |> Enum.map(&inspect/1) |> Enum.join(" ")) <> " ] <<< top"
     state
   end
 

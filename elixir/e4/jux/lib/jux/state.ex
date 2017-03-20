@@ -11,7 +11,7 @@ defmodule Jux.State do
   defstruct dictionary: nil, stacks: [[]], instruction_queue: EQueue.new, unparsed_program: "", mode: [:runtime]
 
   def new(source, stack \\ []) do
-    %__MODULE__{unparsed_program: source, stacks: [stack], dictionary: setup_dictionary}
+    %__MODULE__{unparsed_program: source, stacks: [stack], dictionary: setup_dictionary()}
   end
 
   alias Jux.Primitive
@@ -26,7 +26,7 @@ defmodule Jux.State do
 
     |> add_primitive("[", &Primitive.start_compilation/1, &Primitive.start_compilation/1)
     |> add_primitive("]", &Primitive.noop/1, &Primitive.end_compilation/1)
-    |> add_primitive("simply_compileme", &Primitive.noop_compilation/1, &Primitive.noop/1)
+    # |> add_primitive("simply_compileme", &Primitive.noop/1, &Primitive.noop/1)
 
     |> add_primitive("define_new_word", &Primitive.define_new_word/1)
     |> add_primitive("rename_last_word", &Primitive.rename_last_word/1)
@@ -38,6 +38,10 @@ defmodule Jux.State do
 
     |> add_primitive("dump_state", &Primitive.dump_state/1)
     |> add_primitive("dump_stack", &Primitive.dump_stack/1)
+  end
+
+  def mode(state) do
+    hd state.mode
   end
 
   def push_mode(state, mode) do
@@ -59,16 +63,16 @@ defmodule Jux.State do
   end
 
   def get_stack(state) do
-    head state.stacks
+    hd state.stacks
   end
 
   def update_stack(state, new_stack) do
     [_ | other_stacks] = state.stacks
-    Map.put(state, :stacks, [new_stac | other_stacks])
+    Map.put(state, :stacks, [new_stack | other_stacks])
   end
 
   def create_new_stack(state) do
-    Map.put(state, :stacks. [[] | state.stacks])
+    Map.put(state, :stacks, [[] | state.stacks])
   end
 
   def newest_stack_to_quotation(state) do
@@ -90,15 +94,15 @@ defmodule Jux.State do
     |> Jux.Dictionary.rename_last_word(name)
   end
 
-  defp add_complex(dictionary, name, implementation) do
-    compiled_implementation =
-      implementation
-      |> Enum.map(fn name -> get_reference!(dictionary, name) end)
+  # defp add_complex(dictionary, name, implementation) do
+  #   compiled_implementation =
+  #     implementation
+  #     |> Enum.map(fn name -> get_reference!(dictionary, name) end)
 
-    dictionary
-    |> Jux.Dictionary.define_new_word(compiled_implementation)
-    |> Jux.Dictionary.rename_last_word(name)
-  end
+  #   dictionary
+  #   |> Jux.Dictionary.define_new_word(compiled_implementation)
+  #   |> Jux.Dictionary.rename_last_word(name)
+  # end
 
   def call(state = %__MODULE__{}) do
     case next_word(state) do
@@ -115,7 +119,7 @@ defmodule Jux.State do
     word.(state)
   end
   defp call_word(word, state) when is_integer(word) do
-    {:ok, impl} = Jux.Dictionary.get_implementation(state.dictionary, word, state.mode)
+    {:ok, impl} = Jux.Dictionary.get_implementation(state.dictionary, word, mode(state))
     state
     |> add_impl_to_instruction_queue(impl)
   end
@@ -158,7 +162,7 @@ defmodule Jux.State do
 
   def next_word(state = %__MODULE__{instruction_queue: %EQueue{data: {[],[]}}, unparsed_program: unparsed_program}) do
     {token, rest} = Jux.Parser.extract_token(unparsed_program)
-    compiled_token = Jux.Compiler.compile_token(token, state.dictionary, state.mode)
+    compiled_token = Jux.Compiler.compile_token(token, state.dictionary, mode(state))
 
     new_state =
       state

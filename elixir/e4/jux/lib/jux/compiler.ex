@@ -26,13 +26,17 @@ defmodule Jux.Compiler do
   # Returns a closure that puts the given literal on the Jux.State's :stack field when executed.
   defp push_literal(lit, :runtime) do
     fn state ->
-      Map.put(state, :stack, [lit | state.stack])
+      # Map.put(state, :stack, [lit | state.stack])
+      # stack = Jux.State.get_stack(state)
+      # Jux.State.update_stack(state, [lit | stack])
+      Jux.Primitive.push(state, lit)
     end
   end
 
   defp push_literal(lit, :compiletime) do
     fn state ->
-      {"#{lit}", push_literal(lit, :runtime)}
+      # push_literal(lit, :runtime)
+      Jux.Primitive.push(state, {"#{lit}", lit})
     end
   end
 
