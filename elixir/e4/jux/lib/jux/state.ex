@@ -38,6 +38,7 @@ defmodule Jux.State do
 
     |> add_primitive("dump_state", &Primitive.dump_state/1)
     |> add_primitive("dump_stack", &Primitive.dump_stack/1)
+    |> add_primitive("dump_stack_nasty", &Primitive.dump_stack_nasty/1)
   end
 
   def mode(state) do

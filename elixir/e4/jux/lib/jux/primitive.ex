@@ -177,4 +177,10 @@ defmodule Jux.Primitive do
     state
   end
 
+  def dump_stack_nasty(state) do
+    stack = State.get_stack(state)
+    IO.inspect(stack, structs: false)
+    state
+  end
+
 end

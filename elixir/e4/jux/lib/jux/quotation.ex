@@ -3,7 +3,20 @@ defmodule Jux.Quotation do
 
   def new(implementation \\ :queue.new), do: %__MODULE__{implementation: implementation}
 
-  def from_list(implementation_list), do: %__MODULE__{implementation: :queue.from_list(implementation_list)}
+  def from_list(implementation_list) do
+    # TODO It would be even better if this logic is not hard-coded heere,
+    # but rather, when something is added to a quotation, it is wrapped in a wrapper
+    # that itself knows its name as well as its implementation.
+    # For literals, use a `push_literal` function wrapper.
+    normalized_impl_list =
+      implementation_list
+      |> Enum.map(fn
+      %__MODULE__{} = quot-> {inspect(quot), quot}
+      elem -> elem
+    end)
+    %__MODULE__{implementation: :queue.from_list(normalized_impl_list)}
+  end
+
 
   def push(quotation, instruction) do
     %__MODULE__{implementation: :queue.cons(instruction, quotation.implementation)}
