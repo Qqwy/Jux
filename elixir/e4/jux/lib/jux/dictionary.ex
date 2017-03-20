@@ -21,6 +21,10 @@ defmodule Jux.Dictionary do
     }
   end
 
+  def definition_count(dictionary) do
+    dictionary.definition_count
+  end
+
   @doc """
   Gives a different name to the last word (which should be created using `define_new_word` before).
   """

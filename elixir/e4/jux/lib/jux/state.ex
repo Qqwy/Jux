@@ -86,7 +86,8 @@ defmodule Jux.State do
   defp add_primitive(dictionary, name, function, compile_time_function \\ nil) do
     compile_time_function =
     if compile_time_function == nil do
-      fn state -> Primitive.straightforward_compilation(name, state) end
+      ref = Jux.Dictionary.definition_count(dictionary)
+      fn state -> Primitive.push(state, {name, ref}) end
     else
       compile_time_function
     end

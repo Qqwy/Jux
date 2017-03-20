@@ -73,13 +73,14 @@ defmodule Jux.Primitive do
     case Jux.Parser.extract_token(state.unparsed_program) do
       {"[", unparsed_rest} ->
         unexecuted_stuff = state.instruction_queue
+        IO.inspect({"Unexecuted stuff: ", unexecuted_stuff})
         new_state =
           state
           |> Map.put(:instruction_queue, EQueue.new)
           |> Map.put(:unparsed_program, unparsed_rest)
           |> start_compilation
 
-        Map.put(new_state, :instruction_queue, EQueue.join(new_state.instruction_queue, unexecuted_stuff))
+        Map.put(new_state, :instruction_queue, EQueue.join(unexecuted_stuff, new_state.instruction_queue))
 
       {elem, unparsed_rest} ->
         raise ArgumentError, "heave_quotation called without quotation as next element in the unparsed program: `#{elem}` `#{unparsed_rest}`"
@@ -87,24 +88,26 @@ defmodule Jux.Primitive do
   end
 
   def define_new_word(state) do
-    case state.stack do
+    case State.get_stack(state) do
       [quotation, compiletime_quotation | stack] ->
         dictionary = Jux.Dictionary.define_new_word(state.dictionary, Jux.Quotation.compiled_implementation(quotation), Jux.Quotation.compiled_implementation(compiletime_quotation))
         state
         |> Map.put(:dictionary, dictionary)
-        |> Map.put(:stack, stack)
+        # |> Map.put(:stack, stack)
+        |> State.update_stack(stack)
       _ ->
         raise ArgumentError, "Cannot define new word because the stack does not have a quotation on top: #{inspect state.stack}"
     end
   end
 
   def rename_last_word(state) do
-    case state.stack do
+    case State.get_stack(state) do
       [name | stack] when is_binary(name) ->
         dictionary = Jux.Dictionary.rename_last_word(state.dictionary, name)
         state
         |> Map.put(:dictionary, dictionary)
-        |> Map.put(:stack, stack)
+        |> State.update_stack(stack)
+        # |> Map.put(:stack, stack)
       _ ->
         raise ArgumentError, "Cannot rename last word because the stack does not have a string on top: #{inspect state.stack}"
     end
@@ -143,9 +146,9 @@ defmodule Jux.Primitive do
   # Compilation behaviour = adding the runtime behaviour word reference to the top of the stack.
   # Equivalent to Forth's `,`
   # TODO: Make safe for words whose name is not yet known.
-  def straightforward_compilation(word, state) do
-    push(state, {word, Jux.Compiler.compile_token(word, state.dictionary, :runtime)})
-  end
+  # def straightforward_compilation(word, state) do
+  #   push(state, {word, Jux.Compiler.compile_token(word, state.dictionary, :runtime)})
+  # end
 
   # DEBUGGING ONLY. Not part of the official protocol.
   def dump_state(state) do

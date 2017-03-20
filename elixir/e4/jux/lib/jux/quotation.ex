@@ -11,7 +11,7 @@ defmodule Jux.Quotation do
     normalized_impl_list =
       implementation_list
       |> Enum.map(fn
-      %__MODULE__{} = quot-> {inspect(quot), quot}
+      %__MODULE__{} = quot-> {inspect(quot), fn state -> Jux.Primitive.push(state, quot) end}
       elem -> elem
     end)
     %__MODULE__{implementation: :queue.from_list(normalized_impl_list)}
