@@ -53,18 +53,20 @@ defmodule Jux.Primitive do
     state
     |> State.update_stack(stack)
     # |> Map.put(:stack, stack)
-    |> Map.put(:instruction_queue, EQueue.join(impl, state.instruction_queue))
+    # |> Map.put(:instruction_queue, EQueue.join(impl, state.instruction_queue))
+    |> State.update_iq(EQueue.join(impl, State.get_iq(state)))
   end
 
   def start_compilation(state) do
     state
     |> State.push_mode(:compiletime)
     |> State.create_new_stack
+    |> State.create_new_iq
   end
 
   def end_compilation(state) do
-    # :done
     state
+    |> State.drop_newest_iq
     |> State.newest_stack_to_quotation
     |> State.pop_mode(:compiletime)
   end
@@ -72,15 +74,15 @@ defmodule Jux.Primitive do
   def heave_quotation(state) do
     case Jux.Parser.extract_token(state.unparsed_program) do
       {"[", unparsed_rest} ->
-        unexecuted_stuff = state.instruction_queue
-        IO.inspect({"Unexecuted stuff: ", unexecuted_stuff})
-        new_state =
+        # unexecuted_stuff = state.instruction_queue
+        # IO.inspect({"Unexecuted stuff: ", unexecuted_stuff})
+        # new_state =
           state
-          |> Map.put(:instruction_queue, EQueue.new)
+          # |> Map.put(:instruction_queue, EQueue.new)
           |> Map.put(:unparsed_program, unparsed_rest)
           |> start_compilation
 
-        Map.put(new_state, :instruction_queue, EQueue.join(unexecuted_stuff, new_state.instruction_queue))
+        # Map.put(new_state, :instruction_queue, EQueue.join(unexecuted_stuff, new_state.instruction_queue))
 
       {elem, unparsed_rest} ->
         raise ArgumentError, "heave_quotation called without quotation as next element in the unparsed program: `#{elem}` `#{unparsed_rest}`"
@@ -132,7 +134,7 @@ defmodule Jux.Primitive do
   end
 
   def nand(state) do
-    case State.stack(state) do
+    case State.get_stack(state) do
       [lhs, rhs | rest] ->
         nand_result = !(lhs && rhs)
         stack = [nand_result | rest]
