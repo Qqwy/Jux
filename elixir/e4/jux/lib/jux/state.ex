@@ -8,10 +8,10 @@ defmodule Jux.State do
   - return stack (calculated results)
   - mode
   """
-  defstruct dictionary: nil, stack: [], instruction_queue: EQueue.new, unparsed_program: "", mode: :runtime
+  defstruct dictionary: nil, stacks: [[]], instruction_queue: EQueue.new, unparsed_program: "", mode: [:runtime]
 
   def new(source, stack \\ []) do
-    %__MODULE__{unparsed_program: source, stack: stack, dictionary: setup_dictionary}
+    %__MODULE__{unparsed_program: source, stacks: [stack], dictionary: setup_dictionary}
   end
 
   alias Jux.Primitive
@@ -24,7 +24,7 @@ defmodule Jux.State do
     |> add_primitive("swap", &Primitive.swap/1)
     |> add_primitive("dip", &Primitive.dip/1)
 
-    |> add_primitive("[", &Primitive.build_quotation/1, fn state -> {state, res} = compile(state, Jux.Quotation.new); res end)
+    |> add_primitive("[", &Primitive.start_compilation/1, &Primitive.start_compilation/1)
     |> add_primitive("]", &Primitive.noop/1, &Primitive.end_compilation/1)
     |> add_primitive("simply_compileme", &Primitive.noop_compilation/1, &Primitive.noop/1)
 
@@ -38,6 +38,44 @@ defmodule Jux.State do
 
     |> add_primitive("dump_state", &Primitive.dump_state/1)
     |> add_primitive("dump_stack", &Primitive.dump_stack/1)
+  end
+
+  def push_mode(state, mode) do
+    Map.put(state, :mode, [mode | state.mode])
+  end
+
+  def pop_mode(state) do
+    [_ | rest_modes] = state.mode
+    Map.put(state, :mode, rest_modes)
+  end
+
+  def pop_mode(state, mode) do
+    case state.mode do
+      [mode | rest_modes] ->
+        Map.put(state, :mode, rest_modes)
+      _ ->
+        raise ArgumentError, "Attempting to end mode `#{mode}`, but the Jux state is not currently in this mode."
+    end
+  end
+
+  def get_stack(state) do
+    head state.stacks
+  end
+
+  def update_stack(state, new_stack) do
+    [_ | other_stacks] = state.stacks
+    Map.put(state, :stacks, [new_stac | other_stacks])
+  end
+
+  def create_new_stack(state) do
+    Map.put(state, :stacks. [[] | state.stacks])
+  end
+
+  def newest_stack_to_quotation(state) do
+    [newest, next | rest] = state.stacks
+    quot = Jux.Quotation.from_list(newest)
+    updated_next = [quot | next]
+    Map.put(state, :stacks, [updated_next | rest])
   end
 
   defp add_primitive(dictionary, name, function, compile_time_function \\ nil) do
@@ -68,16 +106,18 @@ defmodule Jux.State do
         IO.puts "Execution finished"
         state
       {word, state} ->
-        if is_function(word) do
-          word.(state)
-          |> call
-        else
-          {:ok, impl} = Jux.Dictionary.get_implementation(state.dictionary, word)
-          state
-          |> add_impl_to_instruction_queue(impl)
-          |> call # Tail recurse
-        end
+        call_word(word, state)
+        |> call
     end
+  end
+
+  defp call_word(word, state) when is_function(word) do
+    word.(state)
+  end
+  defp call_word(word, state) when is_integer(word) do
+    {:ok, impl} = Jux.Dictionary.get_implementation(state.dictionary, word, state.mode)
+    state
+    |> add_impl_to_instruction_queue(impl)
   end
 
   def add_impl_to_instruction_queue(state, impl) do
@@ -85,26 +125,26 @@ defmodule Jux.State do
     %__MODULE__{state | instruction_queue: new_queue}
   end
 
-  def compile(state = %__MODULE__{}, accum) do
-    case next_word(state) do
-      :done ->
-        raise ArgumentError, "Error: End of program reached during compilation mode. Missing `]`?"
-      {word, state} ->
-        if is_function(word) do
-          case word.(state) do
-            :done ->
-              {state, accum}
-            result ->
-              compile(state, Jux.Quotation.push(accum, result))
-          end
-        else
-          {:ok, impl} = Jux.Dictionary.get_implementation(state.dictionary, word, :compiletime)
-          state
-          |> add_impl_to_instruction_queue(impl)
-          |> compile(accum)
-        end
-    end
-  end
+  # def compile(state = %__MODULE__{}, accum) do
+  #   case next_word(state) do
+  #     :done ->
+  #       raise ArgumentError, "Error: End of program reached during compilation mode. Missing `]`?"
+  #     {word, state} ->
+  #       if is_function(word) do
+  #         case word.(state) do
+  #           :done ->
+  #             {state, accum}
+  #           result ->
+  #             compile(state, Jux.Quotation.push(accum, result))
+  #         end
+  #       else
+  #         {:ok, impl} = Jux.Dictionary.get_implementation(state.dictionary, word, :compiletime)
+  #         state
+  #         |> add_impl_to_instruction_queue(impl)
+  #         |> compile(accum)
+  #       end
+  #   end
+  # end
 
   @doc """
   Fetches the next word, by taking it from the instruction queue,

@@ -46,13 +46,13 @@ defmodule Jux.Dictionary do
   def get_implementation(dictionary, reference, :runtime) do
     case dictionary.runtime_definitions[reference] do
       nil -> :error
-      ref -> {:ok, ref}
+      impl -> {:ok, impl}
     end
   end
   def get_implementation(dictionary, reference, :compiletime) do
     case dictionary.compiletime_definitions[reference] do
       nil -> :error
-      ref -> {:ok, ref}
+      impl -> {:ok, impl}
     end
   end
 

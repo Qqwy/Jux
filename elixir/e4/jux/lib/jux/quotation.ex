@@ -3,6 +3,8 @@ defmodule Jux.Quotation do
 
   def new(implementation \\ :queue.new), do: %__MODULE__{implementation: implementation}
 
+  def from_list(implementation_list), do: %__MODULE__{implementation: :queue.from_list(:lists.reverse(implementation_list))}
+
   def push(quotation, instruction) do
     %__MODULE__{implementation: :queue.cons(instruction, quotation.implementation)}
   end

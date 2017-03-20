@@ -1,25 +1,34 @@
 defmodule Jux.Primitive do
   def noop(state), do: state
 
+  def push(state, value) do
+    stack = State.get_stack(state)
+    State.update_stack(state, [value | stack])
+  end
+
   def dup(state) do
-    [n | stack] = state.stack
-    Map.put(state, :stack, [n, n | stack])
+    [n | stack] = State.get_stack(state)
+    State.update_stack(state, [n, n | stack])
+    # Map.put(state, :stack, [n, n | stack])
   end
 
   def pop(state) do
-    [_ | stack] = state.stack
-    Map.put(state, :stack, stack)
+    [_ | stack] = State.get_stack(state)
+    State.update_stack(state, stack)
+    # Map.put(state, :stack, stack)
   end
 
   def swap(state) do
-    [a, b | rest] = state.stack
-    Map.put(state, :stack, [b, a | rest])
+    [a, b | rest] = State.get_stack(state)
+    State.update_stack(state, [b, a | rest])
+    # Map.put(state, :stack, [b, a | rest])
   end
 
   def puts(state) do
-    [n | stack ] = state.stack
+    [n | stack ] = State.get_stack(state)
     IO.puts(n)
-    Map.put(state, :stack, stack)
+    State.update_stack(state, stack)
+    # Map.put(state, :stack, stack)
   end
 
   @doc """
@@ -31,10 +40,11 @@ defmodule Jux.Primitive do
   to the instruction queue.
   """
   def dip(state) do
-    [quotation , n | stack] = state.stack
+    [quotation , n | stack] = State.get_stack(state)
     push_lit = fn state ->
-      state
-      |> Map.put(:stack, [n | state.stack])
+      new_stack = State.get_stack(state)
+      State.update_stack(state, [n | new_stack])
+      # |> Map.put(:stack, [n | state.stack])
     end
     quot_impl =
       quotation
@@ -43,25 +53,34 @@ defmodule Jux.Primitive do
     impl = EQueue.join(quot_impl, EQueue.from_list([push_lit]))
 
     state
-    |> Map.put(:stack, stack)
+    |> State.update_stack(stack)
+    # |> Map.put(:stack, stack)
     |> Map.put(:instruction_queue, EQueue.join(impl, state.instruction_queue))
   end
 
-  def build_quotation(state) do
-    # {quotation, unparsed_rest} = Jux.Parser.parse_quotation(state.unparsed_program)
+  # def build_quotation(state) do
+  #   # {quotation, unparsed_rest} = Jux.Parser.parse_quotation(state.unparsed_program)
 
-    # state
-    # |> Map.put(:unparsed_program, unparsed_rest)
-    # |> Map.put(:stack, [quotation | state.stack])
-    state = Map.put(state, :mode, :compiletime)
-    {state, quotation} = Jux.State.compile(state, Jux.Quotation.new)
+  #   # state
+  #   # |> Map.put(:unparsed_program, unparsed_rest)
+  #   # |> Map.put(:stack, [quotation | state.stack])
+  #   state = Map.put(state, :mode, :compiletime)
+  #   {state, quotation} = Jux.State.compile(state, Jux.Quotation.new)
+  #   state
+  #   |> Map.put(:mode, :runtime)
+  #   |> Map.put(:stack, [quotation | state.stack])
+  # end
+  def start_compilation(state) do
     state
-    |> Map.put(:mode, :runtime)
-    |> Map.put(:stack, [quotation | state.stack])
+    |> push_mode(:compiletime)
+    |> State.create_new_stack
   end
 
   def end_compilation(state) do
-    :done
+    # :done
+    state
+    |> State.newest_stack_to_quotation
+    |> pop_mode(:compiletime)
   end
 
   def heave_quotation(state) do
@@ -139,7 +158,8 @@ defmodule Jux.Primitive do
   end
 
   def noop_compilation(word, state) do
-    {word, Jux.Compiler.compile_token(word, state.dictionary, :runtime)}
+    # {word, Jux.Compiler.compile_token(word, state.dictionary, :runtime)}
+    push(state, {word, Jux.Compiler.compile_token(word, state.dictionary, :runtime)})
   end
 
   # DEBUGGING ONLY. Not part of the official protocol.
