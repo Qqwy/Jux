@@ -1,0 +1,8 @@
+[ heave_token [ simply_compileme ] heave_quotation define_new_word rename_last_word ] [ simply_compileme ] define_new_word heave_token def rename_last_word
+
+def foo [ 1 2 3 dup dup puts ]
+
+def not  [ dup nand ]
+def false [ 1 not ]
+def true  [ false not ]
+def and [ nand not ]
