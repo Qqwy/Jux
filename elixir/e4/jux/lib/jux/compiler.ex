@@ -6,8 +6,6 @@ defmodule Jux.Compiler do
   # TODO Rewrite using `with`?
   def compile_token(word, dictionary, mode) do
     case word do
-      # quotation = %Jux.Quotation{} ->
-      #   push_literal(quotation)
       _ ->
         case Integer.parse(word) do
           {int, ""} ->
@@ -26,16 +24,12 @@ defmodule Jux.Compiler do
   # Returns a closure that puts the given literal on the Jux.State's :stack field when executed.
   defp push_literal(lit, :runtime) do
     fn state ->
-      # Map.put(state, :stack, [lit | state.stack])
-      # stack = Jux.State.get_stack(state)
-      # Jux.State.update_stack(state, [lit | stack])
       Jux.Primitive.push(state, lit)
     end
   end
 
   defp push_literal(lit, :compiletime) do
     fn state ->
-      # push_literal(lit, :runtime)
       Jux.Primitive.push(state, {inspect(lit), push_literal(lit, :runtime)})
     end
   end

@@ -86,7 +86,7 @@ defmodule Jux.State do
   defp add_primitive(dictionary, name, function, compile_time_function \\ nil) do
     compile_time_function =
     if compile_time_function == nil do
-      fn state -> Primitive.noop_compilation(name, state) end
+      fn state -> Primitive.straightforward_compilation(name, state) end
     else
       compile_time_function
     end
@@ -130,27 +130,6 @@ defmodule Jux.State do
     %__MODULE__{state | instruction_queue: new_queue}
   end
 
-  # def compile(state = %__MODULE__{}, accum) do
-  #   case next_word(state) do
-  #     :done ->
-  #       raise ArgumentError, "Error: End of program reached during compilation mode. Missing `]`?"
-  #     {word, state} ->
-  #       if is_function(word) do
-  #         case word.(state) do
-  #           :done ->
-  #             {state, accum}
-  #           result ->
-  #             compile(state, Jux.Quotation.push(accum, result))
-  #         end
-  #       else
-  #         {:ok, impl} = Jux.Dictionary.get_implementation(state.dictionary, word, :compiletime)
-  #         state
-  #         |> add_impl_to_instruction_queue(impl)
-  #         |> compile(accum)
-  #       end
-  #   end
-  # end
-
   @doc """
   Fetches the next word, by taking it from the instruction queue,
   or, if the instruction queue is empty, from the unparsed program directly.
@@ -169,10 +148,6 @@ defmodule Jux.State do
       state
       |> Map.put(:unparsed_program, rest)
     {compiled_token, new_state}
-    # |> Map.put(:instruction_queue, EQueue.from_list([compiled_token]))
-    # state
-    # |> Jux.Parser.extract_token
-    # |> do_next_word
   end
 
   def next_word(state = %__MODULE__{}), do: do_next_word(state)
@@ -181,14 +156,4 @@ defmodule Jux.State do
     {:value, word, new_instruction_queue} = state.instruction_queue |> EQueue.pop
     {word, Map.put(state, :instruction_queue, new_instruction_queue)}
   end
-
-  # def next_compiletime_word(state = %__MODULE__{}) do
-  #   {token, rest} = Jux.Parser.extract_token(state.unparsed_program)
-  #   compiled_token = Jux.Compiler.compile_token(token, state.dictionary)
-  #   new_state =
-  #     state
-  #     |> Map.put(:unparsed_program, rest)
-  #   {compiled_token, new_state}
-  # end
-
 end

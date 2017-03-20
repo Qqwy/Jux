@@ -12,26 +12,22 @@ defmodule Jux.Primitive do
   def dup(state) do
     [n | stack] = State.get_stack(state)
     State.update_stack(state, [n, n | stack])
-    # Map.put(state, :stack, [n, n | stack])
   end
 
   def pop(state) do
     [_ | stack] = State.get_stack(state)
     State.update_stack(state, stack)
-    # Map.put(state, :stack, stack)
   end
 
   def swap(state) do
     [a, b | rest] = State.get_stack(state)
     State.update_stack(state, [b, a | rest])
-    # Map.put(state, :stack, [b, a | rest])
   end
 
   def puts(state) do
     [n | stack ] = State.get_stack(state)
     IO.puts(n)
     State.update_stack(state, stack)
-    # Map.put(state, :stack, stack)
   end
 
   @doc """
@@ -47,7 +43,6 @@ defmodule Jux.Primitive do
     push_lit = fn state ->
       new_stack = State.get_stack(state)
       State.update_stack(state, [n | new_stack])
-      # |> Map.put(:stack, [n | state.stack])
     end
     quot_impl =
       quotation
@@ -61,18 +56,6 @@ defmodule Jux.Primitive do
     |> Map.put(:instruction_queue, EQueue.join(impl, state.instruction_queue))
   end
 
-  # def build_quotation(state) do
-  #   # {quotation, unparsed_rest} = Jux.Parser.parse_quotation(state.unparsed_program)
-
-  #   # state
-  #   # |> Map.put(:unparsed_program, unparsed_rest)
-  #   # |> Map.put(:stack, [quotation | state.stack])
-  #   state = Map.put(state, :mode, :compiletime)
-  #   {state, quotation} = Jux.State.compile(state, Jux.Quotation.new)
-  #   state
-  #   |> Map.put(:mode, :runtime)
-  #   |> Map.put(:stack, [quotation | state.stack])
-  # end
   def start_compilation(state) do
     state
     |> State.push_mode(:compiletime)
@@ -98,10 +81,6 @@ defmodule Jux.Primitive do
 
         Map.put(new_state, :instruction_queue, EQueue.join(new_state.instruction_queue, unexecuted_stuff))
 
-        # {quotation, unparsed_rest} = Jux.Parser.parse_quotation(unparsed_rest)
-        # state
-        # |> Map.put(:unparsed_program, unparsed_rest)
-        # |> Map.put(:stack, [quotation | state.stack])
       {elem, unparsed_rest} ->
         raise ArgumentError, "heave_quotation called without quotation as next element in the unparsed program: `#{elem}` `#{unparsed_rest}`"
     end
@@ -160,8 +139,10 @@ defmodule Jux.Primitive do
     end
   end
 
-  def noop_compilation(word, state) do
-    # {word, Jux.Compiler.compile_token(word, state.dictionary, :runtime)}
+  # Used for nearly all words:
+  # Compilation behaviour = adding the runtime behaviour word reference to the top of the stack.
+  # Equivalent to Forth's `,`
+  def straightforward_compilation(word, state) do
     push(state, {word, Jux.Compiler.compile_token(word, state.dictionary, :runtime)})
   end
 
