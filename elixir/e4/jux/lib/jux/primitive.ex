@@ -88,7 +88,7 @@ defmodule Jux.Primitive do
 
   def define_new_word(state) do
     case state.stack do
-      [quotation , compiletime_quotation | stack] ->
+      [quotation, compiletime_quotation | stack] ->
         dictionary = Jux.Dictionary.define_new_word(state.dictionary, Jux.Quotation.compiled_implementation(quotation), Jux.Quotation.compiled_implementation(compiletime_quotation))
         state
         |> Map.put(:dictionary, dictionary)
@@ -112,28 +112,28 @@ defmodule Jux.Primitive do
 
   def heave_token_to_string(state) do
     {word, unparsed_rest} = Jux.Parser.extract_token(state.unparsed_program)
-    stack = [word | state.stack]
+    stack = State.get_stack(state)
     state
     |> Map.put(:unparsed_program, unparsed_rest)
-    |> Map.put(:stack, stack)
+    |> State.update_stack([word | stack])
   end
 
   def add(state) do
-    case state.stack do
+    case State.get_stack(state) do
       [lhs, rhs | rest] when is_integer(lhs) and is_integer(rhs) ->
         stack = [lhs + rhs | rest]
-        Map.put(state, :stack, stack)
+        State.update_stack(state, stack)
       _ ->
         raise ArgumentError, "Less than two arguments on the stack, or one or both are not integers"
     end
   end
 
   def nand(state) do
-    case state.stack do
+    case State.stack(state) do
       [lhs, rhs | rest] ->
         nand_result = !(lhs && rhs)
         stack = [nand_result | rest]
-        Map.put(state, :stack, stack)
+        State.update_stack(state, stack)
       _ ->
         raise ArgumentError, "Less than two arguments on the stack"
     end
@@ -142,6 +142,7 @@ defmodule Jux.Primitive do
   # Used for nearly all words:
   # Compilation behaviour = adding the runtime behaviour word reference to the top of the stack.
   # Equivalent to Forth's `,`
+  # TODO: Make safe for words whose name is not yet known.
   def straightforward_compilation(word, state) do
     push(state, {word, Jux.Compiler.compile_token(word, state.dictionary, :runtime)})
   end
