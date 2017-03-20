@@ -26,7 +26,7 @@ defmodule Jux.State do
 
     |> add_primitive("[", &Primitive.start_compilation/1, &Primitive.start_compilation/1)
     |> add_primitive("]", &Primitive.noop/1, &Primitive.end_compilation/1)
-    # |> add_primitive("simply_compileme", &Primitive.noop/1, &Primitive.noop/1)
+    |> add_primitive("simply_compileme", &Primitive.simple_compilation/1, &Primitive.simple_compilation/1)
 
     |> add_primitive("define_new_word", &Primitive.define_new_word/1)
     |> add_primitive("rename_last_word", &Primitive.rename_last_word/1)

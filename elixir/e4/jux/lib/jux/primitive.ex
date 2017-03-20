@@ -44,6 +44,7 @@ defmodule Jux.Primitive do
       new_stack = State.get_stack(state)
       State.update_stack(state, [n | new_stack])
     end
+    IO.inspect({quotation, stack})
     quot_impl =
       quotation
       |> Jux.Quotation.compiled_implementation
@@ -151,6 +152,13 @@ defmodule Jux.Primitive do
   # def straightforward_compilation(word, state) do
   #   push(state, {word, Jux.Compiler.compile_token(word, state.dictionary, :runtime)})
   # end
+
+  def simple_compilation(state) do
+    count = Jux.Dictionary.definition_count(state.dictionary)
+    runtime_fun = fn state -> push(state, {"???", count}) end
+    push(state, {"???", runtime_fun})
+    |> IO.inspect
+  end
 
   # DEBUGGING ONLY. Not part of the official protocol.
   def dump_state(state) do
