@@ -1,4 +1,4 @@
-[ simply_compileme ] [ heave_token [ simply_compileme ] heave_quotation dump_state define_new_word rename_last_word ] define_new_word dump_state heave_token def rename_last_word
+[ [ ] swap dip pop ] [ heave_token [ [ ] swap dip pop ] heave_quotation dump_state define_new_word rename_last_word ] define_new_word dump_state heave_token def rename_last_word
 
 def foo [ 1 2 3 dup dup puts ]
 

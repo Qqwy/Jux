@@ -11,7 +11,7 @@ defmodule Jux.Quotation do
     normalized_impl_list =
       implementation_list
       |> Enum.map(fn
-        %__MODULE__{} = quot -> {inspect(quot), fn state -> Jux.Primitive.push(state, quot) end}
+    %__MODULE__{} = quot -> {inspect(quot), fn state -> Jux.Primitive.push(state, quot) end}
         elem                 -> elem
       end)
     %__MODULE__{implementation: :queue.from_list(normalized_impl_list)}
@@ -33,6 +33,7 @@ defmodule Jux.Quotation do
   end
 
   def implementation(quotation) do
+    # IO.inspect(quotation, structs: false, label: "Quotation.implementation")
     quotation.implementation
     |> :queue.to_list
     |> :lists.reverse
@@ -46,14 +47,14 @@ defmodule Jux.Quotation do
 
   defimpl Inspect do
     def inspect(quotation, opts) do
-      "[ " <>
+      "#[ " <>
       (
         quotation
         |> Jux.Quotation.implementation
         |> Enum.map(&elem(&1, 0))
         |> Enum.join(" ")
       )
-      <>" ]"
+      <>" ]#"
     end
   end
 

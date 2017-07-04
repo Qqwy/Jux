@@ -64,7 +64,6 @@ defmodule Jux.Primitive do
     state
     |> State.push_mode(:compiletime)
     |> State.create_new_stack
-    |> push({"runtime_definition_of_this_function", count}) # Push address that this function will end up at when compiled. Hopefully this works?
     |> State.create_new_iq
   end
 
@@ -97,7 +96,14 @@ defmodule Jux.Primitive do
   def define_new_word(state) do
     case State.get_stack(state) do
       [quotation, compiletime_quotation | stack] ->
-        dictionary = Jux.Dictionary.define_new_word(state.dictionary, Jux.Quotation.compiled_implementation(quotation), Jux.Quotation.compiled_implementation(compiletime_quotation))
+        count = Jux.Dictionary.definition_count(state.dictionary)
+        compiled_runtime_code = Jux.Quotation.compiled_implementation(quotation)
+
+        bootstrapped_quotation = Jux.Quotation.new() |> Jux.Quotation.push({"???#{count}", count})
+        bootstrapped_compiletime_code = Jux.Quotation.unshift(compiletime_quotation, {inspect(bootstrapped_quotation), fn state -> Jux.Primitive.push(state, bootstrapped_quotation) end})
+        compiled_compiletime_code = Jux.Quotation.compiled_implementation(bootstrapped_compiletime_code) |> IO.inspect
+        # dictionary = Jux.Dictionary.define_new_word(state.dictionary, Jux.Quotation.compiled_implementation(quotation), Jux.Quotation.compiled_implementation(compiletime_quotation))
+        dictionary = Jux.Dictionary.define_new_word(state.dictionary, compiled_runtime_code, compiled_compiletime_code)
         state
         |> Map.put(:dictionary, dictionary)
         # |> Map.put(:stack, stack)
