@@ -7,3 +7,10 @@ def and [ nand not ]
 
 def false [ 1 not ]
 def true  [ false not ]
+
+def noop [ ]
+def eval [ [ ] swap dip pop ]
+
+def swapd [ [ swap ] dip ]
+
+def if [ [ ] ifte ]

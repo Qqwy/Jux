@@ -155,6 +155,39 @@ defmodule Jux.Primitive do
     end
   end
 
+  def bnand(state) do
+    case State.get_stack(state) do
+      [lhs, rhs | rest] ->
+        bnand_result = Bitwise.band(lhs, rhs) |> Bitwise.bnot
+        stack = [bnand_result | rest]
+        State.update_stack(state, stack)
+      _ ->
+        raise ArgumentError, "Less than two arguments on the stack"
+    end
+  end
+
+  def ifte(state) do
+    case State.get_stack(state) do
+      [else_quot, then_quot, condition_bool | rest] ->
+        quot =
+        if condition_bool !== false do
+          then_quot
+        else
+          else_quot
+        end
+        compiled_quot =
+          quot
+          |> Jux.Quotation.compiled_implementation
+          |> EQueue.from_list
+
+        state
+        |> State.update_stack(rest)
+        |> State.update_iq(EQueue.join(compiled_quot, State.get_iq(state)))
+      _ ->
+        raise ArgumentError, "Less than three arguments on the stack"
+    end
+  end
+
   # Used for nearly all words:
   # Compilation behaviour = adding the runtime behaviour word reference to the top of the stack.
   # Equivalent to Forth's `,`
