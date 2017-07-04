@@ -2,29 +2,29 @@ defmodule Jux.Primitive do
   alias Jux.State
 
 
-  def noop(state, _), do: state
+  def noop(state), do: state
 
-  def push(state, value, _) do
+  def push(state, value) do
     stack = State.get_stack(state)
     State.update_stack(state, [value | stack])
   end
 
-  def dup(state, _) do
+  def dup(state) do
     [n | stack] = State.get_stack(state)
     State.update_stack(state, [n, n | stack])
   end
 
-  def pop(state, _) do
+  def pop(state) do
     [_ | stack] = State.get_stack(state)
     State.update_stack(state, stack)
   end
 
-  def swap(state, _) do
+  def swap(state) do
     [a, b | rest] = State.get_stack(state)
     State.update_stack(state, [b, a | rest])
   end
 
-  def puts(state, _) do
+  def puts(state) do
     [n | stack ] = State.get_stack(state)
     IO.puts(n)
     State.update_stack(state, stack)
@@ -38,7 +38,7 @@ defmodule Jux.Primitive do
   This is done by adding the quotation's implementation, followed by a 'push_lit' function
   to the instruction queue.
   """
-  def dip(state, _) do
+  def dip(state) do
     [quotation , n | stack] = State.get_stack(state)
     push_lit = fn state ->
       new_stack = State.get_stack(state)
@@ -58,21 +58,24 @@ defmodule Jux.Primitive do
     |> State.update_iq(EQueue.join(impl, State.get_iq(state)))
   end
 
-  def start_compilation(state, _) do
+  def start_compilation(state) do
+    count = Jux.Dictionary.definition_count(state.dictionary)
+
     state
     |> State.push_mode(:compiletime)
     |> State.create_new_stack
+    |> push({"runtime_definition_of_this_function", count}) # Push address that this function will end up at when compiled. Hopefully this works?
     |> State.create_new_iq
   end
 
-  def end_compilation(state, _) do
+  def end_compilation(state) do
     state
     |> State.drop_newest_iq
     |> State.newest_stack_to_quotation
     |> State.pop_mode(:compiletime)
   end
 
-  def heave_quotation(state, _) do
+  def heave_quotation(state) do
     IO.inspect(heaving_quotation_of: state)
     case Jux.Parser.extract_token(state.unparsed_program) do
       {"[", unparsed_rest} ->
@@ -91,7 +94,7 @@ defmodule Jux.Primitive do
     end
   end
 
-  def define_new_word(state, _) do
+  def define_new_word(state) do
     case State.get_stack(state) do
       [quotation, compiletime_quotation | stack] ->
         dictionary = Jux.Dictionary.define_new_word(state.dictionary, Jux.Quotation.compiled_implementation(quotation), Jux.Quotation.compiled_implementation(compiletime_quotation))
@@ -104,7 +107,7 @@ defmodule Jux.Primitive do
     end
   end
 
-  def rename_last_word(state, _) do
+  def rename_last_word(state) do
     case State.get_stack(state) do
       [name | stack] when is_binary(name) ->
         dictionary = Jux.Dictionary.rename_last_word(state.dictionary, name)
@@ -117,7 +120,7 @@ defmodule Jux.Primitive do
     end
   end
 
-  def heave_token_to_string(state, _) do
+  def heave_token_to_string(state) do
     {word, unparsed_rest} = Jux.Parser.extract_token(state.unparsed_program)
     stack = State.get_stack(state)
     state
@@ -125,7 +128,7 @@ defmodule Jux.Primitive do
     |> State.update_stack([word | stack])
   end
 
-  def add(state, _) do
+  def add(state) do
     case State.get_stack(state) do
       [lhs, rhs | rest] when is_integer(lhs) and is_integer(rhs) ->
         stack = [lhs + rhs | rest]
@@ -135,7 +138,7 @@ defmodule Jux.Primitive do
     end
   end
 
-  def nand(state, _) do
+  def nand(state) do
     case State.get_stack(state) do
       [lhs, rhs | rest] ->
         nand_result = !(lhs && rhs)
@@ -154,29 +157,34 @@ defmodule Jux.Primitive do
   #   push(state, {word, Jux.Compiler.compile_token(word, state.dictionary, :runtime)})
   # end
 
-  def simple_compilation(state, word) do
+  def simple_compilation(state) do
     count = Jux.Dictionary.definition_count(state.dictionary)
-    runtime_fun = fn state -> push(state, {"???", count}) end
-    push(state, {"???", runtime_fun})
+    # runtime_fun = fn state ->
+    #   rf2 = fn state -> 
+    #     push(state, count)
+    #   end
+    #   push(state, {"???", rf2})
+    # end
+    # push(state, {"???", runtime_fun})
+    push(state, {"???", count})
     |> IO.inspect
   end
 
   # DEBUGGING ONLY. Not part of the official protocol.
-  def dump_state(state, _) do
+  def dump_state(state) do
     state
     |> IO.inspect
   end
 
-  def dump_stack(state, _) do
+  def dump_stack(state) do
     stack = State.get_stack(state)
     IO.puts "bottom >>> [ " <> (stack |> Enum.reverse |> Enum.map(&inspect(&1, state: state)) |> Enum.join(" ")) <> " ] <<< top"
     state
   end
 
-  def dump_stack_nasty(state, _) do
+  def dump_stack_nasty(state) do
     stack = State.get_stack(state)
     IO.inspect(stack, structs: false)
     state
   end
-
 end

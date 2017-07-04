@@ -18,27 +18,27 @@ defmodule Jux.State do
 
   def setup_dictionary do
     %Jux.Dictionary{}
-    |> add_primitive("puts", &Primitive.puts/2)
-    |> add_primitive("dup", &Primitive.dup/2)
-    |> add_primitive("pop", &Primitive.pop/2)
-    |> add_primitive("swap", &Primitive.swap/2)
-    |> add_primitive("dip", &Primitive.dip/2)
+    |> add_primitive("puts", &Primitive.puts/1)
+    |> add_primitive("dup", &Primitive.dup/1)
+    |> add_primitive("pop", &Primitive.pop/1)
+    |> add_primitive("swap", &Primitive.swap/1)
+    |> add_primitive("dip", &Primitive.dip/1)
 
-    |> add_primitive("[", &Primitive.start_compilation/2, &Primitive.start_compilation/2)
-    |> add_primitive("]", &Primitive.noop/2, &Primitive.end_compilation/2)
-    |> add_primitive("simply_compileme", &Primitive.simple_compilation/2, &Primitive.simple_compilation/2)
+    |> add_primitive("[", &Primitive.start_compilation/1, &Primitive.start_compilation/1)
+    |> add_primitive("]", &Primitive.noop/1, &Primitive.end_compilation/1)
+    |> add_primitive("simply_compileme", &Primitive.simple_compilation/1, &Primitive.noop/1)
 
-    |> add_primitive("define_new_word", &Primitive.define_new_word/2)
-    |> add_primitive("rename_last_word", &Primitive.rename_last_word/2)
-    |> add_primitive("heave_token", &Primitive.heave_token_to_string/2)
-    |> add_primitive("heave_quotation", &Primitive.heave_quotation/2)
+    |> add_primitive("define_new_word", &Primitive.define_new_word/1)
+    |> add_primitive("rename_last_word", &Primitive.rename_last_word/1)
+    |> add_primitive("heave_token", &Primitive.heave_token_to_string/1)
+    |> add_primitive("heave_quotation", &Primitive.heave_quotation/1)
 
-    |> add_primitive("add", &Primitive.add/2)
-    |> add_primitive("nand", &Primitive.nand/2)
+    |> add_primitive("add", &Primitive.add/1)
+    |> add_primitive("nand", &Primitive.nand/1)
 
-    |> add_primitive("dump_state", &Primitive.dump_state/2)
-    |> add_primitive("dump_stack", &Primitive.dump_stack/2)
-    |> add_primitive("dump_stack_nasty", &Primitive.dump_stack_nasty/2)
+    |> add_primitive("dump_state", &Primitive.dump_state/1)
+    |> add_primitive("dump_stack", &Primitive.dump_stack/1)
+    |> add_primitive("dump_stack_nasty", &Primitive.dump_stack_nasty/1)
   end
 
   def mode(state) do
