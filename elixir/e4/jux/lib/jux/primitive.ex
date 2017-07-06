@@ -48,14 +48,18 @@ defmodule Jux.Primitive do
     quot_impl =
       quotation
       |> Jux.Quotation.compiled_implementation
-      |> EQueue.from_list
-    impl = EQueue.join(quot_impl, EQueue.from_list([push_lit]))
+      # |> EQueue.from_list
+      |> Okasaki.Deque.new()
+    # impl = EQueue.join(quot_impl, EQueue.from_list([push_lit]))
+    # impl = Collectable.into([push_lit], quot_impl)
+    impl = Okasaki.Deque.insert_right(quot_impl, push_lit)
 
     state
     |> State.update_stack(stack)
     # |> Map.put(:stack, stack)
     # |> Map.put(:instruction_queue, EQueue.join(impl, state.instruction_queue))
-    |> State.update_iq(EQueue.join(impl, State.get_iq(state)))
+    # |> State.update_iq(EQueue.join(impl, State.get_iq(state)))
+    |> State.update_iq(Enum.into(State.get_iq(state), impl))
   end
 
   def cons(state) do
@@ -184,11 +188,12 @@ defmodule Jux.Primitive do
         compiled_quot =
           quot
           |> Jux.Quotation.compiled_implementation
-          |> EQueue.from_list
+          # |> EQueue.from_list
+          |> Okasaki.Queue.new
 
         state
         |> State.update_stack(rest)
-        |> State.update_iq(EQueue.join(compiled_quot, State.get_iq(state)))
+        |> State.update_iq(Enum.into(State.get_iq(state), compiled_quot))
       _ ->
         raise ArgumentError, "Less than three arguments on the stack"
     end
