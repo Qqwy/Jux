@@ -1,9 +1,16 @@
-[ [ ] swap dip pop ] [ heave_token [ [ ] swap dip pop ] heave_quotation dump_state define_new_word rename_last_word ] define_new_word dump_state heave_token def rename_last_word
+[ [ ] swap dip pop ] [ heave_token [ [ ] swap dip pop ] heave_quotation define_new_word rename_last_word ] define_new_word heave_token def rename_last_word
 
 def foo [ 1 2 3 dup dup puts ]
 
 def not [ dup nand ]
 def and [ nand not ]
+
+def bnot [ dup bnand ]
+def band [ bnand bnot ]
+def bor [ [ bnot ] dip bnoot bnand ]
+def bnor [ bor bnot ]
+def complement [ bnot 1 add ]
+def sub [ complement add ]
 
 def false [ 1 not ]
 def true  [ false not ]

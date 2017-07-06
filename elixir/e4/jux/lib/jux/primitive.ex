@@ -44,7 +44,7 @@ defmodule Jux.Primitive do
       new_stack = State.get_stack(state)
       State.update_stack(state, [n | new_stack])
     end
-    IO.inspect({quotation, stack})
+    # IO.inspect({quotation, stack})
     quot_impl =
       quotation
       |> Jux.Quotation.compiled_implementation
@@ -56,6 +56,12 @@ defmodule Jux.Primitive do
     # |> Map.put(:stack, stack)
     # |> Map.put(:instruction_queue, EQueue.join(impl, state.instruction_queue))
     |> State.update_iq(EQueue.join(impl, State.get_iq(state)))
+  end
+
+  def cons(state) do
+    [elem, quotation, | stack] = State.get_stack(state)
+    consed_quotation = Jux.Quotation.unshift(quotation, elem)
+    State.update_stack(state, [consed_quotation | stack])
   end
 
   def start_compilation(state) do
@@ -75,7 +81,7 @@ defmodule Jux.Primitive do
   end
 
   def heave_quotation(state) do
-    IO.inspect(heaving_quotation_of: state)
+    # IO.inspect(heaving_quotation_of: state)
     case Jux.Parser.extract_token(state.unparsed_program) do
       {"[", unparsed_rest} ->
         # unexecuted_stuff = state.instruction_queue
@@ -101,7 +107,7 @@ defmodule Jux.Primitive do
 
         bootstrapped_quotation = Jux.Quotation.new() |> Jux.Quotation.push({"???#{count}", count})
         bootstrapped_compiletime_code = Jux.Quotation.unshift(compiletime_quotation, {inspect(bootstrapped_quotation), fn state -> Jux.Primitive.push(state, bootstrapped_quotation) end})
-        compiled_compiletime_code = Jux.Quotation.compiled_implementation(bootstrapped_compiletime_code) |> IO.inspect
+        compiled_compiletime_code = Jux.Quotation.compiled_implementation(bootstrapped_compiletime_code) #|> IO.inspect
         # dictionary = Jux.Dictionary.define_new_word(state.dictionary, Jux.Quotation.compiled_implementation(quotation), Jux.Quotation.compiled_implementation(compiletime_quotation))
         dictionary = Jux.Dictionary.define_new_word(state.dictionary, compiled_runtime_code, compiled_compiletime_code)
         state
@@ -206,7 +212,7 @@ defmodule Jux.Primitive do
     # end
     # push(state, {"???", runtime_fun})
     push(state, {"???", count})
-    |> IO.inspect
+    # |> IO.inspect
   end
 
   # DEBUGGING ONLY. Not part of the official protocol.
