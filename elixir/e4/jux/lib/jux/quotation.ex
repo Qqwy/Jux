@@ -47,14 +47,14 @@ defmodule Jux.Quotation do
 
   defimpl Inspect do
     def inspect(quotation, opts) do
-      "#[ " <>
+      "[ " <>
       (
         quotation
         |> Jux.Quotation.implementation
         |> Enum.map(&elem(&1, 0))
         |> Enum.join(" ")
       )
-      <>" ]#"
+      <>" ]"
     end
   end
 

@@ -7,7 +7,7 @@ def and [ nand not ]
 
 def bnot [ dup bnand ]
 def band [ bnand bnot ]
-def bor [ [ bnot ] dip bnoot bnand ]
+def bor [ [ bnot ] dip bnot bnand ]
 def bnor [ bor bnot ]
 def complement [ bnot 1 add ]
 def sub [ complement add ]

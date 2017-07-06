@@ -59,8 +59,8 @@ defmodule Jux.Primitive do
   end
 
   def cons(state) do
-    [elem, quotation, | stack] = State.get_stack(state)
-    consed_quotation = Jux.Quotation.unshift(quotation, elem)
+    [elem, quotation | stack] = State.get_stack(state)
+    consed_quotation = Jux.Quotation.unshift(quotation, {inspect(elem), elem})
     State.update_stack(state, [consed_quotation | stack])
   end
 

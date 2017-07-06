@@ -37,6 +37,8 @@ defmodule Jux.State do
     |> add_primitive("nand", &Primitive.nand/1)
     |> add_primitive("bnand", &Primitive.bnand/1)
 
+    |> add_primitive("cons", &Primitive.cons/1)
+
     |> add_primitive("ifte", &Primitive.ifte/1)
 
     |> add_primitive("dump_state", &Primitive.dump_state/1)
