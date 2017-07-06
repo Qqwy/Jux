@@ -8,7 +8,7 @@ defmodule Jux.State do
   - return stack (calculated results)
   - mode
   """
-  defstruct dictionary: nil, stacks: [[]], instruction_queues: [EQueue.new], unparsed_program: "", mode: [:runtime]
+  defstruct dictionary: nil, stacks: [[]], instruction_queues: [Okasaki.Queue.empty()], unparsed_program: "", mode: [:runtime]
 
   def new(source, stack \\ []) do
     %__MODULE__{unparsed_program: source, stacks: [stack], dictionary: setup_dictionary()}
@@ -98,7 +98,7 @@ defmodule Jux.State do
   end
 
   def create_new_iq(state) do
-    Map.put(state, :instruction_queues, [EQueue.new | state.instruction_queues])
+    Map.put(state, :instruction_queues, [Okasaki.Queue.empty() | state.instruction_queues])
   end
 
   def drop_newest_iq(state) do
@@ -149,8 +149,7 @@ defmodule Jux.State do
   end
 
   def add_impl_to_instruction_queue(state, impl) do
-    new_queue = EQueue.join(EQueue.from_list(impl), get_iq(state))
-    # %__MODULE__{state | instruction_queues: new_queue}
+    new_queue = Enum.into(get_iq(state), Okasaki.Queue.new(impl))
     state
     |> update_iq(new_queue)
   end
@@ -161,24 +160,32 @@ defmodule Jux.State do
   """
   def next_word(state)
 
-  def next_word(state = %__MODULE__{instruction_queues: iqs, unparsed_program: ""}) when hd(iqs) == %EQueue{data: {[],[]}} do
-    :done
+  def next_word(state = %__MODULE__{instruction_queues: iqs = [current_iq | _], unparsed_program: ""}) do
+    if !Okasaki.Queue.empty?(current_iq) do
+      do_next_word(state)
+    else
+      :done
+    end
   end
 
-  def next_word(state = %__MODULE__{instruction_queues: iqs, unparsed_program: unparsed_program}) when hd(iqs) == %EQueue{data: {[],[]}} do
-    {token, rest} = Jux.Parser.extract_token(unparsed_program)
-    compiled_token = Jux.Compiler.compile_token(token, state.dictionary, mode(state))
+  def next_word(state = %__MODULE__{instruction_queues: iqs = [current_iq | _], unparsed_program: unparsed_program}) do
+      if !Okasaki.Queue.empty?(current_iq) do
+        do_next_word(state)
+      else
+        {token, rest} = Jux.Parser.extract_token(unparsed_program)
+        compiled_token = Jux.Compiler.compile_token(token, state.dictionary, mode(state))
 
-    new_state =
-      state
-      |> Map.put(:unparsed_program, rest)
-    {compiled_token, new_state}
+        new_state =
+          state
+          |> Map.put(:unparsed_program, rest)
+        {compiled_token, new_state}
+      end
   end
 
   def next_word(state = %__MODULE__{}), do: do_next_word(state)
 
   def do_next_word(state = %__MODULE__{}) do
-    {:value, word, new_instruction_queue} = get_iq(state) |> EQueue.pop
+    {:ok, {word, new_instruction_queue}} = Okasaki.Queue.remove(get_iq(state))
     new_state = update_iq(state, new_instruction_queue)
     {word, new_state}
   end
