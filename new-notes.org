@@ -1,0 +1,126 @@
+Jux notes
+
+* Minimum builtin calls
+** String2Token
+Turns a string into a token.
+Creates a new token in the dictionary if it did not exist yet (with an empty definition that raises an error).
+** Token2String
+Turns a token into a string.
+** add
+Adds two uints.
+Used to implement minus by using two's complement.
+** bnand
+Compares an integer bitwise to another integer.
+** typeIndex
+Pops top element from stack and returns its type index (as an integer).
+** ifte
+Removes top two quotations and value below it from stack. If value is equal to '1', runs lower quotation. If it is '0', runs top quotation.
+If the value was anything else, crash _(undefined behaviour).
+** dup
+Duplicates top value
+** swap
+Switches position of top two elements.
+** runQuotation
+Runs the quotation on top.
+** cons
+Puts element on top in list right below it at the front. (this is the 'right end' of the quotation).
+** uncons
+Removes first element from list on top.
+** pushByte
+Takes two arguments: On top of the stack, the FILENO.
+Below that, the byte to push.
+Pushes this byte into the given file/stream.
+** pullByte
+Takes one arguments: the FILENO to push to.
+Pulls a byte from the given file/stream.
+Blocking.
+Returns on top a 'boolean': 1 if read successfully, 0 if EOF was reached.
+Below that, the read value.
+** sleep
+Takes the top argument, and sleeps that long (approximately) in microseconds.
+
+* Calls built on top of builtins
+** pop
+Removes top value
+On top of 'ifte'.
+** Minus
+On top of plus using two's complement
+** Multiplication
+On top of plus, boolean checks and y-combinator.
+** Nand
+On top of bnand, using '1'.
+** and
+On top of nand
+** or
+On top of nand
+** xor
+On top of nand
+** band
+On top of bnand
+** bor
+On top of bnand
+** bxor
+On top of bnand
+** if
+On top of ifte
+** unless
+on top of ifte
+** integerEq
+on top of sub and and.
+** dip
+Based on runQuotation and cons.
+Removes top quotation from the stack, and the value below it.
+Runs the quotation without the value on the stack.
+Puts the element back on the stack afterwards.
+** CallToken
+On top of runQuotation and cons.
+Calls token on top of stack.
+** Compile
+no-op. Can be overridden by smarter compilers to optimize code before executing it.
+TODO is this required?
+
+* Builtin Types
+** Token
+A 'symbol' type. Besides the tag, contains a pointer or reference to the location of the token's word definition.
+
+Tokens can end up on the stack in the following cases:
+1) There was a code quotation and it is being manipulated.
+2) A string was turned into a token.
+3) A previously created token was taken out of some other datastructure.
+
+** Unsigned Integer (fixnum)
+Signed arithmetic is, when using only this type, made using two's complement.
+
+Also, we build bignums on top of this.
+** Float (?)
+Potentially not required, since we can emulate this using our Unsigned Integer type as well (?)
+** ByteString
+Contains a list of single-byte characters.
+_not_ Unicode-proof.
+(We build Uncidoe features on top of it?)
+** List
+A linear collection datatype, used as a linked list.
+Used both for data and for code.
+* Emulated types
+** Boolean
+Core Jux does not disambugate between integers and booleans.
+Booleans are the integers 0 (false) and 1 (true)
+
+* The Environment
+** File Descriptors
+*** Certain calls, like pullByte/pushByte use FILENOs, akin to C.
+**** STDIN (console input) should be available, and have FILENO 0.
+**** STDOUT (console output) should be available, and have FILENO 1.
+**** STDERR (console error output) should be available, and have FILENO 2.
+** Two stacks:
+*** Data stack.
+*** Function stack, where the body of functions get pushed to when they are about to be called.
+**** This usually only occurs infrequently, since stuff is fully compiled into a function's definition usually.
+**** It allows us to support tail-recursion (rather important) without extra work.
+* Notes
+** Recursion can be built by implementing the Y-combinator
+** Dynamic calls (needed for potential explicit recursion, even more needed for e.g. polymorphic dispatch/traits etc) can be built by having a string-representation of a function to be called later on top.
+*** This means that all other kinds of calls can be statically compiled whenever they are encountered, since they form a full DAG.
+* TODOs
+** Blocking vs Nonblocking IO?
+*** Blocking can be built on nonblocking using a spin-lock, but that is not nice.
