@@ -15,7 +15,7 @@ Compares an integer bitwise to another integer.
 Pops top element from stack and returns its type index (as an integer).
 ** ifte
 Removes top two quotations and value below it from stack. If value is equal to '1', runs lower quotation. If it is '0', runs top quotation.
-If the value was anything else, crash _(undefined behaviour).
+If the value was anything else, crash _(undefined behaviour). TODO maybe just run 'else' in case of non-zero rather than crashing? I'm not sure about performance considerations here.
 ** dup
 Duplicates top value
 ** swap
@@ -38,6 +38,14 @@ Returns on top a 'boolean': 1 if read successfully, 0 if EOF was reached.
 Below that, the read value.
 ** sleep
 Takes the top argument, and sleeps that long (approximately) in microseconds.
+** storeQuotation
+Used to define functions.
+Takes the token on top and adds the quotation below it as its definition to the dictionary.
+Note that this should not replace the previous definition but rather make the linked list longer (?).
+TODO do we need a 'forgetQuotation'?
+** lookupToken
+Looks up the token on top's definition and puts it on the top as a quotation.
+TODO necessary or not?
 
 * Calls built on top of builtins
 ** pop
@@ -73,7 +81,8 @@ Removes top quotation from the stack, and the value below it.
 Runs the quotation without the value on the stack.
 Puts the element back on the stack afterwards.
 ** CallToken
-On top of runQuotation and cons.
+On top of cons + runQuotation.
+TODO alternatively could be made using lookupToken + runQuotation
 Calls token on top of stack.
 ** Compile
 no-op. Can be overridden by smarter compilers to optimize code before executing it.
@@ -112,6 +121,7 @@ Booleans are the integers 0 (false) and 1 (true)
 **** STDIN (console input) should be available, and have FILENO 0.
 **** STDOUT (console output) should be available, and have FILENO 1.
 **** STDERR (console error output) should be available, and have FILENO 2.
+**** TODO Prefix program input (i.e. the standard library) before STDIN or give it its own dedicated file number?
 ** Two stacks:
 *** Data stack.
 *** Function stack, where the body of functions get pushed to when they are about to be called.
@@ -121,6 +131,8 @@ Booleans are the integers 0 (false) and 1 (true)
 ** Recursion can be built by implementing the Y-combinator
 ** Dynamic calls (needed for potential explicit recursion, even more needed for e.g. polymorphic dispatch/traits etc) can be built by having a string-representation of a function to be called later on top.
 *** This means that all other kinds of calls can be statically compiled whenever they are encountered, since they form a full DAG.
+** For now, support 'forth-like' strings where `"` starts a string 
 * TODOs
 ** Blocking vs Nonblocking IO?
 *** Blocking can be built on nonblocking using a spin-lock, but that is not nice.
+
