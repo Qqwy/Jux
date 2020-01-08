@@ -1,12 +1,18 @@
 defmodule Jux.Interpreter do
-  alias Jux.State
-  alias __MODULE__.{Primitives, Dictionary, Integer}
+  alias Jux.{State, Helper}
+  alias __MODULE__.{Primitives, Dictionary, Integer, Quotation}
 
   def main(state \\ %State{}, input) do
-    case input |> String.trim_leading |> take_first_word do
+    case Helper.take_first_word(input) do
       {:error, :empty} ->
         IO.puts("DONE")
         state
+      {:ok, {"[", rest_input}} ->
+        with {:ok, {quotation, rest_input2}} <- Helper.take_quotation(rest_input) do
+          update_in(state.function_stack, fn stack -> [{:quotation, quotation} | stack] end)
+          |> run_function_stack()
+          |> main(rest_input2)
+        end
       {:ok, {token, rest_input}} ->
         state
         |> add_token_to_function_stack(token)
@@ -14,16 +20,6 @@ defmodule Jux.Interpreter do
         |> main(rest_input)
     end
   end
-
-  def take_first_word(str), do: take_first_word(str, "")
-  def take_first_word("", accum) do
-    case accum do
-      "" -> {:error, :empty}
-      other -> {:ok, {accum, ""}}
-    end
-  end
-  def take_first_word(str = <<x::utf8, xs::binary>>, accum) when x == ?\s, do: {:ok, {accum, str}}
-  def take_first_word(<<x::utf8, xs::binary>>, accum), do: take_first_word(xs, accum <> <<x>>)
 
   # TODO reading in quotations
   def add_token_to_function_stack(state, token) do
@@ -45,7 +41,7 @@ defmodule Jux.Interpreter do
 
   # TODO the parsing stuff ought to happen when a new token is added to the function stack instead.
   def run_function_stack_fn(state, token) do
-    case run_token(state, token) do
+    case run_token(state, token) |> IO.inspect() do
       {:ok, state} -> state
       {:error, error} -> raise error
     end
@@ -76,5 +72,9 @@ defmodule Jux.Interpreter do
 
   def run_token(state, atom) when is_atom(atom) do
     Primitives.run(state, atom)
+  end
+
+  def run_token(state, {:quotation, quot}) do
+    Quotation.run(state, quot)
   end
 end
