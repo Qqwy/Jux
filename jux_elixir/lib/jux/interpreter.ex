@@ -27,7 +27,9 @@ defmodule Jux.Interpreter do
 
   # TODO reading in quotations
   def add_token_to_function_stack(state, token) do
-    update_in state.function_stack, fn stack -> [token | stack] end
+    with {:ok, token} <- parse_token(state, token) do
+      update_in state.function_stack, fn stack -> [token | stack] end
+    end
   end
 
   def run_function_stack(state) do
@@ -43,18 +45,36 @@ defmodule Jux.Interpreter do
 
   # TODO the parsing stuff ought to happen when a new token is added to the function stack instead.
   def run_function_stack_fn(state, token) do
-    case parse_run_token(state, token) do
+    case run_token(state, token) do
       {:ok, state} -> state
       {:error, error} -> raise error
     end
   end
 
-  def parse_run_token(state, token) do
-    with {:error, _} <- Integer.try_parse_run(state, token),
-         {:error, _} <- Dictionary.try_lookup_run(state, token),
-         {:error, _} <- Primitives.try_lookup_run(state, token) do
+  def parse_token(state, token) do
+    with {:error, _} <- Integer.try_parse(state, token),
+         {:error, _} <- Dictionary.try_lookup(state, token),
+         {:error, _} <- Primitives.try_lookup(state, token) do
       {:error,  "Could not parse/run token #{token}."}
     end
   end
 
+  # def parse_run_token(state, token) do
+  #   with {:error, _} <- Integer.try_parse_run(state, token),
+  #        {:error, _} <- Dictionary.try_lookup_run(state, token),
+  #        {:error, _} <- Primitives.try_lookup_run(state, token) do
+  #     {:error,  "Could not parse/run token #{token}."}
+  #   end
+  # end
+  def run_token(state, int) when is_integer(int) do
+    Integer.run(state, int)
+  end
+
+  def run_token(state, list) when is_list(list) do
+    Dictionary.run(state, list)
+  end
+
+  def run_token(state, atom) when is_atom(atom) do
+    Primitives.run(state, atom)
+  end
 end
