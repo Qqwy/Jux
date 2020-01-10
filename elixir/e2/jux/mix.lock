@@ -1,0 +1,3 @@
+%{"e_queue": {:hex, :e_queue, "1.0.1", "cee5d830e47938250c56a34de2b34028adbae867e6bccceb2e0edf36e2543680", [:mix], []},
+  "numbers": {:hex, :numbers, "1.0.0", "f1e224920ac347953faff00ecac1ee3f4b9e5103018eb3fc5d1999d53ae6418c", [:mix], []},
+  "tensor": {:hex, :tensor, "1.0.0", "d223fa97dd5b9127369ec86a80967ed45dfb10e23460d12ba793ffab8e131898", [:mix], [{:numbers, "~> 1.0", [hex: :numbers, optional: false]}]}}

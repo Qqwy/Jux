@@ -1,0 +1,78 @@
+# [PackageDev] target_format: plist, ext: tmLanguage
+---
+name: Jux Syntax (Beta)
+scopeName: source.jux-beta_syntax
+fileTypes: [jux]
+uuid: c2678932-0739-4006-bb20-30e38fe41dea
+foldingStartMarker: '\s*\[\s*$'
+foldingStopMarker: '\]\s*$'
+
+patterns:
+- include: '#comment'
+- include: '#quotation_start'
+- include: '#quotation_end'
+#- include: '#definition'
+- include: '#simple_definition'
+- include: '#string'
+- include: '#identifier'
+- include: '#integer'
+
+repository:
+  comment:
+    match: (?:^ *|\G *| +)((#).*\n?)
+    captures:
+      '1': {name: comment.line.number-sign.jux-beta_syntax}
+      '2': {name: punctuation.definition.comment.line.jux-beta_syntax}
+  quotation_start:
+    name: "keyword.control.quotation.start.jux-beta_syntax"
+    match: (\[)
+  quotation_end:
+    name: "keyword.control.quotation.end.jux-beta_syntax"
+    match: (\])
+  string:
+    name: "string.quoted.double.jux-beta_syntax"
+    begin: '"'
+    end: '"'
+    patterns:
+      - name: constant.character.escape.jux-beta_syntax
+        match: (\\.)
+  identifier:
+    name: "variable.language.jux-beta_syntax"
+    match: ([a-zA-Z_][\w]*[?!]?)
+
+  integer:
+    name: "constant.numeric.jux-beta_syntax"
+    match: ([+-]?\d+)
+  # TODO: Fix this, if possible
+  # mutliline-definitions are (nearly?) impossible in the tmLanguage.
+  # We want this to match:
+  # ```
+  # "foo"
+  #   ""
+  #   [
+  #    .. a program here..
+  #   ]
+  # def
+  # ```
+  # Most importantly, we only want it to match if the whole snippet exists; e.g. not make a string blue when no matching `def` is there.
+  # 
+  
+  # definition:
+  #   name: "entity.other.function.jux-beta_syntax"
+  #   begin: ("([a-zA-Z_][\w]*[?!]?)")
+  #   end: (def)
+  #   beginCaptures:
+  #     '1': {name: "entity.name.function.jux-beta_syntax"}
+  #   contentName: "support.constant.jux-beta_syntax"
+  #   patterns:
+  #   - include: '#comment'
+  #   - include: '#quotation_start'
+  #   - include: '#quotation_end'
+  #   #- include: '#definition'
+  #   - include: '#string'
+  #   - include: '#identifier'
+  #   - include: '#integer'
+  simple_definition:
+    name: "entity.other.function.jux-beta_syntax"
+    match: "def"
+

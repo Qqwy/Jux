@@ -1,0 +1,11 @@
+"xor"
+  "
+  Calculates the boolean XOR of the top two arguments.
+  "
+  [
+    dup2
+    or            # get 'or' of top two arguments
+    [and not] dip # get 'nand' of bottom two arguments'
+    and           # only true if both of the above are true
+  ] 
+def
