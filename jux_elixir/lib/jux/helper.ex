@@ -27,11 +27,18 @@ defmodule Jux.Helper do
 
   def take_quotation(str, accum) do
     case take_first_word(str) do
+      {:error, problem} -> {:error, problem}
       {:ok, {"]", words}} ->
         {:ok, {:lists.reverse(accum), words}}
+      {:ok, {"[", words}} ->
+        case take_quotation(words) do
+          {:error, problem} ->
+            {:error, problem}
+          {:ok, {inner_quotation, rest_words}} ->
+            take_quotation(rest_words, [inner_quotation | accum])
+        end
       {:ok, {word, words}} ->
         take_quotation(words, [word | accum])
-      {:error, problem} -> {:error, problem}
     end
   end
 end

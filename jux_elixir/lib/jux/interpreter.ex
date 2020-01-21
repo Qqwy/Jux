@@ -23,8 +23,11 @@ defmodule Jux.Interpreter do
 
   # TODO reading in quotations
   def add_token_to_function_stack(state, token) do
-    with {:ok, token} <- parse_token(state, token) do
-      update_in state.function_stack, fn stack -> [token | stack] end
+    case parse_token(state, token) do
+      {:ok, token} ->
+        update_in state.function_stack, fn stack -> [token | stack] end
+      {:error, problem} ->
+        raise problem
     end
   end
 
