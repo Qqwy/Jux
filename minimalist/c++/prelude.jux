@@ -1,0 +1,37 @@
+compileme
+runme
+pushint
+compile_word
+define
+subtract
+negative
+fetch
+store
+getchar
+putchar
+immediate
+return
+
+inner_interpret
+
+define L
+       108 putchar
+return
+
+define hello
+       72 putchar
+       101 putchar
+       111
+       L
+       L
+       putchar
+       10 putchar
+return
+
+define test immediate
+       hello
+return
+
+test
+test
+test
