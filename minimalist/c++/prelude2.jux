@@ -1,9 +1,9 @@
 compileme
 runme
 pushint
-compile_word
 define
 immediate
+compile_word
 return
 subtract
 negative

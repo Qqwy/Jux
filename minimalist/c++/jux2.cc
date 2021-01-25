@@ -21,9 +21,9 @@ enum core_instruction {
   compileme = 0,
   runme,
   pushint,
-  compile_word,
   define,
-  immediate, // all words up to and including immediate are immediate words.
+  immediate,
+  compile_word,
   returntocaller,
   subtract,
   negative,
@@ -130,17 +130,19 @@ word_t dictionary_entry_to_codeword_location(word_t dictionary_entry) {
 }
 
 
-void run_instruction(core_instruction instruction);
+void run_instruction(word_t instruction_address);
 void run_compile_word() {
+  std::cout << "compile_word\n";
+
     std::string wordname = read_word();
     int dictionary_address = lookup_in_dictionary(wordname);
     if(dictionary_address != 0) {
       int codeword_location = dictionary_entry_to_codeword_location(dictionary_address);
-      run_instruction(static_cast<core_instruction>(memory[codeword_location]));
+      run_instruction(codeword_location);
     } else {
       try {
         int val = std::stoi(wordname);
-        push_dict(pushint);
+        push_dict(dictionary_entry_to_codeword_location(lookup_in_dictionary("pushint")));
         push_dict(val);
       } catch (...) {
         dump_memory();
@@ -153,11 +155,27 @@ void run_compile_word() {
 }
 
 void run_define() {
-  
+  std::cout << "define\n";
+  std::vector<word_t> wide_wordname = wordname_to_wide_wordname(read_word());
+  push_dict(latest); // link to previous dictionary entry
+  latest = here - 1; // update most recent entry pointer to point to current dictionary entry (which starts with the link to the previous entry, hence the - 1)
+  push_dict(wide_wordname.size());
+  for(auto character : wide_wordname) {
+    push_dict(character);
+  }
+  push_dict(compileme);
+  std::cout << "end of define\n";
+}
+
+void run_immediate() {
+  std::cout << "immediate\n";
+  pop_dict();
+  push_dict(runme);
 }
 
 void run_instruction(word_t instruction_address) {
   core_instruction instruction = static_cast<core_instruction>(memory[instruction_address]);
+  std::cout << "instruction: " << instruction << "\t";
   switch(instruction) {
   case compileme: // TODO doubt
     {
@@ -169,7 +187,7 @@ void run_instruction(word_t instruction_address) {
     {
       std::cout << "runme\n";
       push_call(pc); // store 'next instruction to be run' on callstack
-      pc = memory[instruction_address]; // and replace it for now with the instruction following this one.
+      pc = instruction_address + 1; // and replace it for now with the instruction following this one.
     }
     break;
   case pushint:
@@ -182,29 +200,23 @@ void run_instruction(word_t instruction_address) {
       push_value(val);
     }
   case compile_word:
-    std::cout << "compile_word\n";
     run_compile_word();
     break;
   case define:
-    {
-      std::cout << "define\n";
-      run_define();
-    }
+    run_define();
     break;
   case immediate:
-    {
-      std::cout << "immediate\n";
-      pop_dict();
-      push_dict(runme);
-    }
+    run_immediate();
     break;
   case returntocaller:
     {
+      std::cout << "return\n";
       pc = pop_call();
     }
     break;
   case subtract:
     {
+      std::cout << "subtract\n";
       int rhs = pop_value();
       int lhs = pop_value();
       int result = lhs - rhs;
@@ -213,6 +225,7 @@ void run_instruction(word_t instruction_address) {
     break;
   case negative:
     {
+      std::cout << "negative\n";
       int val = pop_value();
       int result = val < 0;
       push_value(result);
@@ -220,6 +233,7 @@ void run_instruction(word_t instruction_address) {
     break;
   case fetch:
     {
+      std::cout << "fetch\n";
       int memory_ptr = pop_value();
       int val = memory[memory_ptr];
       push_value(val);
@@ -227,6 +241,7 @@ void run_instruction(word_t instruction_address) {
     break;
   case store:
     {
+      std::cout << "store\n";
       int memory_ptr = pop_value();
       int val = pop_value();
       memory[memory_ptr] = val;
@@ -234,12 +249,14 @@ void run_instruction(word_t instruction_address) {
     break;
   case getcharacter:
     {
+      std::cout << "getchar\n";
       int val = getchar();
       push_value(val);
     }
     break;
   case putcharacter:
     {
+      std::cout << "putchar\n";
       int val = pop_value();
       putchar(val);
     }
@@ -248,38 +265,51 @@ void run_instruction(word_t instruction_address) {
 }
 
 void run_instructions() {
+  size_t count = 0;
   while(true) {
+    std::cout << count << ": ";
+
     // core_instruction instruction_address = static_cast<core_instruction>(memory[pc]);
     word_t instruction_address(memory[pc]);
     ++pc;
 
+    std::cout << "\t pc: " << pc << "\t m[pc-1]: " << instruction_address << "\t";
+
     // during `run_instruction`, `pc` will always point to the address of the next codeword to be run.
     run_instruction(instruction_address);
+
+    ++count;
+    if(count > 100) {
+      break;
+    }
   }
 }
 
 void initialize_dictionary() {
-  for(word_t instruction = 0; instruction < 6; ++instruction) {
-    run_instruction(define);
-    run_instruction(immediate);
+  for(word_t instruction = 0; instruction < num_core_instructions; ++instruction) {
+    run_define();
+    if(instruction == define || instruction == immediate){
+      // run_immediate();
+      pop_dict();
+    }
     push_dict(instruction);
     push_dict(returntocaller);
   }
-  for(word_t instruction = 6; instruction < num_core_instructions; ++instruction) {
-    run_instruction(define);
-    push_dict(instruction);
-    push_dict(returntocaller);
-  }
+  // for(word_t instruction = 5; instruction < num_core_instructions; ++instruction) {
+  //   run_define();
+  //   push_dict(instruction);
+  //   push_dict(returntocaller);
+  // }
 }
 
 void initialize_inner_interpreter() {
-  run_instruction(define);
-  run_instruction(immediate);
+  run_define();
+  run_immediate();
   int inner_interpreter_start = here - 1;
-  push_dict(dictionary_entry_to_codeword_location(lookup_in_dictionary("compile_word")));
+  push_dict(dictionary_entry_to_codeword_location(lookup_in_dictionary("compile_word")) + 1);
   push_dict(inner_interpreter_start);
 
-  pc = inner_interpreter_start;
+  pc = inner_interpreter_start + 1;
 }
 
 int main() {
@@ -290,6 +320,8 @@ int main() {
 
   initialize_dictionary();
   initialize_inner_interpreter();
+  dump_memory();
 
   run_instructions();
+  dump_memory();
 }
