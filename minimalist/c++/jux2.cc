@@ -78,12 +78,11 @@ word_t pop_dict() {
 
 std::string read_word() {
   std::string str;
-  if(!std::cin) {
-
+  std::cin >> str;
+  if(str == "") {
     std::cout << "EOF encountered. Good bye!\n";
     exit(0);
   }
-  std::cin >> str;
   return str;
 }
 
@@ -109,7 +108,10 @@ word_t lookup_in_dictionary(std::vector<word_t> wide_wordname) {
     word_t entry_name_length = memory[dictionary_entry + 1];
     word_t *entry_name_ptr = &memory[dictionary_entry + 2];
 
-    if(size == entry_name_length && memcmp(wide_wordname.data(), entry_name_ptr, size) == 0) {
+    if(size == entry_name_length && memcmp(wide_wordname.data(), entry_name_ptr, size * sizeof(word_t)) == 0) {
+      for(word_t index = 0; index < size; ++index) {
+        std::cout << wide_wordname[index]  << " vs. " << entry_name_ptr[index] << '\n';
+      }
       std::cout << "success\n";
       return dictionary_entry;
     }
@@ -142,7 +144,7 @@ void run_compile_word() {
     } else {
       try {
         int val = std::stoi(wordname);
-        push_dict(dictionary_entry_to_codeword_location(lookup_in_dictionary("pushint")));
+        push_dict(dictionary_entry_to_codeword_location(lookup_in_dictionary("pushint")) + 1);
         push_dict(val);
       } catch (...) {
         dump_memory();
