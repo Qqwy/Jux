@@ -1,14 +1,20 @@
-#include <iostream> // std::cin, std::cout
-#include <string>  // std::string
-#include <vector> // vector
-#include <cstring> // memcmp
+#define debug if(false)
+// #define debug if(true)
 
-#include <array> // array
+#include <iostream> // std::cin, std::cout
+#include <string>   // std::string
+#include <vector>   // vector
+#include <cstring>  // memcmp
+#include <array>    // array
 
 
 typedef long word_t;
 
-std::array<word_t, 20000> memory;
+word_t const call_stack_size = 256;
+word_t const memory_size = 20000;
+word_t const value_stack_size = memory_size / 2;
+
+std::array<word_t, memory_size> memory;
 word_t &pc = memory[0]; // program counter
 word_t &t = memory[1];  // top of value stack
 word_t &r = memory[2]; // top of return stack
@@ -16,8 +22,6 @@ word_t &latest = memory[3]; // address of beginning of newest dictionary entry
 word_t &here = memory[4]; // address of last instruction added to the dictionary
 
 
-#define debug if(false)
-// #define debug if(true)
 
 enum core_instruction {
   compileme = 0,
@@ -137,6 +141,10 @@ word_t dictionary_entry_to_codeword_location(word_t dictionary_entry) {
   return dictionary_entry + codeword_offset;
 }
 
+word_t dictionary_entry_to_data_location(word_t dictionary_entry) {
+  return dictionary_entry_to_codeword_location(dictionary_entry) + 1;
+}
+
 
 void run_instruction(word_t instruction_address);
 void run_compile_word() {
@@ -150,8 +158,7 @@ void run_compile_word() {
     } else {
       try {
         int val = std::stoi(wordname);
-        // push_dict(pushint);
-        push_dict(dictionary_entry_to_codeword_location(lookup_in_dictionary("pushint")) + 1);
+        push_dict(dictionary_entry_to_data_location(lookup_in_dictionary("pushint")));
         push_dict(val);
       } catch (...) {
         debug { dump_memory(); }
@@ -314,9 +321,8 @@ void initialize_dictionary() {
 
 void initialize_inner_interpreter() {
   run_define();
-  run_immediate();
   int inner_interpreter_start = here - 1;
-  push_dict(dictionary_entry_to_codeword_location(lookup_in_dictionary("compile_word")) + 1);
+  push_dict(dictionary_entry_to_data_location(lookup_in_dictionary("compile_word")));
   push_dict(inner_interpreter_start);
 
   pc = inner_interpreter_start + 1;
@@ -325,8 +331,8 @@ void initialize_inner_interpreter() {
 int main() {
   r = 8;
   latest = 0;
-  here = r + 128;
-  t = 10000;
+  here = r + call_stack_size;
+  t = memory_size - value_stack_size;
 
   initialize_dictionary();
   initialize_inner_interpreter();
