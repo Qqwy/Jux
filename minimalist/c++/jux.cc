@@ -31,6 +31,14 @@ enum core_instruction {
 };
 int const num_core_instructions = 13;
 
+void dump_memory() {
+  std::cout << "Memory dump:\n";
+  for(size_t index = 0; index < 512; ++index) {
+    std::cout << index << ":  " << memory[index] << '\t' << static_cast<char>(memory[index]) << '\n';
+  }
+}
+
+
 void push(int * stack_top, int value) {
   memory[*stack_top] = value;
   ++(*stack_top);
@@ -68,6 +76,7 @@ int pop_dict() {
 std::string read_word() {
   std::string str;
   if(!std::cin) {
+
     std::cout << "EOF encountered. Good bye!\n";
     exit(0);
   }
@@ -120,18 +129,21 @@ void run_instruction(core_instruction instruction) {
   switch(instruction) {
   case compileme:
     {
+      std::cout << "running compileme\n";
       push_dict(*pc);
     }
     break;
   case runme:
     {
+      std::cout << "running runme\n";
       push_call(*pc);
-      pc = &memory[*pc] - 1;
+      pc = &memory[*pc + 1];
     }
     break;
   case pushint:
     {
-      ++pc;
+      std::cout << "running pushint\n";
+      ++(*pc);
       int val = memory[*pc];
       push_value(val);
     }
@@ -143,8 +155,6 @@ void run_instruction(core_instruction instruction) {
       int dictionary_address = lookup_in_dictionary(wordname_to_wide_wordname(wordname));
       if(dictionary_address != 0) {
         int codeword_location = dictionary_entry_to_codeword_location(dictionary_address);
-        // push_dict(codeword_location);
-        // *pc = codeword_location - 1;
         run_instruction(static_cast<core_instruction>(memory[codeword_location]));
       } else {
         try {
@@ -152,10 +162,13 @@ void run_instruction(core_instruction instruction) {
           push_dict(pushint);
           push_dict(val);
         } catch (...) {
+          dump_memory();
+
           std::cerr << "error: `" << wordname << "` cannot be found in the dictionary but is also not a number literal. Exiting.\n";
           exit(1);
         }
       }
+      std::cout << "end of compile_word\n";
     }
     break;
   case define:
@@ -169,6 +182,7 @@ void run_instruction(core_instruction instruction) {
         push_dict(character);
       }
       push_dict(compileme);
+        std::cout << "end of define\n";
     }
     break;
   case subtract:
@@ -214,23 +228,30 @@ void run_instruction(core_instruction instruction) {
     break;
   case immediate:
     {
+      std::cout << "running immediate\n";
       pop_dict();
       push_dict(runme);
     }
     break;
   case returntocaller:
     {
+      std::cout << "running return\n";
       *pc = pop_call();
     }
     break;
   }
 }
 
+
 void define_core_instruction(core_instruction instruction) {
   run_instruction(define);
 
   // put the instruction in the codeword section of the dictionary entry
-  pop_dict();
+
+  if(instruction == define || instruction == immediate){
+    run_instruction(immediate);
+    // pop_dict();
+  }
   push_dict(instruction);
 }
 
@@ -252,16 +273,14 @@ int main() {
   run_instruction(immediate);
   int myself = *h - 1;
   push_dict(dictionary_entry_to_codeword_location(lookup_in_dictionary(wordname_to_wide_wordname("compile_word"))));
+  // push_dict(compile_word);
   push_dict(myself);
 
   *pc = myself;
 
-  std::cout << "Memory dump:\n";
-  for(size_t index = 0; index < 512; ++index) {
-    std::cout << index << ":  " << memory[index] << '\t' << static_cast<char>(memory[index]) << '\n';
-  }
 
 
+  dump_memory();
   size_t no_instruction = 0;
       // start program execution proper
   while(true) {
@@ -274,12 +293,11 @@ int main() {
     std::cout << no_instruction << " memory[pc]: "<< memory[*pc] << '\n';
     core_instruction instruction = static_cast<core_instruction>(memory[*pc]);
     run_instruction(instruction);
-    ++pc;
+    *pc = pop_call();
+    (++*pc);
+    *pc = memory[*pc];
   }
 
-  std::cout << "Memory dump:\n";
-  for(size_t index = 0; index < 512; ++index) {
-    std::cout << index << ":  " << memory[index] << '\t' << static_cast<char>(memory[index]) << '\n';
-  }
+  dump_memory();
 
 }
