@@ -5,7 +5,7 @@ define
 immediate
 compile_word
 return
-subtract
+-
 negative
 fetch
 store
@@ -13,23 +13,196 @@ getchar
 putchar
 inner_interpret
 
+define r
+  2
+return
+
+define ]
+  r fetch
+  1 -
+  r store
+  compile_word
+]
+
+define main immediate
+  ]
+
+main
+
+define t
+  1
+return
+
+define latest
+  3
+return
+
+define h
+  4
+return
+
+define here
+  h fetch
+return
+
+define pc
+  0
+return
+
+
+define " 34 return
+define newline 10 return
+define space 32 return
+define '0' 48 return
+define '-' 45 return
+
+define printnewline
+  newline putchar
+return
+
+define _x  5 fetch return
+define _x= 5 store return
+
+define _y  6 fetch return
+define _y= 6 store return
+
+define swap
+  _x= _y= _x _y
+return
+
+define +
+  0 swap -
+return
+
+define dup
+  _x=
+  _x
+  _x
+return
+
+define drop
+  t fetch
+  1 -
+  t store
+return
+
+define increment_pointer
+  dup
+  fetch
+
+  1 +
+  swap
+  store
+return
+
+define ,
+  here fetch
+  store
+  here increment_pointer
+return
+
+define '
+  r fetch
+  fetch
+  dup
+  1 +
+  r fetch store
+  fetch
+return
+
+define dec
+  dup fetch
+  1 -
+  swap
+  store
+return
+
+define t>r
+  r fetch fetch
+
+  swap
+
+  r fetch
+  1 +
+  r store
+
+  r fetch store
+return
+
+define r>t
+  r fetch fetch
+
+  r fetch
+  1 -
+  r store
+
+  swap
+
+  r fetch store
+return
+
+define tailcall
+  r>t
+  r>t drop
+  t>r
+return
+
+define minus
+  0 swap -
+return
+
+define bnot
+  1 swap -
+return
+
+define <
+  -
+  negative
+return
+
+define int_to_bool
+  dup
+  0 <
+  swap minus
+  0 <
+  +
+return
+
+define not
+  int_to_bool
+  bnot
+return
+
+define ==
+  - not
+return
+
+define miniif
+  r>t
+  +
+  t>r
+return
+
+define find-)
+  getchar
+  
+  find-)
+return
+
+define ( immediate
+  find-)
+return
+
+( foo bar baz )
+
 define L
   108 putchar
 return
 
-define cr
-  10 putchar
-return
-
-define echo
-  getchar putchar
-return
-
 define test immediate
-  L L L L L L cr
-  echo
-  echo
-  echo
+  L L L L L printnewline printnewline
 return
 
+test
+test
 test

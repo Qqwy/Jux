@@ -47,38 +47,38 @@ void dump_memory() {
       }
 }
 
-void push(word_t &stack_top, word_t value) {
+constexpr void push(word_t &stack_top, word_t value) {
   memory[stack_top] = value;
   ++stack_top;
 }
 
-word_t pop(word_t &stack_top) {
+constexpr word_t pop(word_t &stack_top) {
   --stack_top;
   word_t val = memory[stack_top];
   return val;
 }
 
-void push_value(word_t value) {
+constexpr void push_value(word_t value) {
   push(t, value);
 }
 
-word_t pop_value() {
+constexpr word_t pop_value() {
   return pop(t);
 }
 
-void push_call(word_t address) {
+constexpr void push_call(word_t address) {
   push(r, address);
 }
 
-word_t pop_call() {
+constexpr word_t pop_call() {
   return pop(r);
 }
 
-void push_dict(word_t value) {
+constexpr void push_dict(word_t value) {
   push(here, value);
 }
 
-word_t pop_dict() {
+constexpr word_t pop_dict() {
   return pop(here);
 }
 
@@ -88,7 +88,7 @@ std::string read_word() {
   if(str == "") {
     std::cout << "EOF encountered. Good bye!\n";
 
-    debug { dump_memory(); }
+    dump_memory();
     exit(0);
   }
   return str;
@@ -135,13 +135,13 @@ word_t lookup_in_dictionary(std::string wordname) {
   return lookup_in_dictionary(wordname_to_wide_wordname(wordname));
 }
 
-word_t dictionary_entry_to_codeword_location(word_t dictionary_entry) {
+constexpr word_t dictionary_entry_to_codeword_location(word_t dictionary_entry) {
   word_t entry_name_length = memory[dictionary_entry + 1];
   word_t codeword_offset = 2 + entry_name_length;
   return dictionary_entry + codeword_offset;
 }
 
-word_t dictionary_entry_to_data_location(word_t dictionary_entry) {
+constexpr word_t dictionary_entry_to_data_location(word_t dictionary_entry) {
   return dictionary_entry_to_codeword_location(dictionary_entry) + 1;
 }
 
@@ -195,7 +195,7 @@ void run_instruction(word_t instruction_address) {
   core_instruction instruction = static_cast<core_instruction>(memory[instruction_address]);
   if(instruction >= num_core_instructions) {
     std::cerr << "Error. Encountered unrunnable instruction " << instruction << "\n";
-    debug { dump_memory(); }
+    dump_memory();
     exit(1);
   }
   debug { std::cout << "instruction: " << instruction << "\t"; }
