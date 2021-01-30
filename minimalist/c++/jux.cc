@@ -96,7 +96,7 @@ std::string read_word() {
 
 // because we want to store individual characters in individual memory cells.
 // not very memory-efficient, but simple
-std::vector<word_t> wordname_to_wide_wordname(std::string wordname) {
+std::vector<word_t> wordname_to_wide_wordname(std::string_view wordname) {
   debug { std::cout << "converting `" << wordname << "` word_to wide format\n"; }
   std::vector<word_t> wide_wordname;
   std::copy(wordname.begin(), wordname.end(), std::back_inserter(wide_wordname));
@@ -131,7 +131,7 @@ word_t lookup_in_dictionary(std::vector<word_t> wide_wordname) {
 }
 
 
-word_t lookup_in_dictionary(std::string wordname) {
+word_t lookup_in_dictionary(std::string_view wordname) {
   return lookup_in_dictionary(wordname_to_wide_wordname(wordname));
 }
 
