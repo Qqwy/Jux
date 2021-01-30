@@ -16,5 +16,8 @@
   $(TARGET): $(TARGET).cc
 		$(CC) $(CFLAGS) -o $(TARGET) $(TARGET).cc
 
+  run: all
+		cat ../example_programs/prelude2.jux | ./$(TARGET)
+
   clean:
 		$(RM) $(TARGET)
