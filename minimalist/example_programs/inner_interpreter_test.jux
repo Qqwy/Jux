@@ -1,0 +1,14 @@
+compileme
+runme
+pushint
+define
+immediate
+compile_word
+return
+-
+negative
+fetch
+store
+getchar
+putchar
+inner_interpret

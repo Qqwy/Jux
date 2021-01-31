@@ -42,19 +42,19 @@ word_t const num_core_instructions = 13;
 
 void dump_memory() {
       std::cout << "Memory dump:\n";
-      for(size_t index = 0; index < static_cast<size_t>(here); ++index) {
+      for(size_t index = 0; index <= static_cast<size_t>(here); ++index) {
         std::cout << index << ":  " << memory[index] << '\t' << static_cast<char>(memory[index]) << '\n';
       }
 }
 
 constexpr void push(word_t &stack_top, word_t value) {
-  memory[stack_top] = value;
   ++stack_top;
+  memory[stack_top] = value;
 }
 
 constexpr word_t pop(word_t &stack_top) {
-  --stack_top;
   word_t val = memory[stack_top];
+  --stack_top;
   return val;
 }
 
@@ -174,7 +174,7 @@ void run_define() {
   debug { std::cout << "define\n"; }
   std::vector<word_t> wide_wordname = wordname_to_wide_wordname(read_word());
   push_dict(latest); // link to previous dictionary entry
-  latest = here - 1; // update most recent entry pointer to point to current dictionary entry (which starts with the link to the previous entry, hence the - 1)
+  latest = here; // update most recent entry pointer to point to current dictionary entry (which starts with the link to the previous entry, hence the - 1)
   push_dict(wide_wordname.size());
   for(auto character : wide_wordname) {
     push_dict(character);
@@ -335,7 +335,8 @@ void initialize_dictionary() {
 
 void initialize_inner_interpreter() {
   run_define();
-  int inner_interpreter_start = here - 1;
+  int inner_interpreter_start = here;
+  std::cout << "start: "<< inner_interpreter_start << '\n';
   push_dict(dictionary_entry_to_data_location(lookup_in_dictionary("compile_word")));
   push_dict(inner_interpreter_start);
 

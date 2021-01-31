@@ -63,12 +63,9 @@ define t>r
   r fetch fetch
 
   swap
-
   r fetch store
 
-  r fetch
-  1 +
-  r store
+  r fetch 1 + r store
 
   r fetch store
 return
@@ -76,23 +73,17 @@ return
 define r>t
   r fetch fetch
 
-  r fetch
-  1 -
-  r store
+  r fetch 1 - r store
 
   r fetch fetch
   swap
-
   r fetch store
 return
 
 
 define miniif
   r>t
-  swap
-  r>t
   +
-  t>r
   t>r
 return
 

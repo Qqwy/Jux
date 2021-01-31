@@ -71,7 +71,7 @@ define swap
 return
 
 define +
-  0 swap -
+  0 swap - -
 return
 
 define dup
@@ -117,14 +117,14 @@ define dec
   store
 return
 
+
 define t>r
   r fetch fetch
 
   swap
+  r fetch store
 
-  r fetch
-  1 +
-  r store
+  r fetch 1 + r store
 
   r fetch store
 return
@@ -132,14 +132,13 @@ return
 define r>t
   r fetch fetch
 
-  r fetch
-  1 -
-  r store
+  r fetch 1 - r store
 
+  r fetch fetch
   swap
-
   r fetch store
 return
+
 
 define tailcall
   r>t
@@ -186,7 +185,7 @@ return
 define find-)
   getchar
   
-  find-)
+  41 - int_to_bool miniif return tailcall find-)
 return
 
 define ( immediate
