@@ -17,16 +17,16 @@ define r
   2
 return
 
-define ]
+define safe_inner_interpret
   r fetch
   1 -
   r store
   compile_word
-]
+safe_inner_interpret
 
 define main immediate
   r fetch 10 - r store
-  ]
+  safe_inner_interpret
 
 main
 
@@ -124,6 +124,18 @@ return
 
 ( Do note that parentheses _cannot_ yet be nested. )
 
+define skip_until_newline
+  getchar
+  10 - skipnextunlesszero return tailcall skip_until_newline
+return
+
+define # immediate
+  skip_until_newline
+return
+
+# Yay, other comment syntax.
+
+
 ( Let us now talk about what has happened in this prelude so far:
 
 - the first 13 lines give names to the 13 builtin instructions
@@ -131,23 +143,23 @@ return
 which implements the initial inner parsing loop calling `compile_word` many times.
 
 There is however a problem with this: the call stack will continue being filled.
-
+This is why immediately after defining the symbolic name `r`, which is a pointer to the top of the call/return stack, we define a word...
 
 
 
 )
 
-define echo 
+define do_echo
   getchar dup 
   -1 - skipnextunlesszero return
 
   putchar
-  tailcall echo
+  tailcall do_echo
 return
 
-define echo_now immediate
-  echo
+define echo immediate
+  do_echo
 return
 
-echo_now
+echo
 
