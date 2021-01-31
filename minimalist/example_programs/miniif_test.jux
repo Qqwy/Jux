@@ -1,0 +1,122 @@
+compileme
+runme
+pushint
+define
+immediate
+compile_word
+return
+-
+negative
+fetch
+store
+getchar
+putchar
+inner_interpret
+
+define r
+  2
+return
+
+define ]
+  r fetch
+  1 -
+  r store
+  compile_word
+]
+
+define main immediate
+  ]
+
+main
+
+
+define t
+  1
+return
+
+define _x
+  5 fetch
+return
+
+define _x=
+  5 store
+return
+
+define _y
+  6 fetch
+return
+
+define _y=
+  6 store
+return
+
+
+define swap
+  _x= _y= _x _y
+return
+
+define +
+  0 swap - -
+return
+
+define t>r
+  r fetch fetch
+
+  swap
+
+  r fetch store
+
+  r fetch
+  1 +
+  r store
+
+  r fetch store
+return
+
+define r>t
+  r fetch fetch
+
+  r fetch
+  1 -
+  r store
+
+  r fetch fetch
+  swap
+
+  r fetch store
+return
+
+
+define miniif
+  r>t
+  swap
+  r>t
+  +
+  t>r
+  t>r
+return
+
+
+define T
+  84 putchar
+return
+
+define F
+  70 putchar
+return
+
+define example1 immediate
+  48 3 + putchar
+return
+
+example1
+
+define example2
+  1 miniif F T
+return
+
+define run_example2 immediate
+  example2
+return
+
+run_example2

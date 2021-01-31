@@ -268,6 +268,7 @@ void run_instruction(word_t instruction_address) {
       int memory_ptr = pop_value();
       int val = pop_value();
       memory[memory_ptr] = val;
+      std::cout << "memory[" << memory_ptr << "] = " << val << '\n';
     }
     break;
   case getcharacter:
@@ -298,6 +299,19 @@ void run_instructions() {
     debug { std::cout << "\t pc: " << pc << "\t m[pc-1]: " << instruction_address << "\t"; }
 
     run_instruction(instruction_address);
+
+    // debug {
+    std::cout << "val(" << t - (memory_size - value_stack_size)  << "): ";
+    for(word_t index = memory_size - value_stack_size; index < t; ++index) {
+      std::cout << memory[index] << " ";
+    }
+
+    std::cout << " call(" << r - 8 << "): ";
+    for(word_t index = 8; index < r; ++index) {
+      std::cout << memory[index] << " ";
+    }
+      std::cout << "\n";
+    // }
 
     // ++count;
     // if(count > 200) {
