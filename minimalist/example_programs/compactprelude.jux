@@ -1,0 +1,153 @@
+compileme
+runme
+pushint
+define
+immediate
+compile_word
+return
+-
+negative
+fetch
+store
+getchar
+putchar
+inner_interpret
+
+define r
+  2
+return
+
+define ]
+  r fetch
+  1 -
+  r store
+  compile_word
+]
+
+define main immediate
+  r fetch 10 - r store
+  ]
+
+main
+
+define t
+  1
+return
+
+define _x
+  5 fetch
+return
+
+define _x=
+  5 store
+return
+
+define _y
+  6 fetch
+return
+
+define _y=
+  6 store
+return
+
+define swap
+  _x= _y= _x _y
+return
+
+define dup
+  _x= _x _x
+return
+
+define drop
+  t fetch
+  1 -
+  t store
+return
+
+define +
+  0 swap - -
+return
+
+define t>r
+  r fetch fetch
+
+  swap
+  r fetch store
+
+  r fetch 1 + r store
+
+  r fetch store
+return
+
+define r>t
+  r fetch fetch
+
+  r fetch 1 - r store
+
+  r fetch fetch
+  swap
+  r fetch store
+return
+
+define tailcall
+  r>t
+  r>t drop
+  t>r
+return
+
+define int_to_bool
+  dup
+  0 - negative
+  swap 0 swap -
+  0 - negative
+  +
+return
+
+define skipnextunlesszero
+  int_to_bool
+  r>t
+  +
+  t>r
+return
+
+define find-)
+  getchar
+  
+  41 - skipnextunlesszero return tailcall find-)
+return
+
+define ( immediate
+  find-)
+return
+
+( And finally we have comments! )
+
+( Do note that parentheses _cannot_ yet be nested. )
+
+( Let us now talk about what has happened in this prelude so far:
+
+- the first 13 lines give names to the 13 builtin instructions
+- the 14th name is for the inner interpreter, the first `non-builtin' instruction,
+which implements the initial inner parsing loop calling `compile_word` many times.
+
+There is however a problem with this: the call stack will continue being filled.
+
+
+
+
+)
+
+define echo 
+  getchar dup 
+  -1 - skipnextunlesszero return
+
+  putchar
+  tailcall echo
+return
+
+define echo_now immediate
+  echo
+return
+
+echo_now
+

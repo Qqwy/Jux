@@ -176,7 +176,8 @@ define ==
   - not
 return
 
-define miniif
+define skipnextunlesszero
+  int_to_bool
   r>t
   +
   t>r
@@ -185,14 +186,14 @@ return
 define find-)
   getchar
   
-  41 - int_to_bool miniif return tailcall find-)
+  41 - skipnextunlesszero return tailcall find-)
 return
 
 define ( immediate
   find-)
 return
 
-( foo bar baz )
+( Finally we have comments! )
 
 define L
   108 putchar

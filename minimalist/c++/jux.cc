@@ -88,7 +88,7 @@ std::string read_word() {
   if(str == "") {
     std::cout << "EOF encountered. Good bye!\n";
 
-    dump_memory();
+    // dump_memory();
     exit(0);
   }
   return str;
@@ -268,7 +268,7 @@ void run_instruction(word_t instruction_address) {
       int memory_ptr = pop_value();
       int val = pop_value();
       memory[memory_ptr] = val;
-      std::cout << "memory[" << memory_ptr << "] = " << val << '\n';
+      debug { std::cout << "memory[" << memory_ptr << "] = " << val << '\n'; }
     }
     break;
   case getcharacter:
@@ -300,7 +300,7 @@ void run_instructions() {
 
     run_instruction(instruction_address);
 
-    // debug {
+    debug {
     std::cout << "val(" << t - (memory_size - value_stack_size)  << "): ";
     for(word_t index = memory_size - value_stack_size; index < t; ++index) {
       std::cout << memory[index] << " ";
@@ -311,7 +311,7 @@ void run_instructions() {
       std::cout << memory[index] << " ";
     }
       std::cout << "\n";
-    // }
+    }
 
     // ++count;
     // if(count > 200) {
@@ -336,7 +336,7 @@ void initialize_dictionary() {
 void initialize_inner_interpreter() {
   run_define();
   int inner_interpreter_start = here;
-  std::cout << "start: "<< inner_interpreter_start << '\n';
+  // std::cout << "start: "<< inner_interpreter_start << '\n';
   push_dict(dictionary_entry_to_data_location(lookup_in_dictionary("compile_word")));
   push_dict(inner_interpreter_start);
 
